@@ -191,7 +191,16 @@ export default function App() {
       finalize(timer, at);
       setTimer({ mode: "break", start: at });
     },
+    // 終了：勉強中なら一時停止と同じ（30秒以内に再開すればそのまま続き、過ぎたら休憩の計測に切り替わる）。
+    // 一時停止中ならすぐ休憩に、休憩中なら休憩を記録して止める
     stop() {
+      if (timer.mode === "study") return timerActions.pause();
+      if (timer.mode === "paused") {
+        handledPause.current = timer.pausedAt;
+        addEntries("study", studyBase(timer), timer.start, timer.pausedAt);
+        setTimer({ mode: "break", start: timer.pausedAt });
+        return;
+      }
       finalize(timer, Date.now());
       setTimer(IDLE);
     },
