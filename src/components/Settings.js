@@ -256,6 +256,7 @@ function AppAddress() {
         <code className="address">{url}</code>
         <button className="btn small" onClick={copy}>{copied ? "コピーしました" : "コピー"}</button>
       </div>
+      <p className="muted small">画面情報：{window.innerWidth}×{window.innerHeight} / 画面 {window.screen.width}×{window.screen.height} / 下の調整 {getComputedStyle(document.documentElement).getPropertyValue("--bottom-gap") || "0px"}</p>
     </section>
   );
 }

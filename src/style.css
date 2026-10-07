@@ -15,7 +15,7 @@
   --warn: #C9952B;
   --radius: 14px;
   --tabbar-h: 64px;
-  --paper-dots: radial-gradient(#ddd5c6 1px, transparent 1.3px);
+  --paper-dots: radial-gradient(#ece6da 0.9px, transparent 1.2px);
   color-scheme: light;
 }
 
@@ -54,7 +54,7 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 .sync-dot.error { background: var(--danger); }
 
 .tabbar {
-  position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: center;
+  position: fixed; bottom: calc(-1 * var(--bottom-gap, 0px)); left: 0; right: 0; display: flex; justify-content: center;
   background: var(--surface); border-top: 1.5px solid #2B2B2B; box-shadow: 0 -2px 10px rgba(80,60,30,0.08);
   padding: 6px 0 calc(6px + env(safe-area-inset-bottom, 0px)); z-index: 20;
 }
@@ -293,7 +293,9 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 .report-task em { font-style: normal; color: var(--muted); white-space: nowrap; }
 
 /* タイマー画面上部：机の上のノート */
-.hero-desk { border-radius: 10px; box-shadow: 0 4px 14px rgba(80,60,30,0.18); }
+.hero-frame { position: relative; width: 100%; aspect-ratio: 3 / 4; overflow: hidden; border-radius: 10px; box-shadow: 0 4px 14px rgba(80,60,30,0.18); }
+/* 写真ごと 1.26 倍に拡大して、ノートが枠いっぱいになる位置に寄せる（ページ中心を左右中央、上端を少し下に） */
+.hero-desk { position: absolute; left: 0; top: 0; transform-origin: 0 0; transform: translate(-14.5%, -12.3%) scale(1.26); border-radius: 0; }
 .nh-frame {
   position: absolute; inset: 3.2cqw 3.2cqw 3.2cqw 3.6cqw; border: 0.42cqw solid #2B2B2B; border-radius: 6cqw 5cqw 6.5cqw 5.5cqw;
   display: flex; flex-direction: column; align-items: center; padding: 3cqw 2.6cqw 2.6cqw; color: #2B2B2B;

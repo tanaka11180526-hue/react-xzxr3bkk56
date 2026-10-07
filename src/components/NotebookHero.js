@@ -24,6 +24,7 @@ export default function NotebookHero({ app }) {
   else main = { icon: "play", label: timer.mode === "break" ? "勉強を再開" : "計測スタート", on: () => lastSubject && timerActions.toggleSubject(lastSubject) };
 
   return (
+    <div className="hero-frame">
     <div className="desk hero-desk">
       <div className="notebook">
         <div className="nh-frame">
@@ -74,6 +75,7 @@ export default function NotebookHero({ app }) {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }
