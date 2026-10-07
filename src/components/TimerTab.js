@@ -12,8 +12,8 @@ export default function TimerTab({ app }) {
   const isToday = viewDate === today;
   const day = days[viewDate] || { total: 0, by: {} };
   const breakSecs = (breakDays[viewDate] || { total: 0 }).total;
-  const todayPlans = scheduleByDate[today] || [];
-  const dayPlans = isToday ? [] : scheduleByDate[viewDate] || [];
+  // 上の日付で選んだ日の予定を出す（計測を始められるのは今日の予定だけ）
+  const plans = scheduleByDate[viewDate] || [];
   const studied = subjects.filter((s) => day.by[s.id]).sort((a, b) => day.by[b.id] - day.by[a.id]);
 
   return (
@@ -29,10 +29,10 @@ export default function TimerTab({ app }) {
 
       <NotebookHero app={app} dateKey={viewDate} />
 
-      {todayPlans.length > 0 && (
+      {plans.length > 0 && (
         <section className="card section">
-          <div className="section-title">今日の予定<span className="muted">（スプレッドシート）</span></div>
-          {todayPlans.map((p, i) => <ScheduleItem key={i} app={app} item={p} canStart />)}
+          <div className="section-title">{isToday ? "今日" : fmtDateJa(viewDate)}の予定<span className="muted">（スプレッドシート）</span></div>
+          {plans.map((p, i) => <ScheduleItem key={i} app={app} item={p} canStart={isToday} />)}
         </section>
       )}
 
@@ -52,12 +52,6 @@ export default function TimerTab({ app }) {
           </div>
         )}
 
-        {dayPlans.length > 0 && (
-          <>
-            <div className="section-title">この日の予定</div>
-            {dayPlans.map((p, i) => <ScheduleItem key={i} app={app} item={p} canStart={false} />)}
-          </>
-        )}
 
         <Timeline app={app} />
         {breakSecs > 0 && (
