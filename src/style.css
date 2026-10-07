@@ -170,7 +170,8 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 .cal-cell.today { background: #F3EAD6; border-radius: 6px; }
 .cal-day { font-size: 13px; line-height: 22px; }
 .cal-cell.today .cal-day { background: #2B2B2B; color: #FBF8F1; border-radius: 50%; width: 22px; margin: 0 auto; font-weight: 800; }
-.cal-secs { font-size: 10px; color: var(--ok); font-weight: 800; }
+/* 勉強した時間は、黄緑のマーカー色の小さな札に濃い緑の文字で */
+.cal-secs { font-size: 11px; font-weight: 800; color: #34491F; background: #DDE7CB; border-radius: 5px; margin: 0 2px; padding: 1px 0; letter-spacing: 0.2px; }
 .cal-chip { font-size: 9px; font-weight: 700; color: #0d0f16; border-radius: 3px; padding: 1px 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cal-more { font-size: 9px; color: var(--muted); }
 .by-subject { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
