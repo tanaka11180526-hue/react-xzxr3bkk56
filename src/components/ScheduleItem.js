@@ -1,9 +1,11 @@
 import React from "react";
 import { UNKNOWN_COLOR } from "../lib/constants";
+import { isTaskDone } from "../lib/tasks";
 
 // スプレッドシートの予定1件（「ToDo・実績」の1行、または復習日）
 export default function ScheduleItem({ app, item, canStart }) {
-  const { matchSubject, timer, timerActions } = app;
+  const { matchSubject, timer, timerActions, canMarkDone, markDone } = app;
+  const finished = isTaskDone(item);
   const sub = matchSubject(item.subject);
   const color = sub ? sub.color : UNKNOWN_COLOR;
   // 復習も「論文対策講義3（復習①）」のように、やることを付けて計る
@@ -14,7 +16,11 @@ export default function ScheduleItem({ app, item, canStart }) {
   const planText = item.plan ? "計画 " + item.plan + "分" : "";
   const actualText = item.actual !== "" && item.actual != null ? "実績 " + item.actual + "分" : "";
   return (
-    <div className={"plan" + (item.done ? " done" : "")} style={{ "--c": color }}>
+    <div className={"plan" + (finished ? " done" : "")} style={{ "--c": color }}>
+      {canMarkDone && item.row && (
+        <button className={"done-btn" + (finished ? " on" : "")} onClick={() => markDone(item, !finished)}
+          aria-label={finished ? "終わったを取り消す" : "終わった"}>{finished ? "✓" : ""}</button>
+      )}
       <div className="plan-body">
         <div className="plan-meta">
           {item.category && <span className="plan-cat">{item.category}</span>}

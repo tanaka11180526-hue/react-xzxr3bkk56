@@ -24,17 +24,34 @@ export async function ping(cfg) {
 
 export async function fetchSchedule(cfg) {
   const data = await readJson(await fetch(withQuery(cfg.url, { action: "schedule", token: cfg.token, _: Date.now() }), { cache: "no-store" }));
-  return { items: data.items || [], subjects: data.subjects || [] };
+  return { items: data.items || [], subjects: data.subjects || [], version: data.version || 0 };
 }
 
 // Content-Type を text/plain にすると CORS のプリフライトが発生しない
-export async function pushLogs(cfg, upsert, remove) {
+async function post(cfg, action, payload) {
   const res = await fetch(cfg.url, {
     method: "POST",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({ token: cfg.token, action: "logs", upsert, remove }),
+    body: JSON.stringify({ token: cfg.token, action, ...payload }),
   });
-  await readJson(res);
+  return readJson(res);
+}
+
+export async function pushLogs(cfg, upsert, remove) {
+  await post(cfg, "logs", { upsert, remove });
+}
+
+// ここから下はスクリプトの版 6 以上で使える
+export const FEATURE_VERSION = 6;
+
+// 予定を「終わった」にする／戻す（シートの達成 H列、または復習の済チェックだけを書き換える）
+export async function pushDone(cfg, item, value) {
+  await post(cfg, "done", { row: item.row, reviewIndex: item.review ? item.reviewIndex : null, date: item.date, content: item.src, value });
+}
+
+// レポートの「ひとこと」を「アプリメモ」タブに送る
+export async function pushNotes(cfg, notes) {
+  await post(cfg, "notes", { notes });
 }
 
 export function toRow(log, type, subjects) {
