@@ -12,6 +12,7 @@ export default function Settings({ app, onClose }) {
       <SubjectSettings app={app} />
       <BreakColor app={app} />
       <Backup app={app} />
+      <AppAddress />
     </Sheet>
   );
 }
@@ -232,6 +233,29 @@ function Backup({ app }) {
         <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={importData} />
       </div>
       {msg && <p className={"notice " + (msg.ok ? "ok" : "error")}>{msg.text}</p>}
+    </section>
+  );
+}
+
+function AppAddress() {
+  const url = window.location.origin + "/";
+  const [copied, setCopied] = useState(false);
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+    } catch {
+      window.prompt("このアドレスをコピーしてください", url);
+    }
+  }
+  return (
+    <section className="settings-section">
+      <h3>このアプリのアドレス</h3>
+      <p className="muted small">ホーム画面に追加し直すときは、Safari でこのアドレスを開いて「共有 → ホーム画面に追加」してください。</p>
+      <div className="row">
+        <code className="address">{url}</code>
+        <button className="btn small" onClick={copy}>{copied ? "コピーしました" : "コピー"}</button>
+      </div>
     </section>
   );
 }
