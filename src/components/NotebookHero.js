@@ -71,7 +71,7 @@ export default function NotebookHero({ app, dateKey }) {
             {timer.mode !== "idle" && (
               <div className="nh-sublinks">
                 {timer.mode === "study" && <button onClick={timerActions.startBreak}>☕ 休憩</button>}
-                <button onClick={timerActions.stop}>■ 終了</button>
+                <button onClick={timerActions.stop}>{timer.mode === "study" ? "■ 終了" : timer.mode === "paused" ? "☕ すぐ休憩にする" : "■ 休憩を終える"}</button>
               </div>
             )}
           </div>
