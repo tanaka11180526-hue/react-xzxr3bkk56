@@ -20,10 +20,21 @@ export default function NotebookHero({ app, dateKey }) {
   else if (timer.mode === "break") status = <>☕ 休憩中 {fmtHMS((now - timer.start) / 1000)}</>;
   else status = <>科目の ▷ を押すと計測が始まるで</>;
 
-  let main;
-  if (timer.mode === "study") main = { icon: "pause", label: "一時停止", on: timerActions.pause };
-  else if (timer.mode === "paused") main = { icon: "play", label: "再開", on: timerActions.resume };
-  else main = { icon: "play", label: timer.mode === "break" ? "勉強を再開" : "計測スタート", on: () => lastSubject && timerActions.toggleSubject(lastSubject) };
+  // 計測中だけ出す小さな操作ボタン（開始は科目の ▷ から）
+  let controls = [];
+  if (timer.mode === "study") controls = [
+    { label: "⏸ 一時停止", on: timerActions.pause },
+    { label: "☕ 休憩", on: timerActions.startBreak },
+    { label: "■ 終了", on: timerActions.stop },
+  ];
+  else if (timer.mode === "paused") controls = [
+    { label: "▶ 再開", on: timerActions.resume },
+    { label: "☕ すぐ休憩にする", on: timerActions.stop },
+  ];
+  else if (timer.mode === "break") controls = [
+    { label: "▶ 勉強を再開", on: () => lastSubject && timerActions.toggleSubject(lastSubject) },
+    { label: "■ 休憩を終える", on: timerActions.stop },
+  ];
 
   return (
     <div className="hero-frame">
@@ -37,6 +48,11 @@ export default function NotebookHero({ app, dateKey }) {
           </div>
           <div className="nh-oval">{fmtHMS(today.total)}</div>
           <div className="nh-status">{status}</div>
+          <div className="nh-controls">
+            {controls.map((c) => <button key={c.label} onClick={c.on}>{c.label}</button>)}
+          </div>
+
+          <DeskDoodle steaming={timer.mode === "study"} />
 
           <div className={"nh-grid cols-" + cols}>
             {subjects.map((s) => {
@@ -57,24 +73,6 @@ export default function NotebookHero({ app, dateKey }) {
             })}
           </div>
 
-          <div className="nh-actions">
-            <button className="nh-main" onClick={main.on} aria-label={main.label}>
-              <Rays />
-              <svg className="nh-main-icon" viewBox="0 0 20 20" aria-hidden="true">
-                {main.icon === "pause"
-                  ? <path d="M7 4.5 V15.5 M13 4.5 V15.5" stroke="#2B2B2B" strokeWidth="2.6" strokeLinecap="round" />
-                  : <path d="M6 4 L16 10 L6 16 Z" fill="#2B2B2B" />}
-              </svg>
-              <span>{main.label}</span>
-              <Rays flip />
-            </button>
-            {timer.mode !== "idle" && (
-              <div className="nh-sublinks">
-                {timer.mode === "study" && <button onClick={timerActions.startBreak}>☕ 休憩</button>}
-                <button onClick={timerActions.stop}>{timer.mode === "study" ? "■ 終了" : timer.mode === "paused" ? "☕ すぐ休憩にする" : "■ 休憩を終える"}</button>
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </div>
@@ -116,10 +114,38 @@ function Sparks({ flip }) {
   );
 }
 
-function Rays({ flip }) {
+// 机の上の落書き（本・マグカップ・鉛筆・観葉植物）。勉強中はマグの湯気がゆらぐ
+function DeskDoodle({ steaming }) {
   return (
-    <svg className="nh-rays" viewBox="0 0 24 40" style={flip ? { transform: "scaleX(-1)" } : null} aria-hidden="true">
-      <path d="M18 4 L8 10 M20 20 H4 M18 36 L8 30" stroke="#2B2B2B" strokeWidth="1.6" strokeLinecap="round" />
+    <svg className={"nh-doodle" + (steaming ? " steaming" : "")} viewBox="0 0 240 64" aria-hidden="true">
+      <g fill="none" stroke="#2B2B2B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        {/* 積んだ本 */}
+        <rect x="22" y="48" width="58" height="10" rx="1.5" fill="#E9D7B5" />
+        <rect x="28" y="38" width="50" height="10" rx="1.5" fill="#C6D4AE" />
+        <rect x="24" y="28" width="54" height="10" rx="1.5" fill="#D9E3EC" />
+        <path d="M30 53h20M35 43h16M31 33h18" strokeWidth="1.1" />
+        {/* 鉛筆 */}
+        <path d="M86 57l38-8" />
+        <path d="M86 57l3.2 2.6 36-7.6-1.2-3" fill="#F6C76B" />
+        <path d="M86 57l-4 1.6 4.4 1.4" />
+        {/* マグカップ */}
+        <path d="M138 34h26v18a6 6 0 0 1-6 6h-14a6 6 0 0 1-6-6z" fill="#FBF8F1" />
+        <path d="M164 38h4a5 5 0 0 1 0 10h-4" />
+        <path d="M143 44h16" strokeWidth="1.1" />
+        <g className="nh-steam">
+          <path d="M145 28c-3-4 3-6 0-10" />
+          <path d="M151 28c-3-4 3-6 0-10" />
+          <path d="M157 28c-3-4 3-6 0-10" />
+        </g>
+        {/* 観葉植物 */}
+        <path d="M190 44h24l-3 14h-18z" fill="#E9D7B5" />
+        <path d="M202 44V26" />
+        <path d="M202 34c-8 0-12-5-12-11 7 0 12 4 12 11z" fill="#C6D4AE" />
+        <path d="M202 30c7 0 11-5 11-11-7 0-11 4-11 11z" fill="#C6D4AE" />
+        <path d="M202 26c-3-5-1-10 0-12 2 3 3 8 0 12z" fill="#C6D4AE" />
+        {/* 机の線 */}
+        <path d="M8 60.5h224" strokeWidth="1.2" strokeDasharray="1 4" />
+      </g>
     </svg>
   );
 }
