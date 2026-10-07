@@ -1,11 +1,13 @@
 import React from "react";
 import { PAUSE_LIMIT_MS } from "../lib/constants";
-import { fmtHMS, todayKey } from "../lib/time";
+import { fmtHMS, keyToDate, todayKey } from "../lib/time";
 
 // タイマー画面の一番上。机の上のノート（写真）に、合計時間・科目ボタン・計測ボタンを手書き風に重ねる
-export default function NotebookHero({ app }) {
+export default function NotebookHero({ app, dateKey }) {
   const { subjects, timer, timerActions, now, days, logs, getSub } = app;
-  const today = days[todayKey()] || { total: 0, by: {} };
+  // 合計と科目ごとの時間は、上の日付で選んだ日の分を出す（計測は常に今日）
+  const isToday = !dateKey || dateKey === todayKey();
+  const today = days[dateKey || todayKey()] || { total: 0, by: {} };
   const running = timer.mode === "study" || timer.mode === "paused" ? timer.subjectId : null;
   const lastSubject = running
     || (logs.length ? logs.reduce((a, b) => (b.end > a.end ? b : a)).subjectId : null)
@@ -30,7 +32,7 @@ export default function NotebookHero({ app }) {
         <div className="nh-frame">
           <div className="nh-label">
             <Sparks />
-            <span>合計時間</span>
+            <span>{isToday ? "合計時間" : fmtMD(dateKey) + "の合計"}</span>
             <Sparks flip />
           </div>
           <div className="nh-oval">{fmtHMS(today.total)}</div>
@@ -78,6 +80,11 @@ export default function NotebookHero({ app }) {
     </div>
     </div>
   );
+}
+
+function fmtMD(key) {
+  const d = keyToDate(key);
+  return d.getMonth() + 1 + "/" + d.getDate();
 }
 
 function fmtShort(secs) {

@@ -18,7 +18,16 @@ export default function TimerTab({ app }) {
 
   return (
     <div className="page">
-      <NotebookHero app={app} />
+      <div className="date-nav top-date-nav">
+        <button className="nav-btn" onClick={() => setViewDate(addDays(viewDate, -1))} aria-label="前の日">‹</button>
+        <div className="date-nav-center">
+          <div className={"date-nav-label" + (isToday ? " today" : "")}>{fmtDateJa(viewDate)}</div>
+          {!isToday && <button className="link-btn" onClick={() => setViewDate(today)}>今日に戻る</button>}
+        </div>
+        <button className="nav-btn" onClick={() => setViewDate(addDays(viewDate, 1))} disabled={isToday} aria-label="次の日">›</button>
+      </div>
+
+      <NotebookHero app={app} dateKey={viewDate} />
 
       {todayPlans.length > 0 && (
         <section className="card section">
@@ -28,15 +37,7 @@ export default function TimerTab({ app }) {
       )}
 
       <section className="card section">
-        <div className="date-nav">
-          <button className="nav-btn" onClick={() => setViewDate(addDays(viewDate, -1))} aria-label="前の日">‹</button>
-          <div className="date-nav-center">
-            <div className={"date-nav-label" + (isToday ? " today" : "")}>{fmtDateJa(viewDate)}の記録</div>
-            {!isToday && <button className="link-btn" onClick={() => setViewDate(today)}>今日に戻る</button>}
-          </div>
-          <button className="nav-btn" onClick={() => setViewDate(addDays(viewDate, 1))} disabled={isToday} aria-label="次の日">›</button>
-        </div>
-
+        <div className="section-title">{isToday ? "今日" : fmtDateJa(viewDate)}の記録</div>
         <div className="day-total">合計 <b>{fmtHMS(day.total)}</b>{breakSecs > 0 && <span className="muted">・休憩 {fmtHMS(breakSecs)}</span>}</div>
         {day.total > 0 && (
           <div className="mix-bar">
