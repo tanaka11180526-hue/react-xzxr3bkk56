@@ -13,7 +13,7 @@ export default function LogEditor({ app, editor, onClose }) {
   const [end, setEnd] = useState(existing ? fmtClock(existing.end) : "");
   const [task, setTask] = useState(existing ? existing.task || "" : "");
   const subLabel = subjectId ? getSub(subjectId).label : "";
-  const tasks = (scheduleByDate[date] || []).filter((p) => !p.review && p.content && p.subject === subLabel).map((p) => p.content);
+  const tasks = (scheduleByDate[date] || []).filter((p) => p.content && p.subject === subLabel).map((p) => p.content);
   if (task && !tasks.includes(task)) tasks.push(task);
 
   if (editor.id && !existing) return null;
