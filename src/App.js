@@ -109,9 +109,16 @@ export default function App() {
 
   useEffect(() => OLD_KEYS.forEach(removeKey), []);
 
-  // ホーム画面から開いたとき、画面の一番下にすき間ができる端末があるので、その分だけ下のタブを下げる
+  // ホーム画面から開いたとき、表示領域が画面の一番下より手前で終わる端末がある。
+  // その場合は画面下の余白（ホームバーの分）がもう表示領域の外にあるので、タブの下の余白を詰める
   useEffect(() => {
-    const apply = () => document.documentElement.style.setProperty("--bottom-gap", measureBottomGap() + "px");
+    const apply = () => {
+      const gap = measureBottomGap();
+      const root = document.documentElement.style;
+      root.setProperty("--bottom-gap", gap + "px");
+      if (gap > 0) root.setProperty("--tab-bottom-pad", "8px");
+      else root.removeProperty("--tab-bottom-pad");
+    };
     apply();
     window.addEventListener("resize", apply);
     return () => window.removeEventListener("resize", apply);
