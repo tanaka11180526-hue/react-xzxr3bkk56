@@ -346,15 +346,16 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 .nh-cat.asleep .cat-eyes-open, .nh-cat.awake .cat-eyes-closed, .nh-cat.awake .cat-zzz { display: none; }
 /* 寝ているとき：寝息でふくらむ・Zzz が浮かぶ */
 .nh-cat.asleep .cat-body { animation: cat-breathe 3.6s ease-in-out infinite; }
-.nh-cat.asleep .cat-tail { animation: cat-tail-slow 6s ease-in-out infinite; }
+.nh-cat.asleep .cat-tail { animation: cat-tail-sleep 7s ease-in-out infinite; }
 .nh-cat .cat-zzz text { animation: cat-z 3.6s ease-in-out infinite; opacity: 0; }
 .nh-cat .cat-zzz text:nth-child(2) { animation-delay: 0.5s; }
 .nh-cat .cat-zzz text:nth-child(3) { animation-delay: 1s; }
 /* 起きているとき：しっぽを振る・ときどきまばたき */
 .nh-cat.awake .cat-tail { animation: cat-tail 1.8s ease-in-out infinite; }
 .nh-cat.awake .cat-eyes-open ellipse { transform-box: fill-box; transform-origin: center; animation: cat-blink 4.5s infinite; }
-@keyframes cat-breathe { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.015, 1.04); } }
-@keyframes cat-tail-slow { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-6deg); } }
+@keyframes cat-breathe { 0%, 100% { transform: scale(1, 1); } 45% { transform: scale(1.035, 1.09); } }
+/* 寝ているときは、しばらくじっとしてから、ときどき2回ぱたぱた振る */
+@keyframes cat-tail-sleep { 0%, 62%, 100% { transform: rotate(0deg); } 70% { transform: rotate(-16deg); } 78% { transform: rotate(4deg); } 86% { transform: rotate(-12deg); } 94% { transform: rotate(0deg); } }
 @keyframes cat-tail { 0%, 100% { transform: rotate(4deg); } 50% { transform: rotate(-14deg); } }
 @keyframes cat-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
 @keyframes cat-z { 0% { opacity: 0; transform: translate(0, 3px); } 30%, 60% { opacity: 0.85; } 100% { opacity: 0; transform: translate(2px, -3px); } }
