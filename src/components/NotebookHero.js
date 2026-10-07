@@ -86,7 +86,10 @@ export default function NotebookHero({ app, dateKey }) {
               );
             })}
           </div>
-          <DeskDoodle steaming={timer.mode === "study"} />
+          <div className="nh-bottom">
+            <CatDoodle awake={timer.mode === "study"} />
+            <DeskDoodle steaming={timer.mode === "study"} />
+          </div>
         </div>
       </div>
     </div>
@@ -189,6 +192,42 @@ function CornerDoodle() {
         <path d="M33.6 40.4c1.4-3.6 4.6-5.4 12.6-1.2" />
       </g>
       <text x="27" y="28.5" textAnchor="middle" fontSize="11.5" fontFamily="Klee One, sans-serif" fill="#2F2F2F" transform="rotate(-4 27 25)">合格!</text>
+    </svg>
+  );
+}
+
+// ノートの左下の猫。ふだんは丸まって寝ていて（Zzz・寝息）、勉強中は起きてしっぽを振りながら見守る
+function CatDoodle({ awake }) {
+  return (
+    <svg className={"nh-cat" + (awake ? " awake" : " asleep")} viewBox="0 0 90 58" aria-hidden="true">
+      <g className="cat-tail">
+        <path d="M73 49c9 0 13-5 12-12-1-5-5-7-8-6" fill="none" stroke="#2F2F2F" strokeWidth="1.4" strokeLinecap="round" />
+      </g>
+      <g className="cat-body">
+        {/* 色（線から少しずらす） */}
+        <path d="M22 51c-1-13 9-22 26-22s28 8 27 22z" fill="#F3D9B1" transform="translate(1.4 1.2)" />
+        <circle cx="25" cy="40" r="10.5" fill="#F3D9B1" transform="translate(1.4 1.2)" />
+        <g fill="none" stroke="#2F2F2F" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M33 30.4c4-1.4 9-2 14.6-1.8 15 .4 26.4 8.8 25.6 22.2" />
+          <path d="M15.4 44.6c-1.8-6.2 1-12.2 5-14.8l-1.6-8.6 6.8 5.6c2-.4 3.8-.2 5.6.4l5-6.6.6 9c3.4 3.4 4.4 9 2.6 14" />
+          <path d="M47 30.6l1 4.4 M55 31.4l-.2 4.6 M62.6 34l-1 4.2" strokeWidth="1.1" />
+          <path d="M28.4 44.6c.6.8 1.4.8 2 0 .6.8 1.4.8 2 0" strokeWidth="1.1" />
+        </g>
+        <g className="cat-eyes-closed" fill="none" stroke="#2F2F2F" strokeWidth="1.2" strokeLinecap="round">
+          <path d="M20.6 40.4c1 1.2 2.6 1.2 3.6 0 M30 40.4c1 1.2 2.6 1.2 3.6 0" />
+        </g>
+        <g className="cat-eyes-open" fill="#2F2F2F">
+          <ellipse cx="22.4" cy="40" rx="1.3" ry="1.6" />
+          <ellipse cx="31.8" cy="40" rx="1.3" ry="1.6" />
+        </g>
+        <path d="M18 43.6l-4 .4 M18.4 45.4l-3.6 1.4 M36.6 43.6l4 .2 M36.2 45.4l3.6 1.2" fill="none" stroke="#2F2F2F" strokeWidth=".9" strokeLinecap="round" />
+      </g>
+      <g className="cat-zzz" fill="#2F2F2F" fontFamily="Caveat, Klee One, sans-serif">
+        <text x="40" y="22" fontSize="8">z</text>
+        <text x="46" y="15" fontSize="10">z</text>
+        <text x="53" y="7" fontSize="12">Z</text>
+      </g>
+      <path d="M4 53.6c24 .6 52 .4 82-.4" fill="none" stroke="#2F2F2F" strokeWidth="1" strokeLinecap="round" />
     </svg>
   );
 }
