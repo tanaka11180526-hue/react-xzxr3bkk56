@@ -924,10 +924,6 @@ export default function App() {
           );
         })()}
 
-        {tab === "ai" && (
-          <AITab subjects={subjects} sessions={sessions} setSessions={setSessions} today={today} addDays={addDays} />
-        )}
-
       </div>
 
       <div style={{ position:"fixed", bottom:0, left:0, width:"100%", background:"#0D0F16", borderTop:"1px solid #1C1F2E", display:"flex", padding:"8px 0 env(safe-area-inset-bottom,8px)", zIndex:20 }}>
@@ -936,12 +932,11 @@ export default function App() {
           { id:"today",    icon:"📌", label:"今日" },
           { id:"timer",    icon:"⏱",  label:"タイマー" },
           { id:"list",     icon:"📋", label:"タスク" },
-          { id:"ai",       icon:"✦",  label:"AI" },
         ].map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{ flex:1, border:"none", background:"none", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:3, padding:"6px 0", WebkitTapHighlightColor:"transparent" }}>
-            <div style={{ fontSize: t.id==="ai" ? 26 : 30, fontWeight: t.id==="ai" ? 800 : 400, color: tab===t.id && t.id==="ai" ? "#A78BFA" : "inherit", lineHeight:1 }}>{t.icon}</div>
-            <div style={{ fontSize:13, fontWeight:700, color: tab===t.id ? (t.id==="ai"?"#A78BFA":"#60A5FA") : "#374151" }}>{t.label}</div>
-            {tab === t.id && <div style={{ width:24, height:2, borderRadius:1, background: t.id==="ai"?"#A78BFA":"#60A5FA" }} />}
+            <div style={{ fontSize:30, lineHeight:1 }}>{t.icon}</div>
+            <div style={{ fontSize:13, fontWeight:700, color: tab===t.id ? "#60A5FA" : "#374151" }}>{t.label}</div>
+            {tab === t.id && <div style={{ width:24, height:2, borderRadius:1, background:"#60A5FA" }} />}
           </button>
         ))}
       </div>
@@ -1575,128 +1570,6 @@ function CollapsibleReviewSection({ title, reviews, subjects, onTap, showDate, r
           })}
         </div>
       </div>
-    </div>
-  );
-}
-
-// ── AI TAB ──
-function AITab({ subjects, sessions, setSessions, today, addDays }) {
-  const [messages, setMessages] = useState([
-    { role:"assistant", content:"こんにちは！CPAの勉強をサポートするAIアシスタントです📚\n\n例えば：\n・「租税法の問題集20問を2週間で終わらせたい」\n・「今週の勉強どうだった？」\n・「財務会計の連結が苦手」\n\nなんでも話しかけてください！" }
-  ]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const messagesEndRef = useRef(null);
-  const inputRef = useRef(null);
-
-  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior:"smooth" }); }, [messages]);
-
-  function buildSystemPrompt() {
-    const subjectList = subjects.map(s => s.label).join("、");
-    const recentSessions = [...sessions].reverse().slice(0, 20).map(s => {
-      const sub = subjects.find(x => x.id===s.subject);
-      return `・${s.date} ${sub?.label} : ${s.content}`;
-    }).join("\n");
-    return `あなたは公認会計士試験の勉強をサポートするAIアシスタントです。
-ユーザーの科目：${subjectList}
-最近の学習記録（直近20件）：
-${recentSessions || "まだ記録がありません"}
-
-【できること】
-1. 学習スケジュールを組んでカレンダーに追加（JSONで返す）
-2. 学習記録の分析・アドバイス
-3. 公認会計士試験に関する質問への回答
-
-【スケジュール追加の場合】
-ユーザーが「〇〇を△週間で終わらせたい」などと言ったら、スケジュールを提案して以下のJSON形式で返してください。必ずJSONブロックを含めること：
-\`\`\`schedule
-[{"date":"YYYY-MM-DD","subject":"科目ID","content":"内容"}]
-\`\`\`
-科目IDは: ${subjects.map(s => `${s.label}→${s.id}`).join("、")}
-今日の日付: ${today}
-
-返答は日本語で、親しみやすく簡潔に。`;
-  }
-
-  async function sendMessage() {
-    if (!input.trim() || loading) return;
-    const userMsg = input.trim();
-    setInput("");
-    setMessages(prev => [...prev, { role:"user", content:userMsg }]);
-    setLoading(true);
-    try {
-      const apiKey = process.env.REACT_APP_ANTHROPIC_API_KEY;
-      if (!apiKey) {
-        await new Promise(r => setTimeout(r, 800));
-        setMessages(prev => [...prev, { role:"assistant", content:"⚠️ APIキーが設定されていません。\n\nVercelの環境変数に `REACT_APP_ANTHROPIC_API_KEY` を設定すると、本物のAIが使えるようになります！\n\nそれまでは枠だけ動いている状態です😊" }]);
-        setLoading(false);
-        return;
-      }
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method:"POST",
-        headers:{ "Content-Type":"application/json", "x-api-key": apiKey, "anthropic-version":"2023-06-01", "anthropic-dangerous-direct-browser-access":"true" },
-        body: JSON.stringify({
-          model:"claude-sonnet-4-20250514",
-          max_tokens:1024,
-          system: buildSystemPrompt(),
-          messages: [...messages.filter(m=>m.role!=="assistant"||messages.indexOf(m)>0), { role:"user", content:userMsg }].filter(m => m.role==="user"||m.role==="assistant").slice(-10),
-        }),
-      });
-      const data = await res.json();
-      const text = data.content?.[0]?.text || "エラーが発生しました";
-      const scheduleMatch = text.match(/```schedule\n([\s\S]*?)```/);
-      if (scheduleMatch) {
-        try {
-          const scheduleData = JSON.parse(scheduleMatch[1]);
-          const newSessions = scheduleData.map(item => ({ id: Date.now().toString() + Math.random().toString(36).slice(2), date: item.date, subject: item.subject, content: item.content, review: true }));
-          setSessions(prev => [...prev, ...newSessions]);
-          setMessages(prev => [...prev, { role:"assistant", content: text.replace(/```schedule[\s\S]*?```/, ""), addedCount: newSessions.length }]);
-        } catch {
-          setMessages(prev => [...prev, { role:"assistant", content: text }]);
-        }
-      } else {
-        setMessages(prev => [...prev, { role:"assistant", content: text }]);
-      }
-    } catch(e) {
-      setMessages(prev => [...prev, { role:"assistant", content:"通信エラーが発生しました。もう一度試してください。" }]);
-    }
-    setLoading(false);
-  }
-
-  const suggestions = ["今週の勉強を分析して", "租税法20問を2週間で計画して", "苦手科目のアドバイスをくれ", "明日の復習スケジュールは？"];
-
-  return (
-    <div style={{ display:"flex", flexDirection:"column", height:"100%", position:"relative" }}>
-      <div style={{ flex:1, overflowY:"auto", padding:"16px 16px 0", display:"flex", flexDirection:"column", gap:12 }}>
-        {messages.map((msg, i) => (
-          <div key={i} style={{ display:"flex", flexDirection: msg.role==="user"?"row-reverse":"row", gap:8, alignItems:"flex-end" }}>
-            {msg.role==="assistant" && (<div style={{ width:32, height:32, borderRadius:"50%", background:"linear-gradient(135deg,#7C3AED,#A78BFA)", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, marginBottom:2 }}>✦</div>)}
-            <div style={{ maxWidth:"78%", display:"flex", flexDirection:"column", gap:4 }}>
-              <div style={{ padding:"12px 14px", borderRadius: msg.role==="user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px", background: msg.role==="user" ? "linear-gradient(135deg,#3B82F6,#2563EB)" : "#1C1F2E", color: "#F0EDE6", fontSize:14, lineHeight:1.6, whiteSpace:"pre-wrap", wordBreak:"break-word" }}>{msg.content.trim()}</div>
-              {msg.addedCount > 0 && (<div style={{ fontSize:11, color:"#4ADE80", background:"#0F2A1A", borderRadius:8, padding:"5px 10px", display:"inline-flex", alignItems:"center", gap:5 }}>✅ {msg.addedCount}件をカレンダーに追加しました</div>)}
-            </div>
-          </div>
-        ))}
-        {loading && (
-          <div style={{ display:"flex", gap:8, alignItems:"flex-end" }}>
-            <div style={{ width:32, height:32, borderRadius:"50%", background:"linear-gradient(135deg,#7C3AED,#A78BFA)", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16 }}>✦</div>
-            <div style={{ padding:"12px 16px", borderRadius:"18px 18px 18px 4px", background:"#1C1F2E" }}>
-              <div style={{ display:"flex", gap:4, alignItems:"center" }}>{[0,1,2].map(i => (<div key={i} style={{ width:6, height:6, borderRadius:"50%", background:"#A78BFA", animation:`bounce 1.2s ${i*0.2}s infinite` }} />))}</div>
-            </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} style={{ height:8 }} />
-      </div>
-      {messages.length <= 1 && (
-        <div style={{ padding:"8px 16px", display:"flex", gap:8, overflowX:"auto", WebkitOverflowScrolling:"touch" }}>
-          {suggestions.map((s,i) => (<button key={i} onClick={() => { setInput(s); inputRef.current?.focus(); }} style={{ flexShrink:0, padding:"8px 14px", borderRadius:20, border:"1.5px solid #2A2D3E", background:"#13151F", color:"#9CA3AF", fontSize:12, cursor:"pointer", whiteSpace:"nowrap", WebkitTapHighlightColor:"transparent" }}>{s}</button>))}
-        </div>
-      )}
-      <div style={{ padding:"12px 16px", paddingBottom:"calc(12px + env(safe-area-inset-bottom, 0px))", borderTop:"1px solid #1C1F2E", background:"#0D0F16", display:"flex", gap:10, alignItems:"flex-end" }}>
-        <textarea ref={inputRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if(e.key==="Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }}} placeholder="メッセージを入力…" rows={1} style={{ flex:1, background:"#1C1F2E", border:"1.5px solid "+(input?"#7C3AED":"#2A2D3E"), borderRadius:20, padding:"10px 16px", color:"#F0EDE6", fontSize:14, outline:"none", resize:"none", fontFamily:"inherit", lineHeight:1.5, maxHeight:100, overflowY:"auto" }} />
-        <button onClick={sendMessage} disabled={!input.trim()||loading} style={{ width:40, height:40, borderRadius:"50%", border:"none", background: input.trim()&&!loading?"linear-gradient(135deg,#7C3AED,#A78BFA)":"#1C1F2E", color: input.trim()&&!loading?"#fff":"#374151", fontSize:18, cursor: input.trim()&&!loading?"pointer":"not-allowed", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", WebkitTapHighlightColor:"transparent" }}>↑</button>
-      </div>
-      <style>{`@keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }`}</style>
     </div>
   );
 }
