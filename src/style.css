@@ -21,15 +21,19 @@
 
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; }
-/* 表示領域の外（ホーム画面アプリで画面の一番下に残る部分）は html の背景色になるので、下のタブと同じ色にする */
+/* 表示領域の外（ホーム画面アプリで画面の一番下に残る部分）は html の背景色になるので、下のタブと同じ色にする。
+   机の色の背景は、表示領域の中だけに敷く */
 html { background: #FBF8F1; }
-body {
-  margin: 0;
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
   background:
     radial-gradient(120% 80% at 30% 0%, rgba(255,255,255,0.35), transparent 60%),
     repeating-linear-gradient(97deg, rgba(120,95,60,0.04) 0 2px, transparent 2px 9px),
     var(--bg);
-    color: var(--text);
+}
+body {
+  margin: 0;
+  color: var(--text);
   font-family: "Klee One", "M PLUS Rounded 1c", "Noto Sans JP", "Hiragino Sans", sans-serif;
   -webkit-tap-highlight-color: transparent;
 }
@@ -319,9 +323,8 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 .nh-circle svg { width: 62%; height: 62%; }
 .nh-name { display: flex; flex-direction: column; font-size: var(--nh-f); line-height: 1.15; white-space: nowrap; min-width: 0; }
 .nh-name small { font-size: 2.4cqw; color: #6b655b; margin-top: 0.2cqw; }
-.nh-marked { background: linear-gradient(transparent 58%, var(--marker) 58%, var(--marker) 94%, transparent 94%); }
-/* 科目の色は名前の下の線で見せる */
-.nh-underline { align-self: flex-start; padding-bottom: 0.3cqw; border-bottom: 0.7cqw solid transparent; border-radius: 0.3cqw; }
+/* 科目の色は、名前の上から引いたマーカーで見せる */
+.nh-hl { align-self: flex-start; padding: 0 0.4cqw; background: linear-gradient(transparent 52%, var(--hl) 52%, var(--hl) 92%, transparent 92%); }
 .nh-actions { display: flex; flex-direction: column; align-items: center; gap: 0.8cqw; margin-top: 1.2cqw; }
 .nh-main {
   display: flex; align-items: center; gap: 1cqw; background: repeating-linear-gradient(-55deg, rgba(43,43,43,0.06) 0 0.25cqw, transparent 0.25cqw 1.3cqw);
