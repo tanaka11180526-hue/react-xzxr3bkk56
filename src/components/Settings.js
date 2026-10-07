@@ -54,7 +54,7 @@ function SyncSettings({ app }) {
   return (
     <section className="settings-section">
       <h3>スプレッドシート同期</h3>
-      <p className="muted small">予定はシートの「予定」から読み込み、勉強時間はシートの「記録」に書き込みます。設定方法はリポジトリの <code>apps-script/README.md</code> を見てください。</p>
+      <p className="muted small">予定はシートの「ToDo・実績」から読み込み（書き込みはしません）、計測した時間は「アプリ記録」タブに書き込みます。設定方法はリポジトリの <code>apps-script/README.md</code> を見てください。</p>
       <div className="field">
         <label>ウェブアプリのURL</label>
         <input type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://script.google.com/macros/s/…/exec" autoComplete="off" />
@@ -75,7 +75,7 @@ function SyncSettings({ app }) {
           {syncState.status === "error" && <div className="error-text">送信エラー：{syncState.message}</div>}
           <div className="row">
             <button className="btn small" onClick={() => { flush(); refreshSchedule(); }}>今すぐ同期</button>
-            <button className="btn small ghost" onClick={() => window.confirm("すべての記録をシートに送り直しますか？") && queueAll()}>全記録を送り直す</button>
+            <button className="btn small ghost" onClick={() => window.confirm("すべての記録をシートの「アプリ記録」に送り直しますか？") && queueAll()}>全記録を送り直す</button>
           </div>
         </div>
       )}
@@ -83,9 +83,38 @@ function SyncSettings({ app }) {
   );
 }
 
+// シートの「設定」にある科目のうち、計測しないもの
+const NON_STUDY = ["計画", "相談", "手続", "休憩"];
+// 初期設定の科目名とシートの科目名の対応（過去の記録をそのまま引き継ぐため）
+const SHEET_ALIASES = { "財務会計": "財計", "管理会計": "管理", "監査論": "監査", "企業法": "企業", "租税法": "租税", "経営学": "経営" };
+
 function SubjectSettings({ app }) {
-  const { subjects, setSubjects, logs, queue } = app;
+  const { subjects, setSubjects, logs, queue, schedule } = app;
   const [picking, setPicking] = useState(null);
+  const sheetNames = (schedule.sheetSubjects || []).filter((n) => n && !NON_STUDY.includes(n));
+  const matches = sheetNames.length > 0 && sheetNames.length === subjects.length && sheetNames.every((n, i) => subjects[i].label === n);
+
+  function adoptSheet() {
+    if (!window.confirm("アプリの科目をシートの科目（" + sheetNames.join("・") + "）に合わせますか？\n今までの記録は対応する科目に引き継がれます。")) return;
+    const used = new Set();
+    const next = sheetNames.map((name) => {
+      const found = subjects.find((s) => !used.has(s.id) && (s.label === name || SHEET_ALIASES[s.label] === name));
+      if (found) {
+        used.add(found.id);
+        return { ...found, label: name, short: name.slice(0, 2) };
+      }
+      return { id: makeId("subject"), label: name, short: name.slice(0, 2), color: "" };
+    });
+    const rest = subjects.filter((s) => !used.has(s.id));
+    const colors = new Set(next.map((s) => s.color).filter(Boolean));
+    next.forEach((s) => {
+      if (!s.color) {
+        s.color = COLOR_PALETTE.find((c) => !colors.has(c)) || COLOR_PALETTE[0];
+        colors.add(s.color);
+      }
+    });
+    setSubjects([...next, ...rest]);
+  }
 
   const update = (id, fields) => setSubjects((p) => p.map((s) => (s.id === id ? { ...s, ...fields } : s)));
   function rename(s, label) {
@@ -115,7 +144,10 @@ function SubjectSettings({ app }) {
   return (
     <section className="settings-section">
       <h3>科目</h3>
-      <p className="muted small">シートの「科目」列に、ここの科目名か略称（先頭2文字）を書くと色が付きます。</p>
+      <p className="muted small">シートの「科目」と同じ名前にすると、予定に色が付き、予定から計測を始められます。</p>
+      {sheetNames.length > 0 && !matches && (
+        <button className="btn primary block" onClick={adoptSheet}>シートの科目に合わせる（{sheetNames.join("・")}）</button>
+      )}
       {subjects.map((s, i) => (
         <div key={s.id} className="subject-edit">
           <div className="subject-edit-row">
