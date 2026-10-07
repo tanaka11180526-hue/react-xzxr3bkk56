@@ -1,10 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
+import Sheet from "./Sheet";
+import { isTaskDone } from "../lib/tasks";
 import { PAUSE_LIMIT_MS } from "../lib/constants";
 import { fmtHMS, keyToDate, todayKey } from "../lib/time";
 
 // タイマー画面の一番上。机の上のノート（写真）に、合計時間・科目ボタン・計測ボタンを手書き風に重ねる
 export default function NotebookHero({ app, dateKey }) {
-  const { subjects, timer, timerActions, now, days, logs, getSub } = app;
+  const { subjects, timer, timerActions, now, days, logs, getSub, scheduleByDate, matchSubject } = app;
+  const [picking, setPicking] = useState(null);
   // 合計と科目ごとの時間は、上の日付で選んだ日の分を出す（計測は常に今日）
   const isToday = !dateKey || dateKey === todayKey();
   const today = days[dateKey || todayKey()] || { total: 0, by: {} };
@@ -13,6 +16,18 @@ export default function NotebookHero({ app, dateKey }) {
     || (logs.length ? logs.reduce((a, b) => (b.end > a.end ? b : a)).subjectId : null)
     || (subjects[0] && subjects[0].id);
   const cols = subjects.length > 8 ? 3 : 2;
+
+  // 科目の ▷：今日その科目の予定（終わってないもの）が1つならそれとして計る。2つ以上なら選ぶ
+  function pressSubject(s) {
+    if (running === s.id) return timer.mode === "study" ? timerActions.pause() : timerActions.resume();
+    const plans = (scheduleByDate[todayKey()] || []).filter((it) => {
+      const sub = matchSubject(it.subject);
+      return sub && sub.id === s.id && it.content && !isTaskDone(it);
+    });
+    if (plans.length === 1) return timerActions.toggleSubject(s.id, plans[0].content);
+    if (plans.length > 1) return setPicking({ sub: s, plans });
+    timerActions.toggleSubject(s.id);
+  }
 
   let status;
   if (timer.mode === "study") status = <><b>{getSub(timer.subjectId).label}</b> 計測中 {fmtHMS((now - timer.start) / 1000)}</>;
@@ -58,7 +73,7 @@ export default function NotebookHero({ app, dateKey }) {
               const active = running === s.id;
               const studying = active && timer.mode === "study";
               return (
-                <button key={s.id} className={"nh-sub" + (active ? " active" : "")} onClick={() => timerActions.toggleSubject(s.id)}
+                <button key={s.id} className={"nh-sub" + (active ? " active" : "")} onClick={() => pressSubject(s)}
                   aria-label={(studying ? "一時停止 " : "開始 ") + s.label}>
                   <span className="nh-circle" style={active ? { background: "#2B2B2B" } : null}>
                     {studying ? <PauseMark /> : <PlayMark filled={active} />}
@@ -72,10 +87,21 @@ export default function NotebookHero({ app, dateKey }) {
             })}
           </div>
           <DeskDoodle steaming={timer.mode === "study"} />
-
         </div>
       </div>
     </div>
+    {picking && (
+      <Sheet title={picking.sub.label + "のどの予定をやる？"} onClose={() => setPicking(null)}>
+        {picking.plans.map((p, i) => (
+          <button key={i} className="pick-plan" style={{ "--c": picking.sub.color }}
+            onClick={() => { timerActions.toggleSubject(picking.sub.id, p.content); setPicking(null); }}>
+            {p.category && <span className="plan-cat">{p.category}</span>}
+            <span>{p.content}</span>
+          </button>
+        ))}
+        <button className="btn block" onClick={() => { timerActions.toggleSubject(picking.sub.id); setPicking(null); }}>予定なしで計る</button>
+      </Sheet>
+    )}
     </div>
   );
 }

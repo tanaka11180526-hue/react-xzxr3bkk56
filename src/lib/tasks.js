@@ -29,3 +29,9 @@ export function syncTaskNames(logs, items, matchSubject) {
   });
   return { next, changed };
 }
+
+// シートの「達成」列でこれが付いていたら終わったタスク（復習は済チェック）
+const DONE_MARK = /^(〇|○|◯|済|✓|✔|完)/;
+export function isTaskDone(it) {
+  return it.review ? !!it.done : DONE_MARK.test(String(it.achieved || "").trim());
+}

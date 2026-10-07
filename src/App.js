@@ -5,6 +5,7 @@ import { syncTaskNames } from "./lib/tasks";
 import * as sync from "./lib/sync";
 import { BREAK_LIMIT_MS, DEFAULT_SUBJECTS, PAUSE_LIMIT_MS } from "./lib/constants";
 import TimerTab from "./components/TimerTab";
+import LongStudyCheck from "./components/LongStudyCheck";
 import CalendarTab from "./components/CalendarTab";
 import StatsTab from "./components/StatsTab";
 import Settings from "./components/Settings";
@@ -46,6 +47,9 @@ export function breakEnd(start) {
 // 一度だけ行うデータ整理。シートの科目に合わせたときに消した旧科目の記録を付け替え、
 // 止め忘れて長くなった休憩を切り詰め、科目名が変わった記録をシートに送り直す
 const MIGRATION_KEY = "cpa_migrated_v3";
+const NOTES_SEEDED_KEY = "cpa_notes_seeded_v1";
+// 勉強の計測がこれ以上続いていたら、止め忘れていないか聞く
+const LONG_STUDY_MS = 2 * 3600 * 1000;
 
 // 一度だけ行う休憩の掃除（計測の切り忘れ・重なって入った休憩）。どれも本人と確認した分
 const BREAK_CLEANUPS = [
@@ -104,6 +108,11 @@ function buildDays(list, getKey) {
   return days;
 }
 
+// シートの同じ予定か（行番号・復習の何回目か・日付で見る）
+function sameItem(a, b) {
+  return a.row === b.row && !!a.review === !!b.review && (a.reviewIndex ?? null) === (b.reviewIndex ?? null) && a.date === b.date;
+}
+
 const TABS = [
   { id: "timer", icon: "⏱", label: "タイマー" },
   { id: "calendar", icon: "📅", label: "カレンダー" },
@@ -116,6 +125,8 @@ export default function App() {
   const [logs, setLogs] = usePersisted("cpa_timer_logs", () => withIds(load("cpa_timer_logs", []), "s"));
   const [breaks, setBreaks] = usePersisted("cpa_break_logs", () => withIds(load("cpa_break_logs", []), "b"));
   const [timer, setTimer] = usePersisted("cpa_timer", loadTimer);
+  const timerRef = useRef(timer);
+  timerRef.current = timer;
   const [breakColor, setBreakColor] = usePersisted("cpa_break_color", "#FBBF24");
   const [examDate, setExamDate] = usePersisted("cpa_exam_date", "");
   const [syncCfg, setSyncCfg] = usePersisted("cpa_sync", { url: "", token: "" });
@@ -128,6 +139,10 @@ export default function App() {
   const [editor, setEditor] = useState(null);
   const [report, setReport] = useState(null);
   const [now, setNow] = useState(Date.now());
+  const [notes, setNotes] = usePersisted("cpa_daily_notes", {});
+  const [notesOutbox, setNotesOutbox] = usePersisted("cpa_notes_outbox", {});
+  const [toast, setToast] = useState(null);
+  const [longCheck, setLongCheck] = useState(null);
 
   const getSub = useCallback((id) => subjects.find((s) => s.id === id) || { id, label: "（削除した科目）", short: "？", color: "#6B7280" }, [subjects]);
   const configured = sync.isConfigured(syncCfg);
@@ -217,6 +232,12 @@ export default function App() {
     },
     // 終了：勉強中なら一時停止と同じ（30秒以内に再開すればそのまま続き、過ぎたら休憩の計測に切り替わる）。
     // 一時停止中ならすぐ休憩に、休憩中なら休憩を記録して止める
+    // 止め忘れたとき：end の時刻で勉強を終わったことにする
+    stopAt(end) {
+      if (timer.mode !== "study") return;
+      addEntries("study", studyBase(timer), timer.start, Math.min(end, Date.now()));
+      setTimer(IDLE);
+    },
     stop() {
       if (timer.mode === "study") return timerActions.pause();
       if (timer.mode === "paused") {
@@ -321,12 +342,24 @@ export default function App() {
     return () => clearTimeout(t);
   }, [configured, pending, outbox, flush, syncState.status]);
 
+  // 勉強の計測が長く続いたままアプリを開いたら、止め忘れていないか聞く（2時間ごとに1回）
+  const askedLong = useRef("");
+  const checkLong = useCallback(() => {
+    const t = timerRef.current;
+    if (t.mode !== "study") return;
+    const step = Math.floor((Date.now() - t.start) / LONG_STUDY_MS);
+    const key = t.start + ":" + step;
+    if (step < 1 || askedLong.current === key) return;
+    askedLong.current = key;
+    setLongCheck({ start: t.start });
+  }, []);
+
   const refreshSchedule = useCallback(async () => {
     if (!configured) return;
     setScheduleState({ status: "loading" });
     try {
-      const { items, subjects: sheetSubjects } = await sync.fetchSchedule(syncCfg);
-      setSchedule({ items, sheetSubjects, at: Date.now() });
+      const { items, subjects: sheetSubjects, version } = await sync.fetchSchedule(syncCfg);
+      setSchedule({ items, sheetSubjects, version, at: Date.now() });
       setScheduleState({ status: "ok" });
     } catch (e) {
       setScheduleState({ status: "error", message: e.message });
@@ -340,6 +373,7 @@ export default function App() {
       setNow(Date.now());
       refreshSchedule();
       flush();
+      checkLong();
     };
     document.addEventListener("visibilitychange", onWake);
     window.addEventListener("online", onWake);
@@ -347,7 +381,8 @@ export default function App() {
       document.removeEventListener("visibilitychange", onWake);
       window.removeEventListener("online", onWake);
     };
-  }, [refreshSchedule, flush]);
+  }, [refreshSchedule, flush, checkLong]);
+  useEffect(() => { checkLong(); }, [checkLong]);
 
   // ── 集計（計測中の分も含める）──
   const studyDays = useMemo(() => buildDays(logs, (l) => l.subjectId), [logs]);
@@ -395,6 +430,71 @@ export default function App() {
     return () => clearInterval(id);
   }, [refreshSchedule]);
 
+  // ── 予定を「終わった」にする（シートの達成 H列／復習の済チェックだけを書き換える）──
+  const canMarkDone = configured && (schedule.version || 0) >= sync.FEATURE_VERSION;
+  const setItemDone = useCallback((item, value) => {
+    setSchedule((sc) => ({
+      ...sc,
+      items: sc.items.map((it) => (sameItem(it, item) ? (it.review ? { ...it, done: value } : { ...it, achieved: value ? "〇" : "" }) : it)),
+    }));
+  }, [setSchedule]);
+  async function markDone(item, value) {
+    if (!canMarkDone || !item.row) return;
+    setItemDone(item, value);
+    try {
+      await sync.pushDone(syncCfg, item, value);
+    } catch (e) {
+      setItemDone(item, !value);
+      setToast("シートに書けませんでした：" + e.message);
+      refreshSchedule();
+    }
+  }
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 5000);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  // ── レポートの「ひとこと」（アプリメモ タブに送る）──
+  function setNote(key, text) {
+    setNotes((n) => ({ ...n, [key]: text }));
+    setNotesOutbox((o) => ({ ...o, [key]: (o[key] || 0) + 1 }));
+  }
+  const notesReady = configured && (schedule.version || 0) >= sync.FEATURE_VERSION;
+  useEffect(() => {
+    // はじめて使えるようになったとき、今までのひとことも全部送る
+    if (!notesReady || load(NOTES_SEEDED_KEY, false)) return;
+    setNotesOutbox((o) => {
+      const next = { ...o };
+      Object.keys(notes).forEach((k) => { if (notes[k]) next[k] = (next[k] || 0) + 1; });
+      return next;
+    });
+    save(NOTES_SEEDED_KEY, true);
+  }, [notesReady, notes, setNotesOutbox]);
+  const notesSending = useRef(false);
+  useEffect(() => {
+    const keys = Object.keys(notesOutbox);
+    if (!notesReady || !keys.length || notesSending.current) return;
+    const snap = { ...notesOutbox };
+    notesSending.current = true;
+    const t = setTimeout(async () => {
+      try {
+        await sync.pushNotes(syncCfg, keys.map((k) => ({ date: k, text: notes[k] || "" })));
+        setNotesOutbox((o) => {
+          const next = { ...o };
+          keys.forEach((k) => { if (next[k] === snap[k]) delete next[k]; });
+          return next;
+        });
+      } catch (e) {
+        // 次に開いたときにまた送る
+      } finally {
+        notesSending.current = false;
+      }
+    }, 1500);
+    return () => { clearTimeout(t); notesSending.current = false; };
+  }, [notesReady, notesOutbox, notes, syncCfg, setNotesOutbox]);
+
   function openDay(key) {
     setViewDate(key);
     setTab("timer");
@@ -405,6 +505,7 @@ export default function App() {
     examDate, setExamDate, days, breakDays, scheduleByDate, schedule, scheduleState, refreshSchedule, matchSubject,
     viewDate, setViewDate, openDay, setEditor, openReport: setReport, syncCfg, setSyncCfg, syncState, pending, flush, queueAll, configured,
     addEntries, updateEntry, deleteEntry, setLogs, setBreaks, queue,
+    canMarkDone, markDone, notes, setNote,
   };
 
   const syncError = syncState.status === "error" || scheduleState.status === "error";
@@ -442,6 +543,10 @@ export default function App() {
       {settingsOpen && <Settings app={app} onClose={() => setSettingsOpen(false)} />}
       {editor && <LogEditor app={app} editor={editor} onClose={() => setEditor(null)} />}
       {report && <DailyReport app={app} dateKey={report} onClose={() => setReport(null)} />}
+      {longCheck && timer.mode === "study" && timer.start === longCheck.start && (
+        <LongStudyCheck app={app} onClose={() => setLongCheck(null)} />
+      )}
+      {toast && <div className="toast" onClick={() => setToast(null)}>{toast}</div>}
     </div>
   );
 }

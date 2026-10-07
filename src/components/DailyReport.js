@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { usePersisted } from "../lib/storage";
 import { DAY_NAMES, addDays, keyToDate, todayKey } from "../lib/time";
 import { STREAK_MIN_SECS } from "../lib/constants";
 
@@ -19,9 +18,8 @@ function streakAt(days, key) {
 
 // ノート風の1日のまとめ
 export default function DailyReport({ app, dateKey, onClose }) {
-  const { days, breakDays, subjects, getSub, logs } = app;
+  const { days, breakDays, subjects, getSub, logs, notes, setNote } = app;
   const [key, setKey] = useState(dateKey);
-  const [notes, setNotes] = usePersisted("cpa_daily_notes", {});
   const [editing, setEditing] = useState(false);
   const isToday = key === todayKey();
   const day = days[key] || { total: 0, by: {} };
@@ -84,7 +82,7 @@ export default function DailyReport({ app, dateKey, onClose }) {
               <span className="rp-tag tag-blue">FOCUS NOTE</span>
               {editing ? (
                 <textarea className="rp-note-input" autoFocus rows={2} defaultValue={note} placeholder="今日のひとこと"
-                  onBlur={(e) => { setNotes((n) => ({ ...n, [key]: e.target.value.trim() })); setEditing(false); }} />
+                  onBlur={(e) => { const v = e.target.value.trim(); if (v !== note) setNote(key, v); setEditing(false); }} />
               ) : (
                 <button className="rp-note" onClick={() => setEditing(true)}>
                   {note || <span className="rp-placeholder">タップしてひとこと書く</span>}

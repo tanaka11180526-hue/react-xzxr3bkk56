@@ -1,13 +1,18 @@
 /**
  * CPA Study Tracker ⇄「CPA学習計画シート」同期スクリプト
  *
- * ・「ToDo・実績」の各行（と復習①〜④の日付）を読み、アプリのカレンダーに予定として渡す（書き込みはしない）
+ * ・「ToDo・実績」の各行（と復習①〜④の日付）を読み、アプリのカレンダーに予定として渡す
  * ・アプリで計測した勉強時間・休憩を「アプリ記録」タブに1件ずつ書き込む
+ * ・アプリで「終わった」を押したタスクは、「ToDo・実績」の達成（H列）か復習の済チェックだけを書き換える
+ * ・レポートの「ひとこと」を「アプリメモ」タブに書き込む
  *
  * 設定方法は apps-script/README.md を参照。
  */
 
 // アプリの設定にも同じ合言葉を入れる
+// このスクリプトの版。アプリはこの数字を見て、使える機能を決める
+const VERSION = 6;
+
 const TOKEN = 'ここを自分だけの合言葉に変える';
 // 同期するスプレッドシートの ID（URL の /d/ と /edit の間）。空ならこのスクリプトを開いたスプレッドシート
 const SPREADSHEET_ID = '';
@@ -30,6 +35,10 @@ const LOG_SHEET = 'アプリ記録';
 const LOG_HEADERS = ['ID', '日付', '種類', '科目', '開始', '終了', '分', '手動', 'やること'];
 const LOG_TEXT_COLUMNS = 6; // ID〜終了 は文字列のまま保存する
 
+const NOTE_SHEET = 'アプリメモ';
+const NOTE_HEADERS = ['日付', 'ひとこと', '更新'];
+const DONE_MARK = '〇';
+
 function spreadsheet_() {
   return SPREADSHEET_ID ? SpreadsheetApp.openById(SPREADSHEET_ID) : SpreadsheetApp.getActiveSpreadsheet();
 }
@@ -37,10 +46,10 @@ function spreadsheet_() {
 function doGet(e) {
   const p = (e && e.parameter) || {};
   if (!isAuthorized_(p.token)) return json_({ ok: false, error: '合言葉が違います' });
-  if (p.action === 'ping') return json_({ ok: true });
+  if (p.action === 'ping') return json_({ ok: true, version: VERSION });
   if (p.action === 'schedule') {
     const ss = spreadsheet_();
-    return json_({ ok: true, items: readSchedule_(ss), subjects: readSubjects_(ss) });
+    return json_({ ok: true, version: VERSION, items: readSchedule_(ss), subjects: readSubjects_(ss) });
   }
   return json_({ ok: false, error: '不明な操作です' });
 }
@@ -53,16 +62,23 @@ function doPost(e) {
     return json_({ ok: false, error: '送信データを読めませんでした' });
   }
   if (!isAuthorized_(body.token)) return json_({ ok: false, error: '合言葉が違います' });
-  if (body.action !== 'logs') return json_({ ok: false, error: '不明な操作です' });
+  const actions = {
+    logs: function (ss) { writeLogs_(ss, body.upsert || [], body.remove || []); },
+    done: function (ss) { writeDone_(ss, body); },
+    notes: function (ss) { writeNotes_(ss, body.notes || []); },
+  };
+  if (!actions[body.action]) return json_({ ok: false, error: '不明な操作です' });
 
   const lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try {
-    writeLogs_(spreadsheet_(), body.upsert || [], body.remove || []);
+    actions[body.action](spreadsheet_());
+  } catch (err) {
+    return json_({ ok: false, error: err.message });
   } finally {
     lock.releaseLock();
   }
-  return json_({ ok: true });
+  return json_({ ok: true, version: VERSION });
 }
 
 function isAuthorized_(token) {
@@ -121,14 +137,14 @@ function readSchedule_(ss) {
     if (!r.date) return;
     items.push({
       date: r.date, category: r.category, subject: r.subject, content: r.content,
-      plan: r.plan, actual: r.actual, achieved: r.achieved, note: r.memo,
+      plan: r.plan, actual: r.actual, achieved: r.achieved, note: r.memo, row: r.row, src: r.content,
     });
     if (!r.review) return;
-    r.reviews.forEach(function (rv) {
+    r.reviews.forEach(function (rv, i) {
       if (!rv.date) return;
       items.push({
         date: rv.date, category: rv.label, subject: r.subject, content: r.content + '（' + rv.label + '）',
-        done: rv.done, review: true,
+        done: rv.done, review: true, row: r.row, reviewIndex: i, src: r.content,
       });
     });
   });
@@ -190,4 +206,56 @@ function writeLogs_(ss, upsert, remove) {
     .filter(function (row) { return row > 0; })
     .sort(function (a, b) { return b - a; })
     .forEach(function (row) { sh.deleteRow(row); });
+}
+
+// アプリで「終わった」を押したとき、その行の達成（H列）か、復習の済チェックだけを書き換える。
+// 行番号がずれていたら書き換えない（アプリが予定を読み直してからやり直す）
+function writeDone_(ss, body) {
+  const sh = ss.getSheetByName(TODO_SHEET);
+  if (!sh) throw new Error('「' + TODO_SHEET + '」シートが見つかりません');
+  const row = Number(body.row);
+  if (!(row >= TODO_FIRST_ROW) || row > sh.getLastRow()) throw new Error('予定の行が見つかりません');
+  const tz = ss.getSpreadsheetTimeZone();
+  const range = sh.getRange(row, 1, 1, TODO_COLS);
+  const v = range.getValues()[0], shown = range.getDisplayValues()[0];
+  const review = body.reviewIndex === undefined || body.reviewIndex === null ? null : REVIEWS[Number(body.reviewIndex)];
+  const dateCol = review ? review.date : C_DATE;
+  if (String(v[C_CONTENT - 1]).trim() !== String(body.content || '').trim()
+      || dateKey_(v[dateCol - 1], tz, shown[dateCol - 1]) !== String(body.date || '')) {
+    throw new Error('シートの予定が変わっています。予定を読み直してからもう一度押してください');
+  }
+  if (review) sh.getRange(row, review.done).setValue(!!body.value);
+  else sh.getRange(row, C_ACHIEVED).setValue(body.value ? DONE_MARK : '');
+}
+
+// レポートの「ひとこと」を「アプリメモ」に書く（日付で照合。空なら行を消す）
+function writeNotes_(ss, notes) {
+  let sh = ss.getSheetByName(NOTE_SHEET);
+  if (!sh) {
+    sh = ss.insertSheet(NOTE_SHEET);
+    sh.getRange(1, 1, 1, NOTE_HEADERS.length).setValues([NOTE_HEADERS]).setFontWeight('bold');
+    sh.setFrozenRows(1);
+  }
+  const last = sh.getLastRow();
+  const index = {};
+  if (last > 1) {
+    sh.getRange(2, 1, last - 1, 1).getDisplayValues().forEach(function (r, i) { index[r[0]] = i + 2; });
+  }
+  const stamp = Utilities.formatDate(new Date(), ss.getSpreadsheetTimeZone(), 'yyyy-MM-dd HH:mm');
+  const removes = [];
+  notes.forEach(function (n) {
+    const date = String(n.date || ''), text = String(n.text || '').trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+    const at = index[date];
+    if (!text) { if (at) removes.push(at); return; }
+    if (at) {
+      sh.getRange(at, 2, 1, 2).setValues([[text, stamp]]);
+    } else {
+      const r = sh.getLastRow() + 1;
+      sh.getRange(r, 1).setNumberFormat('@');
+      sh.getRange(r, 1, 1, 3).setValues([[date, text, stamp]]);
+      index[date] = r;
+    }
+  });
+  removes.sort(function (a, b) { return b - a; }).forEach(function (r) { sh.deleteRow(r); });
 }

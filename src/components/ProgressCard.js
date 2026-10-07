@@ -1,13 +1,8 @@
 import React, { useState } from "react";
 import { addDays, fmtHM, keyToDate, toKey, todayKey } from "../lib/time";
+import { isTaskDone } from "../lib/tasks";
 
-// シートの「達成」列でこれが付いていたら終わったタスク
-const DONE_MARK = /^(〇|○|◯|済|✓|✔|完)/;
 const LIST_MAX = 8;
-
-function isDone(it) {
-  return it.review ? !!it.done : DONE_MARK.test(String(it.achieved || "").trim());
-}
 
 function periodOf(kind, today) {
   const d = keyToDate(today);
@@ -22,14 +17,14 @@ const md = (key) => { const d = keyToDate(key); return d.getMonth() + 1 + "/" + 
 
 // 計画の時間ではなく、タスクが終わったかどうかで進み具合を見る
 export default function ProgressCard({ app }) {
-  const { schedule, logs, days, subjects, matchSubject } = app;
+  const { schedule, logs, days, subjects, matchSubject, canMarkDone, markDone } = app;
   const [kind, setKind] = useState("week");
   const today = todayKey();
   const { from, to } = periodOf(kind, today);
 
   const tasks = (schedule.items || [])
     .filter((it) => it.date >= from && it.date <= to && it.content)
-    .map((it) => ({ ...it, sub: matchSubject(it.subject), done: isDone(it) }))
+    .map((it) => ({ ...it, sub: matchSubject(it.subject), done: isTaskDone(it) }))
     .filter((t) => t.sub)
     .sort((a, b) => a.date.localeCompare(b.date));
   const done = tasks.filter((t) => t.done);
@@ -103,6 +98,7 @@ export default function ProgressCard({ app }) {
                 <span className="pg-date">{md(t.date)}</span>
                 <i style={{ background: t.sub.color }} />
                 <span className="pg-content">{t.content}</span>
+                {canMarkDone && t.row && <button className="done-btn" onClick={() => markDone(t, true)} aria-label="終わった">✓</button>}
               </div>
             ))}
             {late.length > LIST_MAX && <div className="pg-more">ほか {late.length - LIST_MAX}件</div>}
@@ -134,7 +130,7 @@ export default function ProgressCard({ app }) {
             {done.length > LIST_MAX && <div className="pg-more">ほか {done.length - LIST_MAX}件</div>}
           </>
         )}
-        <p className="hint">終わったかどうかはシートの「達成」と復習の済チェックで数えます。時間がかからず終わったタスクも1件は1件です</p>
+        <p className="hint">終わったかどうかはシートの「達成」と復習の済チェックで数えます（予定の ✓ で付けられます）。時間がかからず終わったタスクも1件は1件です</p>
       </div>
     </section>
   );
