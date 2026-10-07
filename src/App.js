@@ -47,17 +47,29 @@ export function breakEnd(start) {
 // 止め忘れて長くなった休憩を切り詰め、科目名が変わった記録をシートに送り直す
 const MIGRATION_KEY = "cpa_migrated_v3";
 
-// 一度だけ行う休憩の掃除（計測の切り忘れ・重なって入った休憩）。2026-10-07 に本人と確認した分
-const BREAK_CLEANUP_KEY = "cpa_break_cleanup_v1";
-const BREAK_CLEANUP_DELETE = [
-  "b_1780124465717", // 5/30 16:01〜19:01
-  "b_1784810932917", // 7/23 21:48〜0:00
-  "b_1786178436167", // 8/8 17:40〜20:40
-  "b_1780652700000", // 6/5 18:45〜19:16（18:40〜19:16 と重なり）
-  "b_1780653000000", // 6/5 18:50〜19:14（同上）
-  "b_1781320800000", // 6/13 12:20〜12:39（12:15〜12:39 と重なり）
+// 一度だけ行う休憩の掃除（計測の切り忘れ・重なって入った休憩）。どれも本人と確認した分
+const BREAK_CLEANUPS = [
+  {
+    key: "cpa_break_cleanup_v1", // 2026-10-07
+    del: [
+      "b_1780124465717", // 5/30 16:01〜19:01
+      "b_1784810932917", // 7/23 21:48〜0:00
+      "b_1786178436167", // 8/8 17:40〜20:40
+      "b_1780652700000", // 6/5 18:45〜19:16（18:40〜19:16 と重なり）
+      "b_1780653000000", // 6/5 18:50〜19:14（同上）
+      "b_1781320800000", // 6/13 12:20〜12:39（12:15〜12:39 と重なり）
+    ],
+    trim: { b_1781410588917: 1781413200000 }, // 6/14 13:16〜15:39 → 14:00 まで
+  },
+  {
+    key: "cpa_break_cleanup_v2", // 2026-10-07
+    del: [
+      "b_1787392463478", // 8/22 18:54〜21:54
+      "b_1788951296245", // 9/9 19:54〜22:54
+    ],
+    trim: {},
+  },
 ];
-const BREAK_CLEANUP_TRIM = { b_1781410588917: 1781413200000 }; // 6/14 13:16〜15:39 → 14:00 まで
 const LEGACY_SUBJECTS = { subject_1780109014480: "財理", subject_1780109002406: "財計" }; // 旧「財務理論」「財務計算」
 
 const OLD_KEYS = ["cpa_active_subject", "cpa_timer_start", "cpa_paused_subject", "cpa_paused_timer_start", "cpa_paused_at", "cpa_break_start"];
@@ -241,15 +253,16 @@ export default function App() {
       queue([...fixedLogs.map((l) => [l.id, "study"]), ...fixedBreaks.map((b) => [b.id, "break"])]);
       save(MIGRATION_KEY, true);
     }
-    if (!load(BREAK_CLEANUP_KEY, false)) {
-      const drop = new Set(BREAK_CLEANUP_DELETE);
-      const trimmed = breaks.filter((b) => BREAK_CLEANUP_TRIM[b.id] && b.end > BREAK_CLEANUP_TRIM[b.id]).map((b) => b.id);
+    BREAK_CLEANUPS.forEach(({ key, del, trim }) => {
+      if (load(key, false)) return;
+      const drop = new Set(del);
+      const trimmed = breaks.filter((b) => trim[b.id] && b.end > trim[b.id]).map((b) => b.id);
       setBreaks((p) => p.filter((b) => !drop.has(b.id)).map((b) => (
-        trimmed.includes(b.id) ? { ...b, end: BREAK_CLEANUP_TRIM[b.id] } : b
+        trimmed.includes(b.id) ? { ...b, end: trim[b.id] } : b
       )));
-      queue(trimmed.map((id) => [id, "break"]), BREAK_CLEANUP_DELETE);
-      save(BREAK_CLEANUP_KEY, true);
-    }
+      queue(trimmed.map((id) => [id, "break"]), del);
+      save(key, true);
+    });
   }, []);
 
   // 一時停止が一定時間続いたら休憩に切り替える。休憩は3時間たつか日付が変わったら終了
