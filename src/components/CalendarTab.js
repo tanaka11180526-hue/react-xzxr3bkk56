@@ -88,7 +88,7 @@ function SyncStatus({ configured, schedule, state, onRefresh }) {
 }
 
 function DaySheet({ app, dateKey, onClose }) {
-  const { scheduleByDate, days, subjects, openDay } = app;
+  const { scheduleByDate, days, subjects, openDay, openReport } = app;
   const plans = scheduleByDate[dateKey] || [];
   const day = days[dateKey] || { total: 0, by: {} };
   const canStart = dateKey === todayKey();
@@ -108,6 +108,7 @@ function DaySheet({ app, dateKey, onClose }) {
       ) : <p className="empty">記録はありません</p>}
 
       <button className="btn block" onClick={() => { openDay(dateKey); onClose(); }}>この日のタイムラインを開く</button>
+      <button className="btn block" onClick={() => { openReport(dateKey); onClose(); }}>📓 この日のレポートを見る</button>
     </Sheet>
   );
 }
