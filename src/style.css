@@ -326,8 +326,9 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 .nh-sub { position: relative; display: flex; align-items: center; gap: 1.2cqw; min-width: 0; background: none; border: none; padding: 0.4cqw 0; color: #2B2B2B; text-align: left; }
 .nh-circle { width: var(--nh-c); height: var(--nh-c); border: 0.38cqw solid #2B2B2B; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .nh-circle svg { width: 62%; height: 62%; }
-.nh-name { display: flex; flex-direction: column; font-size: var(--nh-f); line-height: 1.15; white-space: nowrap; min-width: 0; }
-.nh-name small { font-size: 2.6cqw; color: #4a463f; margin-top: 0.3cqw; }
+/* 科目名は丸ボタンの真横にそろえ、時間はその下にぶら下げる */
+.nh-name { position: relative; display: flex; flex-direction: column; font-size: var(--nh-f); line-height: 1.15; white-space: nowrap; min-width: 0; }
+.nh-name small { position: absolute; left: 0.4cqw; top: 100%; font-size: 2.6cqw; line-height: 1.2; color: #4a463f; margin-top: 0.3cqw; }
 /* 科目の色は、名前の上から引いたマーカーで見せる */
 .nh-hl { align-self: flex-start; padding: 0 0.4cqw; background: linear-gradient(transparent 52%, var(--hl) 52%, var(--hl) 92%, transparent 92%); }
 .nh-controls { display: flex; justify-content: center; gap: 4.5cqw; min-height: 5cqw; margin-top: -0.6cqw; }

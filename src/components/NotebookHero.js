@@ -153,16 +153,55 @@ function DeskDoodle({ steaming }) {
   );
 }
 
-// ノートの左上の落書き（星とキラキラ）
+// ノートの左上の落書き（案を切り替えて見比べる用）
+const CORNER_DOODLES = {
+  sun: (
+    <>
+      <circle cx="19" cy="20" r="8" fill="#F6D58A" stroke="none" transform="translate(1.5 1.2)" />
+      <g fill="none" stroke="#2F2F2F" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M19 12.2c4.6-.2 8 3.4 7.8 7.8-.2 4.4-3.6 7.6-8 7.6-4.2-.2-7.4-3.6-7.2-7.8.2-4.2 3.4-7.6 7.4-7.6" />
+        <path d="M19 4v3.6 M19 32.6v3.4 M3.4 20h3.6 M31 20h3.4 M8 9l2.4 2.4 M27.6 28.4l2.2 2.2 M8 31l2.4-2.4 M28 11.4l2.4-2.4" />
+      </g>
+      <path d="M33 40c-.4-4 3-6.6 6.4-5.4 1.4-3.6 7-4 8.8.2 3.6-.4 5.6 3 4.2 5.6z" fill="#E4EBF2" stroke="none" transform="translate(1.4 1)" />
+      <path d="M33 40c-.4-4 3-6.6 6.4-5.4 1.4-3.6 7-4 8.8.2 3.6-.4 5.6 3 4.2 5.6-6.4.2-13 .2-19.4-.4z" fill="none" stroke="#2F2F2F" strokeWidth="1.3" strokeLinejoin="round" strokeLinecap="round" />
+    </>
+  ),
+  clip: (
+    <g fill="none" stroke="#2F2F2F" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 44V12c0-4.4 3-7.4 7-7.4s7 3 7 7.4v26c0 2.8-1.8 4.6-4.2 4.6s-4.2-1.8-4.2-4.6V15" stroke="#8C99A6" strokeWidth="1.6" />
+      <path d="M22 44c0 3.6 2.6 5.4 5.2 5.4" stroke="#8C99A6" strokeWidth="1.6" />
+    </g>
+  ),
+  memo: (
+    <>
+      <path d="M9 9l36-2 2 32-35 3z" fill="#F7E6A0" stroke="none" transform="translate(1.6 1.4)" />
+      <g fill="none" stroke="#2F2F2F" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M8.6 8.6c12-.8 24-1.4 36.2-1.8 .6 10.6 1.2 21.4 1.6 32-11.6 .8-23 1.6-34.6 2.6-1-11-2-22-3.2-32.8" />
+        <path d="M33.6 40.4c1.4-3.6 4.6-5.4 12.6-1.2" />
+      </g>
+      <text x="27" y="28.5" textAnchor="middle" fontSize="11.5" fontFamily="Klee One, sans-serif" fill="#2F2F2F" transform="rotate(-4 27 25)">合格!</text>
+    </>
+  ),
+  clover: (
+    <>
+      <g fill="#C9D7B0" stroke="none" transform="translate(1.4 1.2)">
+        <path d="M24 22c-6-1-9-6-6-9 3-3 7-1 6 9z M24 22c1-6 6-9 9-6 3 3 1 7-9 6z M24 22c6 1 9 6 6 9-3 3-7 1-6-9z M24 22c-1 6-6 9-9 6-3-3-1-7 9-6z" />
+      </g>
+      <g fill="none" stroke="#2F2F2F" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M24 22c-6.4-1-9.4-6.2-6.2-9.2 3.2-3 7.4-1 6.2 9.2z M24 22c1-6.4 6.2-9.4 9.2-6.2 3 3.2 1 7.4-9.2 6.2z M24 22c6.4 1 9.4 6.2 6.2 9.2-3.2 3-7.4 1-6.2-9.2z M24 22c-1 6.4-6.2 9.4-9.2 6.2-3-3.2-1-7.4 9.2-6.2z" />
+        <path d="M24.4 22.6c2.4 6 4.2 12 9 17.4" />
+        <path d="M42 10v6 M39 13h6" strokeWidth="1.1" />
+      </g>
+    </>
+  ),
+};
+
 function CornerDoodle() {
+  let pick = "sun";
+  try { pick = localStorage.getItem("cpa_corner_doodle") || pick; } catch {}
   return (
     <svg className="nh-corner" viewBox="0 0 60 50" aria-hidden="true">
-      <path d="M21 9.5l4.6 9.6 10.2 1.2-7.6 7 2.2 10.2-9.2-5.2-9 5.4 1.8-10.4-7.8-6.8 10.4-1.4z" fill="#F6D58A" stroke="none" transform="translate(1.6 1.4)" opacity="0.9" />
-      <g fill="none" stroke="#2F2F2F" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 8l4.6 9.8 10.4 1.2-7.8 7.2 2.3 10.4-9.4-5.4-9.2 5.6 1.9-10.6-7.9-7 10.6-1.4z" />
-        <path d="M44 10v8 M40 14h8" />
-        <path d="M47 30.5v5 M44.5 33h5" strokeWidth="1.1" />
-      </g>
+      {CORNER_DOODLES[pick] || CORNER_DOODLES.sun}
     </svg>
   );
 }
