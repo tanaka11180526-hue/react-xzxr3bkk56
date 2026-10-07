@@ -101,6 +101,7 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 .date-nav-center { text-align: center; }
 .date-nav-label { font-size: 16px; font-weight: 700; }
 .date-nav-label.today { color: var(--accent); }
+.top-date-nav { margin-bottom: -4px; }
 
 /* now card */
 .now-card { text-align: center; --c: var(--text); }
