@@ -1,9 +1,8 @@
 /**
  * CPA Study Tracker ⇄「CPA学習計画シート」同期スクリプト
  *
- * ・「ToDo・実績」の各行（と復習①〜④の日付）を、アプリのカレンダーに予定として渡す
- * ・アプリで計測した勉強時間を「アプリ記録」タブに1件ずつ残し、
- *   その合計を「ToDo・実績」の該当行の 実績(分) に書き込む
+ * ・「ToDo・実績」の各行（と復習①〜④の日付）を読み、アプリのカレンダーに予定として渡す（書き込みはしない）
+ * ・アプリで計測した勉強時間・休憩を「アプリ記録」タブに1件ずつ書き込む
  *
  * 設定方法は apps-script/README.md を参照。
  */
@@ -28,14 +27,8 @@ const SETTINGS_SHEET = '設定';
 const SETTINGS_SUBJECT_RANGE = 'C4:C';
 
 const LOG_SHEET = 'アプリ記録';
-const LOG_HEADERS = ['ID', '日付', '種類', '科目', '開始', '終了', '分', '手動', 'やること', '反映先'];
-const L_ID = 0, L_DATE = 1, L_TYPE = 2, L_SUBJECT = 3, L_MIN = 6, L_TASK = 8, L_TARGET = 9;
+const LOG_HEADERS = ['ID', '日付', '種類', '科目', '開始', '終了', '分', '手動', 'やること'];
 const LOG_TEXT_COLUMNS = 6; // ID〜終了 は文字列のまま保存する
-
-// 予定から選ばずに科目だけで計測した時間を入れる行の「やること」
-const AUTO_TASK = 'アプリ計測';
-// 手入力の実績があって書き込まなかった記録の「反映先」に付ける印
-const SKIPPED_PREFIX = '未反映：';
 
 function spreadsheet_() {
   return SPREADSHEET_ID ? SpreadsheetApp.openById(SPREADSHEET_ID) : SpreadsheetApp.getActiveSpreadsheet();
@@ -157,24 +150,13 @@ function logSheet_(ss) {
   return sh;
 }
 
+// 「アプリ記録」にアプリの記録を追加・更新・削除する（ID で照合）
 function writeLogs_(ss, upsert, remove) {
   const sh = logSheet_(ss);
   const last = sh.getLastRow();
   const index = {};
-  const touched = {}; // 実績を計算し直す「日付|科目|やること」
-  const dates = {};   // 計算し直す日付
-  const managed = {}; // これまでにアプリが実績を書き込んだ行
   if (last > 1) {
-    sh.getRange(2, 1, last - 1, LOG_HEADERS.length).getValues().forEach(function (r, i) {
-      index[String(r[L_ID])] = { row: i + 2, date: String(r[L_DATE]), subject: String(r[L_SUBJECT]), target: String(r[L_TARGET]) };
-      if (r[L_TARGET]) managed[r[L_DATE] + '|' + r[L_SUBJECT] + '|' + r[L_TARGET]] = true;
-    });
-  }
-  function touchOld(id) {
-    const old = index[id];
-    if (!old || old.row < 0) return;
-    dates[old.date] = true;
-    if (old.target) touched[old.date + '|' + old.subject + '|' + old.target] = true;
+    sh.getRange(2, 1, last - 1, 1).getValues().forEach(function (r, i) { index[String(r[0])] = i + 2; });
   }
 
   const appends = [];
@@ -182,16 +164,14 @@ function writeLogs_(ss, upsert, remove) {
     const id = String(r.id);
     const row = [
       id, String(r.date), r.type === 'break' ? '休憩' : '勉強', String(r.subject || ''),
-      String(r.start), String(r.end), Number(r.minutes) || 0, r.manual ? '○' : '', String(r.task || ''), '',
+      String(r.start), String(r.end), Number(r.minutes) || 0, r.manual ? '○' : '', String(r.task || ''),
     ];
-    dates[row[L_DATE]] = true;
-    touchOld(id);
     const at = index[id];
-    if (at && at.row > 0) {
-      sh.getRange(at.row, 1, 1, row.length).setValues([row]);
+    if (at > 0) {
+      sh.getRange(at, 1, 1, row.length).setValues([row]);
     } else if (!at) {
       appends.push(row);
-      index[id] = { row: -1 };
+      index[id] = -1; // 同じ送信内の重複を防ぐ
     }
   });
   if (appends.length) {
@@ -200,97 +180,9 @@ function writeLogs_(ss, upsert, remove) {
     sh.getRange(start, 1, appends.length, LOG_HEADERS.length).setValues(appends);
   }
 
-  remove.forEach(function (id) { touchOld(String(id)); });
-  remove.map(function (id) { return index[String(id)] && index[String(id)].row; })
+  // 下の行から消さないと行番号がずれる
+  remove.map(function (id) { return index[String(id)]; })
     .filter(function (row) { return row > 0; })
     .sort(function (a, b) { return b - a; })
     .forEach(function (row) { sh.deleteRow(row); });
-
-  applyActuals_(ss, sh, Object.keys(dates), touched, managed);
-}
-
-// アプリ記録の合計を ToDo・実績 の 実績(分) に反映する
-function applyActuals_(ss, logSh, dates, touched, managed) {
-  if (!dates.length) return;
-  const wanted = {};
-  dates.forEach(function (d) { wanted[d] = true; });
-  const todo = readTodo_(ss);
-  const find = function (date, subject, content) {
-    return todo.rows.filter(function (r) { return r.date === date && r.subject === subject && r.content === content; })[0];
-  };
-
-  const last = logSh.getLastRow();
-  if (last < 2) {
-    writeActuals_(todo, find, {}, touched, managed);
-    return;
-  }
-  const logs = logSh.getRange(2, 1, last - 1, LOG_HEADERS.length).getValues();
-  const sums = {};
-  const targetCol = logs.map(function (r) { return [r[L_TARGET]]; });
-  const keyOf = {};
-  logs.forEach(function (r, i) {
-    const date = String(r[L_DATE]), subject = String(r[L_SUBJECT]);
-    if (!wanted[date] || r[L_TYPE] !== '勉強') return;
-    let target = '';
-    const task = String(r[L_TASK]);
-    if (task && find(date, subject, task)) {
-      target = task;
-    } else {
-      const same = todo.rows.filter(function (t) { return t.date === date && t.subject === subject && t.content !== AUTO_TASK; });
-      target = same.length === 1 ? same[0].content : AUTO_TASK;
-    }
-    const key = date + '|' + subject + '|' + target;
-    sums[key] = (sums[key] || 0) + (Number(r[L_MIN]) || 0);
-    keyOf[i] = { key: key, target: target };
-  });
-  const skipped = writeActuals_(todo, find, sums, touched, managed);
-  Object.keys(keyOf).forEach(function (i) {
-    // 手入力の実績があって書き込まなかった分は、反映先に「未反映」と残す
-    targetCol[i][0] = skipped[keyOf[i].key] ? SKIPPED_PREFIX + keyOf[i].target : keyOf[i].target;
-  });
-  logSh.getRange(2, L_TARGET + 1, targetCol.length, 1).setValues(targetCol);
-}
-
-// 手で入れた実績は上書きしない（空欄か、前にアプリが書いた行だけ書き換える）
-function writeActuals_(todo, find, sums, touched, managed) {
-  const skipped = {};
-  const keys = {};
-  Object.keys(sums).forEach(function (k) { keys[k] = true; });
-  Object.keys(touched).forEach(function (k) { keys[k] = true; });
-  Object.keys(keys).forEach(function (key) {
-    const parts = key.split('|');
-    const date = parts[0], subject = parts[1], content = parts.slice(2).join('|');
-    const minutes = Math.round(sums[key] || 0);
-    let row = find(date, subject, content);
-    if (!row && content === AUTO_TASK && minutes > 0) row = addAutoRow_(todo, date, subject);
-    if (!row) return;
-    if (content === AUTO_TASK && minutes === 0) {
-      // 計測がなくなった「アプリ計測」行は空に戻す
-      todo.sh.getRange(row.row, C_DATE, 1, C_CONTENT).clearContent();
-      todo.sh.getRange(row.row, C_ACTUAL).clearContent();
-      row.date = '';
-      return;
-    }
-    if (content !== AUTO_TASK && row.actual !== '' && !managed[key]) {
-      skipped[key] = true;
-      return;
-    }
-    todo.sh.getRange(row.row, C_ACTUAL).setValue(minutes > 0 ? minutes : '');
-    row.actual = minutes > 0 ? String(minutes) : '';
-  });
-  return skipped;
-}
-
-function addAutoRow_(todo, date, subject) {
-  let target = todo.rows.filter(function (r) { return !r.date && !r.subject && !r.content; })[0];
-  const rowNum = target ? target.row : todo.sh.getLastRow() + 1;
-  const day = Utilities.parseDate(date, todo.tz, 'yyyy-MM-dd');
-  todo.sh.getRange(rowNum, C_DATE, 1, C_CONTENT).setValues([[day, '自習', subject, AUTO_TASK]]);
-  if (target) {
-    target.date = date; target.subject = subject; target.content = AUTO_TASK; target.category = '自習';
-    return target;
-  }
-  const added = { row: rowNum, date: date, subject: subject, content: AUTO_TASK, category: '自習' };
-  todo.rows.push(added);
-  return added;
 }

@@ -54,7 +54,7 @@ function SyncSettings({ app }) {
   return (
     <section className="settings-section">
       <h3>スプレッドシート同期</h3>
-      <p className="muted small">予定はシートの「予定」から読み込み、勉強時間はシートの「記録」に書き込みます。設定方法はリポジトリの <code>apps-script/README.md</code> を見てください。</p>
+      <p className="muted small">予定はシートの「ToDo・実績」から読み込み（書き込みはしません）、計測した時間は「アプリ記録」タブに書き込みます。設定方法はリポジトリの <code>apps-script/README.md</code> を見てください。</p>
       <div className="field">
         <label>ウェブアプリのURL</label>
         <input type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://script.google.com/macros/s/…/exec" autoComplete="off" />
@@ -75,7 +75,7 @@ function SyncSettings({ app }) {
           {syncState.status === "error" && <div className="error-text">送信エラー：{syncState.message}</div>}
           <div className="row">
             <button className="btn small" onClick={() => { flush(); refreshSchedule(); }}>今すぐ同期</button>
-            <button className="btn small ghost" onClick={() => window.confirm("すべての記録をシートに送り直しますか？\n（手で入れた実績は上書きされません）") && queueAll()}>全記録を送り直す</button>
+            <button className="btn small ghost" onClick={() => window.confirm("すべての記録をシートの「アプリ記録」に送り直しますか？") && queueAll()}>全記録を送り直す</button>
           </div>
         </div>
       )}
