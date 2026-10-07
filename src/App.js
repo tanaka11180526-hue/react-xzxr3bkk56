@@ -8,6 +8,7 @@ import CalendarTab from "./components/CalendarTab";
 import StatsTab from "./components/StatsTab";
 import Settings from "./components/Settings";
 import LogEditor from "./components/LogEditor";
+import DailyReport from "./components/DailyReport";
 
 const MIN_LOG_MS = 5000;
 const IDLE = { mode: "idle" };
@@ -87,6 +88,7 @@ export default function App() {
   const [viewDate, setViewDate] = useState(todayKey());
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [editor, setEditor] = useState(null);
+  const [report, setReport] = useState(null);
   const [now, setNow] = useState(Date.now());
 
   const getSub = useCallback((id) => subjects.find((s) => s.id === id) || { id, label: "（削除した科目）", short: "？", color: "#6B7280" }, [subjects]);
@@ -312,7 +314,7 @@ export default function App() {
   const app = {
     subjects, setSubjects, getSub, logs, breaks, timer, timerActions, now, breakColor, setBreakColor,
     examDate, setExamDate, days, breakDays, scheduleByDate, schedule, scheduleState, refreshSchedule, matchSubject,
-    viewDate, setViewDate, openDay, setEditor, syncCfg, setSyncCfg, syncState, pending, flush, queueAll, configured,
+    viewDate, setViewDate, openDay, setEditor, openReport: setReport, syncCfg, setSyncCfg, syncState, pending, flush, queueAll, configured,
     addEntries, updateEntry, deleteEntry, setLogs, setBreaks, queue,
   };
 
@@ -350,6 +352,7 @@ export default function App() {
 
       {settingsOpen && <Settings app={app} onClose={() => setSettingsOpen(false)} />}
       {editor && <LogEditor app={app} editor={editor} onClose={() => setEditor(null)} />}
+      {report && <DailyReport app={app} dateKey={report} onClose={() => setReport(null)} />}
     </div>
   );
 }

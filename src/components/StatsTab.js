@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { DAY_NAMES, addDays, fmtHM, keyToDate, todayKey } from "../lib/time";
+import { STREAK_MIN_SECS } from "../lib/constants";
 
 const RANGES = [7, 14, 30];
-// この時間以上勉強した日を「連続」に数える
-const STREAK_MIN_SECS = 10 * 60;
 
 function calcStreak(days, today) {
   const has = (k) => days[k] && days[k].total >= STREAK_MIN_SECS;
@@ -20,7 +19,7 @@ function calcStreak(days, today) {
 }
 
 export default function StatsTab({ app }) {
-  const { days, subjects, examDate, setExamDate } = app;
+  const { days, subjects, examDate, setExamDate, openReport } = app;
   const [range, setRange] = useState(7);
   const [editingExam, setEditingExam] = useState(false);
   const today = todayKey();
@@ -32,6 +31,9 @@ export default function StatsTab({ app }) {
 
   return (
     <div className="page">
+      <button className="report-cta" onClick={() => openReport(today)}>
+        <span>📓</span><span><b>今日のレポート</b><small>ノート風にまとめて見る</small></span><span>›</span>
+      </button>
       <div className="stat-grid">
         <div className={"card stat" + (streak > 0 ? " good" : "")}>
           <div className="stat-label">{streak > 0 ? "🔥 連続" : "💤 連続"}</div>

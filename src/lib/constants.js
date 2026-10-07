@@ -24,5 +24,8 @@ export const PAUSE_LIMIT_MS = 30000;
 // 休憩はこの時間で自動的に終わる（止め忘れ対策）
 export const BREAK_LIMIT_MS = 3 * 3600 * 1000;
 
+// この時間以上勉強した日を「連続」に数える
+export const STREAK_MIN_SECS = 10 * 60;
+
 // スプレッドシートの科目名がどの科目にも当てはまらないときの色
 export const UNKNOWN_COLOR = "#6B7280";
