@@ -46,6 +46,18 @@ export function breakEnd(start) {
 // 一度だけ行うデータ整理。シートの科目に合わせたときに消した旧科目の記録を付け替え、
 // 止め忘れて長くなった休憩を切り詰め、科目名が変わった記録をシートに送り直す
 const MIGRATION_KEY = "cpa_migrated_v3";
+
+// 一度だけ行う休憩の掃除（計測の切り忘れ・重なって入った休憩）。2026-10-07 に本人と確認した分
+const BREAK_CLEANUP_KEY = "cpa_break_cleanup_v1";
+const BREAK_CLEANUP_DELETE = [
+  "b_1780124465717", // 5/30 16:01〜19:01
+  "b_1784810932917", // 7/23 21:48〜0:00
+  "b_1786178436167", // 8/8 17:40〜20:40
+  "b_1780652700000", // 6/5 18:45〜19:16（18:40〜19:16 と重なり）
+  "b_1780653000000", // 6/5 18:50〜19:14（同上）
+  "b_1781320800000", // 6/13 12:20〜12:39（12:15〜12:39 と重なり）
+];
+const BREAK_CLEANUP_TRIM = { b_1781410588917: 1781413200000 }; // 6/14 13:16〜15:39 → 14:00 まで
 const LEGACY_SUBJECTS = { subject_1780109014480: "財理", subject_1780109002406: "財計" }; // 旧「財務理論」「財務計算」
 
 const OLD_KEYS = ["cpa_active_subject", "cpa_timer_start", "cpa_paused_subject", "cpa_paused_timer_start", "cpa_paused_at", "cpa_break_start"];
@@ -228,6 +240,15 @@ export default function App() {
       setBreaks(fixedBreaks);
       queue([...fixedLogs.map((l) => [l.id, "study"]), ...fixedBreaks.map((b) => [b.id, "break"])]);
       save(MIGRATION_KEY, true);
+    }
+    if (!load(BREAK_CLEANUP_KEY, false)) {
+      const drop = new Set(BREAK_CLEANUP_DELETE);
+      const trimmed = breaks.filter((b) => BREAK_CLEANUP_TRIM[b.id] && b.end > BREAK_CLEANUP_TRIM[b.id]).map((b) => b.id);
+      setBreaks((p) => p.filter((b) => !drop.has(b.id)).map((b) => (
+        trimmed.includes(b.id) ? { ...b, end: BREAK_CLEANUP_TRIM[b.id] } : b
+      )));
+      queue(trimmed.map((id) => [id, "break"]), BREAK_CLEANUP_DELETE);
+      save(BREAK_CLEANUP_KEY, true);
     }
   }, []);
 
