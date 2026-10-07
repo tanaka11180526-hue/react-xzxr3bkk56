@@ -4,7 +4,6 @@ import { DAY_NAMES, addDays, keyToDate, todayKey } from "../lib/time";
 import { STREAK_MIN_SECS } from "../lib/constants";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const RINGS = 14;
 
 function fmtSpaced(secs) {
   const h = Math.floor(secs / 3600), m = Math.floor((secs % 3600) / 60);
@@ -53,12 +52,7 @@ export default function DailyReport({ app, dateKey, onClose }) {
         </div>
 
         <div className="desk">
-          <LeavesDoodle />
-          <PenDoodle />
           <div className="notebook">
-            <div className="spiral" aria-hidden="true">
-              {Array.from({ length: RINGS }, (_, i) => <span key={i} />)}
-            </div>
             <div className="page-paper">
               <div className="rp-head">
                 <SunDoodle />
@@ -153,39 +147,6 @@ function MountainDoodle() {
       <path d="M70 56 L96 26 L122 56" fill="#E8E2D6" stroke="none" />
       <path d="M96 22 V4 L112 9 L96 14" fill="none" stroke="#2B2B2B" strokeWidth="2" strokeLinejoin="round" />
       <path d="M120 6l6-4M122 14h7M118 0l2-4" stroke="#2B2B2B" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-// 茎に沿って左右交互に丸い葉を付ける（ユーカリ風）
-const STEM = { ax: 128, ay: -6, bx: 30, by: 88 };
-const LEAVES = Array.from({ length: 9 }, (_, i) => {
-  const t = 0.12 + i * 0.1;
-  const x = STEM.ax + (STEM.bx - STEM.ax) * t, y = STEM.ay + (STEM.by - STEM.ay) * t;
-  const side = i % 2 ? 1 : -1;
-  return { x: x + side * 9.5 * 0.69, y: y + side * 9.5 * 0.72, r: side * 35 + 45, s: 1 - i * 0.05 };
-});
-
-function LeavesDoodle() {
-  return (
-    <svg className="desk-leaves" viewBox="0 0 130 130" aria-hidden="true">
-      <path d={`M${STEM.ax} ${STEM.ay} Q 80 30, ${STEM.bx} ${STEM.by}`} fill="none" stroke="#6f7f5c" strokeWidth="2" />
-      {LEAVES.map((l, i) => (
-        <ellipse key={i} cx={l.x} cy={l.y} rx={11 * l.s} ry={8.5 * l.s} transform={`rotate(${l.r} ${l.x} ${l.y})`}
-          fill={i % 3 === 0 ? "#8ea47c" : i % 3 === 1 ? "#a6b896" : "#97ab86"} stroke="#7b8f69" strokeWidth="0.6" />
-      ))}
-    </svg>
-  );
-}
-
-function PenDoodle() {
-  return (
-    <svg className="desk-pen" viewBox="0 0 24 220" aria-hidden="true">
-      <rect x="4" y="0" width="16" height="170" rx="7" fill="#D8CCB8" />
-      <rect x="4" y="18" width="16" height="40" rx="3" fill="#C9BCA6" />
-      <rect x="15" y="22" width="3" height="56" rx="1.5" fill="#B5A790" />
-      <path d="M4 168 L12 214 L20 168 Z" fill="#CFC2AC" />
-      <path d="M10 204 L12 216 L14 204 Z" fill="#555" />
     </svg>
   );
 }
