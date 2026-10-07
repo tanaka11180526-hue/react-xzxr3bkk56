@@ -230,8 +230,8 @@ function CatDoodle({ awake }) {
         {cat.body}
         <g className="cat-eyes-closed">{cat.eyesClosed}</g>
         <g className="cat-eyes-open">{cat.eyesOpen}</g>
+        <g className="cat-tail" style={{ transformOrigin: cat.tail.origin }}>{cat.tail.el}</g>
       </g>
-      <g className="cat-tail" style={{ transformOrigin: cat.tail.origin }}>{cat.tail.el}</g>
       <g className="cat-zzz" fill={z.fill} fontFamily="Caveat, Klee One, sans-serif" fontWeight="700">
         <text x={z.x} y={z.y} fontSize="8">z</text>
         <text x={z.x + 6} y={z.y - 6} fontSize="10">z</text>
