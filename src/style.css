@@ -347,3 +347,30 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 .day-total { font-size: 14px; color: var(--text-2); }
 .day-total b { font-size: 20px; color: var(--text); margin: 0 4px; font-variant-numeric: tabular-nums; }
 .timeline { background: var(--surface); }
+
+/* 記録タブの進み具合（タスクの数で見る） */
+.progress { display: flex; flex-direction: column; gap: 8px; }
+.pg-head { display: flex; align-items: baseline; justify-content: space-between; }
+.pg-count { font-size: 13px; color: var(--text-2); }
+.pg-count b { font-size: 26px; color: var(--text); margin-left: 4px; }
+.pg-count small { font-size: 13px; }
+.pg-pct { font-size: 18px; font-weight: 800; }
+.pg-bar { height: 10px; border: 1.5px solid #2B2B2B; border-radius: 6px; overflow: hidden; background: var(--surface); }
+.pg-bar i { display: block; height: 100%; background: var(--marker); }
+.pg-sub { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+.pg-late { color: var(--danger); font-weight: 700; }
+.pg-subjects { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.pg-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.pg-row i, .pg-task i { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.pg-name { flex: 1; color: var(--text-2); }
+.pg-mini { width: 64px; text-align: right; color: var(--muted); font-size: 12px; }
+.pg-mini b { color: var(--text); font-size: 14px; }
+.pg-time { width: 64px; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.pg-title { margin-top: 6px; }
+.pg-task { display: flex; align-items: center; gap: 8px; font-size: 12.5px; flex-wrap: wrap; }
+.pg-date { width: 38px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.pg-content { flex: 1; min-width: 0; }
+.pg-spent { width: 100%; padding-left: 56px; color: var(--muted); font-size: 12px; }
+.pg-spent small { margin-left: 2px; }
+.pg-fast { font-style: normal; margin-left: 8px; color: var(--ok); font-weight: 700; background: #DDE7CB; border-radius: 5px; padding: 0 5px; }
+.pg-more { font-size: 12px; color: var(--muted); padding-left: 56px; }
