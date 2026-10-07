@@ -6,7 +6,8 @@ export default function ScheduleItem({ app, item, canStart }) {
   const { matchSubject, timer, timerActions } = app;
   const sub = matchSubject(item.subject);
   const color = sub ? sub.color : UNKNOWN_COLOR;
-  const task = item.review ? "" : item.content;
+  // 復習も「論文対策講義3（復習①）」のように、やることを付けて計る
+  const task = item.content || "";
   const active = sub && (timer.mode === "study" || timer.mode === "paused") && timer.subjectId === sub.id && (timer.task || "") === task;
   const running = active && timer.mode === "study";
   const time = item.start ? item.start + (item.end ? "–" + item.end : "") : "";
