@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { DAY_NAMES, addDays, fmtHM, keyToDate, todayKey } from "../lib/time";
 
 const RANGES = [7, 14, 30];
+// この時間以上勉強した日を「連続」に数える
+const STREAK_MIN_SECS = 10 * 60;
 
 function calcStreak(days, today) {
-  const has = (k) => days[k] && days[k].total > 0;
+  const has = (k) => days[k] && days[k].total >= STREAK_MIN_SECS;
   const todayDone = has(today);
   let streak = 0;
   for (let k = todayDone ? today : addDays(today, -1); has(k); k = addDays(k, -1)) streak++;
@@ -34,7 +36,7 @@ export default function StatsTab({ app }) {
         <div className={"card stat" + (streak > 0 ? " good" : "")}>
           <div className="stat-label">{streak > 0 ? "🔥 連続" : "💤 連続"}</div>
           <div className="stat-value">{streak}<small>日</small></div>
-          <div className="stat-sub">{streak > 0 ? (todayDone ? "今日も継続中" : "今日やれば継続") : "今日から再スタート"}・最長 {longest}日</div>
+          <div className="stat-sub">{streak > 0 ? (todayDone ? "今日も継続中" : "今日10分やれば継続") : "今日から再スタート"}・最長 {longest}日<br />1日10分以上で連続に数えます</div>
         </div>
         <div className="card stat">
           <div className="stat-label">📝 試験日まで</div>
