@@ -199,64 +199,7 @@ function CornerDoodle() {
 // ノートの左下の猫。ふだんは丸まって寝ていて（Zzz・寝息）、勉強中は起きて目を開け、しっぽを振る
 const INK = "#2F2F2F";
 const CATS = {
-  // 1：薄茶のトラ猫。右を向いて丸まり、しっぽが前を回る
-  tan: {
-    zzz: { x: 58, y: 22, fill: INK },
-    tail: { origin: "14px 54px", el: <path d="M13.4 52.6c-3.4 2.4-4.4 5.4-2.4 7.2 3 2.6 10 .6 14-1.6" fill="none" stroke={INK} strokeWidth="1.4" strokeLinecap="round" /> },
-    body: (
-      <>
-        <g transform="translate(1 1)" fill="#E9C893">
-          <ellipse cx="36" cy="46" rx="25" ry="14" />
-          <circle cx="64" cy="45" r="11.5" />
-          <path d="M55 37l1-11 7 8z M67 34l8-7-.6 11z" />
-        </g>
-        <g fill="none" stroke={INK} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M53.4 34.6c-4-4.6-11-7.4-19-7.4-14 .4-24 7.8-23.6 18 .4 9.2 9 14.8 23 14.8h18" />
-          <path d="M52.6 38.4l2.4-12.2 7.4 7.4c3-1.2 6.4-1.2 9.4 0l6.6-6.6-.2 11.8c2.4 3.6 2.8 8.4.6 12.4-2.4 4.4-7.6 6.8-13 6.2-6-.6-10.6-5.2-11-11" />
-          <path d="M30 31c1.6 2.4 1.8 5.4.8 8 M38 29.6c1 2.6 1 5.4 0 8 M22 34.4c2 2 2.8 4.6 2.4 7.4 M46 31.6c.4 2.4 0 4.8-1 7" strokeWidth="1.1" />
-          <path d="M45 54c-4.6-3.4-6-9-3.4-13.6" strokeWidth="1.2" />
-          <path d="M62.4 49.6c.6.8 1.4.8 2 0 .6.8 1.4.8 2 0" strokeWidth="1.1" />
-          <path d="M71 47.6l5-.6 M71.2 49.6l4.8.8" strokeWidth=".9" />
-        </g>
-      </>
-    ),
-    eyesClosed: <path d="M57.6 45.2c1 1.2 2.6 1.2 3.6 0 M66.6 45.2c1 1.2 2.6 1.2 3.6 0" fill="none" stroke={INK} strokeWidth="1.2" strokeLinecap="round" />,
-    eyesOpen: <g fill={INK}><ellipse cx="59.4" cy="44.6" rx="1.3" ry="1.6" /><ellipse cx="68.4" cy="44.6" rx="1.3" ry="1.6" /></g>,
-  },
-  // 2：オレンジのトラ猫。左を向いて丸まり、しましまのしっぽが前に来る
-  orange: {
-    zzz: { x: 40, y: 16, fill: INK },
-    tail: { origin: "76px 48px", el: (
-      <g>
-        <path d="M77 46c4 8-2 13.6-14 13.6-7 0-14-.6-17-2.4-2-1.4-1-4 1.4-4 8 .4 17 .6 21-1.4 3-1.6 4-3.6 4.4-6.4z" fill="#F4B67C" stroke={INK} strokeWidth="1.3" strokeLinejoin="round" />
-        <path d="M55 54.4l-.8 4.6 M62 54.6l-.4 4.8 M69 53.4l.6 5" stroke="#E5863F" strokeWidth="2.2" strokeLinecap="round" />
-      </g>
-    ) },
-    body: (
-      <>
-        <g fill="#F4B67C" transform="translate(1.2 1)">
-          <ellipse cx="58" cy="42" rx="22" ry="17" />
-          <ellipse cx="30" cy="41" rx="15" ry="13" />
-          <path d="M17 34l1-14 10 8z M33 28l10-8 0 14z" />
-        </g>
-        <path d="M58 26.4c-.6 3-.4 6 .6 8.6 M66 27.6c-1.4 3-2 6-1.6 9 M73 33c-2 2.2-3.2 5-3.4 8 M48 28.4c.8 2.6.8 5.4 0 8" stroke="#E5863F" strokeWidth="2.4" strokeLinecap="round" />
-        <path d="M27 28.6l.4 4.4 M31 28.4v4.6 M35 29l-.4 4.4 M16.6 42.4l4 .6 M16.8 46.4l3.6-.4" stroke="#E5863F" strokeWidth="2" strokeLinecap="round" />
-        <ellipse cx="30" cy="46.6" rx="5.4" ry="3.8" fill="#FFF9F0" />
-        <path d="M18.6 31.4l.6-7.6 5.6 4.6z M35.6 28.2l5.6-4.6.4 7.4z" fill="#FFF9F0" />
-        <g fill="none" stroke={INK} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M42.6 33.6c3.6-5 9.4-8 15.8-8 12 0 21.6 7.4 21.4 17.4-.2 6.6-4.6 12-11 14.6" />
-          <path d="M17.4 47.6c-2.8-5.4-2.4-11.6 1-16l.4-11.6 8.6 7c1.8-.6 3.8-.8 5.8-.6l9.2-7 .2 12.2c3 4.4 3.4 10 1 15" />
-          <path d="M19.6 57.4c-.4-3 1.6-5.2 4.4-5.2 2.4 0 4 1.8 4 4.4 M28 56.6c0-2.6 1.8-4.4 4.2-4.4 2.6 0 4.4 2 4 5" />
-          <path d="M28.6 48c.6.8 1.4.8 2 0 .6.8 1.4.8 2 0" strokeWidth="1.1" transform="translate(-1.6 0)" />
-          <path d="M14 58h22" strokeWidth="1" />
-        </g>
-        <path d="M29.2 45l1.6 0-.8 1z" fill="#F2A0A8" />
-      </>
-    ),
-    eyesClosed: <path d="M21.4 41.8c1.2 1.4 3.2 1.4 4.4 0 M34 41.8c1.2 1.4 3.2 1.4 4.4 0" fill="none" stroke={INK} strokeWidth="1.3" strokeLinecap="round" />,
-    eyesOpen: <g fill={INK}><ellipse cx="23.6" cy="41.2" rx="1.4" ry="1.8" /><ellipse cx="36.2" cy="41.2" rx="1.4" ry="1.8" /></g>,
-  },
-  // 3：黒白のハチワレ猫（イラスト風の太めのグレーの線）
+  // 黒白のハチワレ猫（イラスト風の太めのグレーの線）
   tuxedo: {
     zzz: { x: 44, y: 14, fill: "#3A3F55" },
     tail: { origin: "62px 52px", el: <path d="M62 52c8 1 14-3 15-10 .6-4-1-7.4-3.6-9.4" fill="none" stroke="#8C8C8C" strokeWidth="2" strokeLinecap="round" /> },
@@ -279,9 +222,7 @@ const CATS = {
 };
 
 function CatDoodle({ awake }) {
-  let pick = "tan";
-  try { pick = localStorage.getItem("cpa_cat") || pick; } catch {}
-  const cat = CATS[pick] || CATS.tan;
+  const cat = CATS.tuxedo;
   const z = cat.zzz;
   return (
     <svg className={"nh-cat" + (awake ? " awake" : " asleep")} viewBox="0 -12 90 76" aria-hidden="true">
