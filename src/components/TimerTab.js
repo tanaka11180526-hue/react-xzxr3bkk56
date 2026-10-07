@@ -125,7 +125,7 @@ function NowCard({ app, dayTotal }) {
       <div className="card now-card" style={{ "--c": breakColor }}>
         <div className="now-label accent">☕ 休憩中</div>
         <div className="now-time accent">{fmtHMS((now - timer.start) / 1000)}</div>
-        <div className="now-sub">今日の合計 {fmtHMS(dayTotal)}・科目の ▶ で勉強を再開</div>
+        <div className="now-sub">今日の合計 {fmtHMS(dayTotal)}・科目の ▶ で勉強を再開<br />3時間たつと休憩は自動で終わります</div>
         <div className="now-actions">
           <button className="btn" onClick={timerActions.stop}>休憩を終える</button>
         </div>

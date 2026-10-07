@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { load, remove as removeKey, makeId, usePersisted } from "./lib/storage";
-import { dayStart, splitByDay, toKey, todayKey } from "./lib/time";
+import { load, save, remove as removeKey, makeId, usePersisted } from "./lib/storage";
+import { dayStart, nextMidnight, splitByDay, toKey, todayKey } from "./lib/time";
 import * as sync from "./lib/sync";
-import { DEFAULT_SUBJECTS, PAUSE_LIMIT_MS } from "./lib/constants";
+import { BREAK_LIMIT_MS, DEFAULT_SUBJECTS, PAUSE_LIMIT_MS } from "./lib/constants";
 import TimerTab from "./components/TimerTab";
 import CalendarTab from "./components/CalendarTab";
 import StatsTab from "./components/StatsTab";
@@ -36,6 +36,16 @@ function loadTimer() {
   if (breakStart) return { mode: "break", start: breakStart };
   return IDLE;
 }
+// 休憩が自動で終わる時刻（3時間後か、その日の終わりの早いほう）
+export function breakEnd(start) {
+  return Math.min(start + BREAK_LIMIT_MS, nextMidnight(start));
+}
+
+// 一度だけ行うデータ整理。シートの科目に合わせたときに消した旧科目の記録を付け替え、
+// 止め忘れて長くなった休憩を切り詰め、科目名が変わった記録をシートに送り直す
+const MIGRATION_KEY = "cpa_migrated_v3";
+const LEGACY_SUBJECTS = { subject_1780109014480: "財理", subject_1780109002406: "財計" }; // 旧「財務理論」「財務計算」
+
 const OLD_KEYS = ["cpa_active_subject", "cpa_timer_start", "cpa_paused_subject", "cpa_paused_timer_start", "cpa_paused_at", "cpa_break_start"];
 
 function studyBase(t) {
@@ -166,16 +176,32 @@ export default function App() {
       addEntries("study", studyBase(timer), timer.start, t0);
       setTimer(IDLE);
     }
+    if (!load(MIGRATION_KEY, false)) {
+      const ids = new Set(subjects.map((s) => s.id));
+      const fixedLogs = logs.map((l) => {
+        const label = LEGACY_SUBJECTS[l.subjectId];
+        const target = label && !ids.has(l.subjectId) && subjects.find((s) => s.label === label);
+        return target ? { ...l, subjectId: target.id } : l;
+      });
+      const fixedBreaks = breaks.map((b) => (b.end > breakEnd(b.start) ? { ...b, end: breakEnd(b.start) } : b));
+      setLogs(fixedLogs);
+      setBreaks(fixedBreaks);
+      queue([...fixedLogs.map((l) => [l.id, "study"]), ...fixedBreaks.map((b) => [b.id, "break"])]);
+      save(MIGRATION_KEY, true);
+    }
   }, []);
 
-  // 一時停止が一定時間続いたら休憩に切り替える。休憩は日付が変わったら終了
+  // 一時停止が一定時間続いたら休憩に切り替える。休憩は3時間たつか日付が変わったら終了
   const handledPause = useRef(null);
+  const handledBreak = useRef(null);
   useEffect(() => {
     if (timer.mode === "paused" && now - timer.pausedAt >= PAUSE_LIMIT_MS && handledPause.current !== timer.pausedAt) {
       handledPause.current = timer.pausedAt;
       addEntries("study", studyBase(timer), timer.start, timer.pausedAt);
       setTimer({ mode: "break", start: timer.pausedAt });
-    } else if (timer.mode === "break" && timer.start < dayStart(toKey(new Date(now)))) {
+    } else if (timer.mode === "break" && now >= breakEnd(timer.start) && handledBreak.current !== timer.start) {
+      handledBreak.current = timer.start;
+      addEntries("break", {}, timer.start, breakEnd(timer.start));
       setTimer(IDLE);
     }
   }, [now, timer, addEntries, setTimer]);

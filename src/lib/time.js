@@ -61,3 +61,8 @@ export function splitByDay(start, end) {
   }
   return out;
 }
+
+// その時刻の翌日 0:00
+export function nextMidnight(ts) {
+  return dayStart(addDays(toKey(new Date(ts)), 1));
+}
