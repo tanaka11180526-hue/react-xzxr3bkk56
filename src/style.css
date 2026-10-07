@@ -237,45 +237,58 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 .report-wrap { max-width: 460px; margin: 0 auto; }
 .report-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 .hint.light { color: #9b9384; margin-top: 12px; }
-.notebook { position: relative; padding-left: 22px; filter: drop-shadow(0 10px 22px rgba(0,0,0,0.45)); }
-.spiral { position: absolute; left: 0; top: 26px; bottom: 26px; width: 40px; display: flex; flex-direction: column; justify-content: space-between; z-index: 2; }
-.spiral span { display: block; width: 36px; height: 12px; border-radius: 8px; border: 3px solid #3b3b3b; border-right-color: transparent; background: transparent; box-shadow: inset 0 -1px 0 rgba(255,255,255,0.25); }
+/* 机の上のノート。サイズは .desk の幅（cqw）基準で、写真のように比率を固定 */
+.desk {
+  container-type: inline-size; position: relative; width: 100%; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 4px;
+  background:
+    radial-gradient(120% 90% at 30% 20%, rgba(255,255,255,0.35), transparent 60%),
+    radial-gradient(140% 120% at 50% 50%, transparent 55%, rgba(80,60,30,0.28)),
+    repeating-linear-gradient(97deg, rgba(120,95,60,0.05) 0 2px, transparent 2px 9px),
+    #E4D9C6;
+}
+.desk-leaves { position: absolute; top: -3cqw; right: -3cqw; width: 30cqw; z-index: 3; filter: drop-shadow(0.6cqw 1cqw 0.8cqw rgba(60,40,10,0.25)); }
+.desk-pen { position: absolute; right: 4cqw; top: 30cqw; width: 4.6cqw; z-index: 3; transform: rotate(4deg); filter: drop-shadow(0.8cqw 1.2cqw 1cqw rgba(60,40,10,0.35)); }
+.notebook { position: absolute; left: 7cqw; top: 5cqw; width: 76cqw; height: 115cqw; filter: drop-shadow(0 2cqw 3cqw rgba(60,40,10,0.35)); }
+.spiral { position: absolute; left: -3.2cqw; top: 5cqw; bottom: 5cqw; width: 8cqw; display: flex; flex-direction: column; justify-content: space-between; z-index: 2; }
+.spiral span { display: block; width: 7.4cqw; height: 2.4cqw; border-radius: 1.6cqw; border: 0.7cqw solid #3a3a3a; border-right-color: transparent; }
 .page-paper {
-  position: relative; border-radius: 6px 14px 14px 6px; padding: 28px 22px 22px 34px; min-height: 560px;
+  position: absolute; inset: 0; border-radius: 0.8cqw 2cqw 2cqw 0.8cqw; padding: 6cqw 5.5cqw 4cqw 8cqw; overflow: hidden;
   background-color: #FBF8F1;
-  background-image: radial-gradient(#d9d2c3 1px, transparent 1.2px);
-  background-size: 18px 18px; background-position: 9px 9px;
+  background-image: radial-gradient(#d9d2c3 0.22cqw, transparent 0.3cqw);
+  background-size: 3.6cqw 3.6cqw; background-position: 1.8cqw 1.8cqw;
   color: #2B2B2B; font-family: "Klee One", "Caveat", "M PLUS Rounded 1c", sans-serif;
 }
-.rp-head { display: flex; align-items: center; gap: 10px; }
-.rp-sun { width: 46px; height: 46px; flex-shrink: 0; }
-.rp-title { margin: 0; white-space: nowrap; font-family: "Caveat", "Klee One", cursive; font-size: clamp(30px, 9vw, 40px); font-weight: 700; letter-spacing: 1px; line-height: 1; padding-bottom: 4px; background: linear-gradient(transparent 72%, #C6D4AE 72%, #C6D4AE 92%, transparent 92%); }
-.rp-date { text-align: right; font-family: "Caveat", "Klee One", cursive; font-size: 24px; margin: 10px 4px 18px auto; width: fit-content; border-bottom: 1.5px solid #2B2B2B; padding: 0 6px; }
-.rp-date span { font-family: "Klee One", sans-serif; font-size: 15px; }
-.rp-total { display: flex; align-items: center; gap: 16px; margin-bottom: 22px; }
-.rp-clock { width: 54px; height: 54px; flex-shrink: 0; }
-.rp-label { font-family: "Caveat", "Klee One", cursive; font-size: 17px; letter-spacing: 2px; color: #4a4a4a; }
-.rp-big { font-family: "Caveat", "Klee One", cursive; font-size: 46px; font-weight: 700; line-height: 1.1; }
-.marker { background: linear-gradient(transparent 70%, #C6D4AE 70%, #C6D4AE 90%, transparent 90%); padding: 0 4px; }
-.rp-section { margin-bottom: 18px; }
-.rp-tag { display: inline-block; font-family: "Caveat", "Klee One", cursive; font-size: 19px; font-weight: 700; letter-spacing: 1.5px; padding: 0 10px; border-radius: 3px; margin-bottom: 6px; }
+.rp-head { display: flex; align-items: center; gap: 2cqw; }
+.rp-sun { width: 9cqw; height: 9cqw; flex-shrink: 0; }
+.rp-title { margin: 0; white-space: nowrap; font-family: "Caveat", "Klee One", cursive; font-size: 8.4cqw; font-weight: 700; letter-spacing: 0.2cqw; line-height: 1; padding-bottom: 0.6cqw; background: linear-gradient(transparent 72%, #C6D4AE 72%, #C6D4AE 92%, transparent 92%); }
+.rp-date { font-family: "Caveat", "Klee One", cursive; font-size: 4.6cqw; margin: 1.4cqw 0 2.6cqw auto; width: fit-content; border-bottom: 0.3cqw solid #2B2B2B; padding: 0 1.2cqw; }
+.rp-date span { font-family: "Klee One", sans-serif; font-size: 3cqw; }
+.rp-total { display: flex; align-items: center; gap: 3.4cqw; margin-bottom: 3.6cqw; padding-left: 2cqw; }
+.rp-clock { width: 10.5cqw; height: 10.5cqw; flex-shrink: 0; }
+.rp-label { font-family: "Caveat", "Klee One", cursive; font-size: 3.6cqw; letter-spacing: 0.4cqw; color: #4a4a4a; }
+.rp-big { font-family: "Caveat", "Klee One", cursive; font-size: 9.5cqw; font-weight: 700; line-height: 1.05; }
+.marker { background: linear-gradient(transparent 70%, #C6D4AE 70%, #C6D4AE 90%, transparent 90%); padding: 0 0.8cqw; }
+.rp-tag { display: inline-block; font-family: "Caveat", "Klee One", cursive; font-size: 4.2cqw; font-weight: 700; letter-spacing: 0.3cqw; padding: 0 2cqw; border-radius: 0.6cqw; margin: 0 0 1.4cqw 1cqw; }
 .tag-sand { background: #F3DFC1; }
-.tag-green { background: #D9E5C6; }
 .tag-blue { background: #D5DEE6; }
-.rp-list, .rp-done { list-style: none; margin: 0; padding: 0; }
-.rp-list li, .rp-done li { display: flex; align-items: center; gap: 8px; padding: 9px 2px; border-bottom: 1px solid #ddd5c6; font-size: 16px; }
-.rp-num { width: 22px; height: 22px; border: 1.5px solid #2B2B2B; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
-.rp-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.rp-check { width: 22px; text-align: center; flex-shrink: 0; color: #6b8a4e; font-weight: 700; }
-.rp-name { flex: 1; min-width: 0; line-height: 1.4; }
-.rp-name b { font-weight: 600; margin-right: 4px; }
-.rp-time { font-family: "Caveat", "Klee One", cursive; font-size: 21px; white-space: nowrap; }
-.rp-empty, .rp-more { margin: 6px 2px; font-size: 14px; color: #7a7366; }
-.rp-mini { display: flex; gap: 26px; margin: 4px 2px 18px; }
-.rp-mini > div { display: flex; flex-direction: column; }
-.rp-mini b { font-family: "Caveat", "Klee One", cursive; font-size: 28px; line-height: 1.1; }
-.rp-mini small { font-size: 16px; }
-.rp-note { display: block; width: 100%; text-align: left; background: none; border: none; padding: 4px 2px; min-height: 52px; color: #2B2B2B; font-family: "Klee One", sans-serif; font-size: 16px; line-height: 1.7; white-space: pre-wrap; }
+.rp-list { list-style: none; margin: 0 0 3cqw; padding: 0 0 0 2cqw; }
+.rp-list li { display: flex; align-items: center; gap: 2.6cqw; padding: 1.5cqw 0.4cqw; border-bottom: 0.25cqw solid #ddd5c6; font-size: 3.8cqw; }
+.rp-num { width: 5cqw; height: 5cqw; border: 0.3cqw solid #2B2B2B; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 3cqw; flex-shrink: 0; }
+.rp-name { flex: 1; min-width: 0; }
+.rp-time { font-family: "Caveat", "Klee One", cursive; font-size: 4.4cqw; white-space: nowrap; }
+.rp-empty { margin: 1cqw 0 4cqw 3cqw; font-size: 3.4cqw; color: #7a7366; }
+.rp-note { display: block; width: 100%; text-align: left; background: none; border: none; padding: 0.6cqw 2.4cqw; color: #2B2B2B; font-family: "Klee One", sans-serif; font-size: 3.4cqw; line-height: 1.6; white-space: pre-wrap;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; padding-right: 22cqw; }
 .rp-placeholder { color: #a39b8c; }
-.rp-note-input { width: 100%; box-sizing: border-box; background: rgba(255,255,255,0.6); border: 1px dashed #b9b09f; border-radius: 6px; padding: 8px; font-family: "Klee One", sans-serif; font-size: 16px; color: #2B2B2B; resize: none; outline: none; }
-.rp-mountain { display: block; width: 130px; margin: 8px 0 0 auto; }
+.rp-note-input { width: 100%; box-sizing: border-box; background: rgba(255,255,255,0.7); border: 0.3cqw dashed #b9b09f; border-radius: 1cqw; padding: 1.4cqw; font-family: "Klee One", sans-serif; font-size: 16px; color: #2B2B2B; resize: none; outline: none; }
+.rp-mountain { position: absolute; right: 4cqw; bottom: 3cqw; width: 20cqw; }
+.report-extra { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; color: #e9e3d6; }
+.report-stats { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+.report-stats > div { display: flex; flex-direction: column; }
+.report-stats span { font-size: 11px; color: #9b9384; }
+.report-stats b { font-size: 15px; }
+.report-task { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 8px 10px; background: #26231e; border-radius: 10px; }
+.report-task i { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.report-task span { flex: 1; min-width: 0; }
+.report-task b { margin-right: 4px; }
+.report-task em { font-style: normal; color: #c9c1b1; white-space: nowrap; }

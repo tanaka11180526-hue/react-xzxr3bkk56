@@ -4,7 +4,7 @@ import { DAY_NAMES, addDays, keyToDate, todayKey } from "../lib/time";
 import { STREAK_MIN_SECS } from "../lib/constants";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const RINGS = 18;
+const RINGS = 14;
 
 function fmtSpaced(secs) {
   const h = Math.floor(secs / 3600), m = Math.floor((secs % 3600) / 60);
@@ -52,76 +52,73 @@ export default function DailyReport({ app, dateKey, onClose }) {
           <button className="nav-btn" onClick={() => { setKey(addDays(key, 1)); setEditing(false); }} disabled={isToday} aria-label="次の日">›</button>
         </div>
 
-        <div className="notebook">
-          <div className="spiral" aria-hidden="true">
-            {Array.from({ length: RINGS }, (_, i) => <span key={i} />)}
-          </div>
-          <div className="page-paper">
-            <div className="rp-head">
-              <SunDoodle />
-              <h2 className="rp-title">DAILY REPORT</h2>
+        <div className="desk">
+          <LeavesDoodle />
+          <PenDoodle />
+          <div className="notebook">
+            <div className="spiral" aria-hidden="true">
+              {Array.from({ length: RINGS }, (_, i) => <span key={i} />)}
             </div>
-            <div className="rp-date">{MONTHS[d.getMonth()]} {d.getDate()}<span>（{DAY_NAMES[d.getDay()]}）</span></div>
-
-            <div className="rp-total">
-              <ClockDoodle />
-              <div>
-                <div className="rp-label">TOTAL STUDY TIME</div>
-                <div className="rp-big"><span className="marker">{fmtSpaced(day.total)}</span></div>
+            <div className="page-paper">
+              <div className="rp-head">
+                <SunDoodle />
+                <h2 className="rp-title">DAILY REPORT</h2>
               </div>
-            </div>
+              <div className="rp-date">{MONTHS[d.getMonth()]} {d.getDate()}<span>（{DAY_NAMES[d.getDay()]}）</span></div>
 
-            <div className="rp-section">
-              <span className="rp-tag tag-sand">TOP {Math.max(top.length, 1)} SUBJECT{top.length === 1 ? "" : "S"}</span>
+              <div className="rp-total">
+                <ClockDoodle />
+                <div>
+                  <div className="rp-label">TOTAL STUDY TIME</div>
+                  <div className="rp-big"><span className="marker">{fmtSpaced(day.total)}</span></div>
+                </div>
+              </div>
+
+              <span className="rp-tag tag-sand">TOP 3 SUBJECTS</span>
               {top.length ? (
                 <ol className="rp-list">
                   {top.map((s, i) => (
                     <li key={s.id}>
                       <span className="rp-num">{i + 1}</span>
-                      <span className="rp-dot" style={{ background: s.color }} />
                       <span className="rp-name">{s.label}</span>
                       <span className="rp-time">{fmtSpaced(day.by[s.id])}</span>
                     </li>
                   ))}
                 </ol>
               ) : <p className="rp-empty">この日の記録はまだないで</p>}
-              {ranked.length > 3 && <p className="rp-more">ほか {ranked.length - 3}科目</p>}
-            </div>
 
-            {tasks.length > 0 && (
-              <div className="rp-section">
-                <span className="rp-tag tag-green">DONE</span>
-                <ul className="rp-done">
-                  {tasks.map((t) => (
-                    <li key={t.subjectId + t.task}>
-                      <span className="rp-check">✓</span>
-                      <span className="rp-name"><b style={{ color: getSub(t.subjectId).color }}>{getSub(t.subjectId).label}</b> {t.task}</span>
-                      <span className="rp-time">{fmtSpaced(t.secs)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            <div className="rp-mini">
-              <div><span className="rp-label">BREAK</span><b>{fmtSpaced(breakSecs)}</b></div>
-              <div><span className="rp-label">STREAK</span><b>{streak}<small> days</small></b></div>
-            </div>
-
-            <div className="rp-section">
               <span className="rp-tag tag-blue">FOCUS NOTE</span>
               {editing ? (
-                <textarea className="rp-note-input" autoFocus rows={3} defaultValue={note} placeholder="今日のひとこと"
+                <textarea className="rp-note-input" autoFocus rows={2} defaultValue={note} placeholder="今日のひとこと"
                   onBlur={(e) => { setNotes((n) => ({ ...n, [key]: e.target.value.trim() })); setEditing(false); }} />
               ) : (
                 <button className="rp-note" onClick={() => setEditing(true)}>
                   {note || <span className="rp-placeholder">タップしてひとこと書く</span>}
                 </button>
               )}
+              <MountainDoodle />
             </div>
-
-            <MountainDoodle />
           </div>
+        </div>
+
+        <div className="report-extra">
+          <div className="report-stats">
+            <div><span>休憩</span><b>{fmtSpaced(breakSecs)}</b></div>
+            <div><span>連続</span><b>{streak}日</b></div>
+            {ranked.length > 3 && <div><span>ほかの科目</span><b>{ranked.slice(3).map((s) => s.label + " " + fmtSpaced(day.by[s.id])).join("・")}</b></div>}
+          </div>
+          {tasks.length > 0 && (
+            <>
+              <div className="section-title">やったこと<span className="muted">（予定から計った分）</span></div>
+              {tasks.map((t) => (
+                <div key={t.subjectId + t.task} className="report-task">
+                  <i style={{ background: getSub(t.subjectId).color }} />
+                  <span><b>{getSub(t.subjectId).label}</b> {t.task}</span>
+                  <em>{fmtSpaced(t.secs)}</em>
+                </div>
+              ))}
+            </>
+          )}
         </div>
         <p className="hint center light">スクリーンショットで保存・共有できます</p>
       </div>
@@ -156,6 +153,39 @@ function MountainDoodle() {
       <path d="M70 56 L96 26 L122 56" fill="#E8E2D6" stroke="none" />
       <path d="M96 22 V4 L112 9 L96 14" fill="none" stroke="#2B2B2B" strokeWidth="2" strokeLinejoin="round" />
       <path d="M120 6l6-4M122 14h7M118 0l2-4" stroke="#2B2B2B" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+// 茎に沿って左右交互に丸い葉を付ける（ユーカリ風）
+const STEM = { ax: 128, ay: -6, bx: 30, by: 88 };
+const LEAVES = Array.from({ length: 9 }, (_, i) => {
+  const t = 0.12 + i * 0.1;
+  const x = STEM.ax + (STEM.bx - STEM.ax) * t, y = STEM.ay + (STEM.by - STEM.ay) * t;
+  const side = i % 2 ? 1 : -1;
+  return { x: x + side * 9.5 * 0.69, y: y + side * 9.5 * 0.72, r: side * 35 + 45, s: 1 - i * 0.05 };
+});
+
+function LeavesDoodle() {
+  return (
+    <svg className="desk-leaves" viewBox="0 0 130 130" aria-hidden="true">
+      <path d={`M${STEM.ax} ${STEM.ay} Q 80 30, ${STEM.bx} ${STEM.by}`} fill="none" stroke="#6f7f5c" strokeWidth="2" />
+      {LEAVES.map((l, i) => (
+        <ellipse key={i} cx={l.x} cy={l.y} rx={11 * l.s} ry={8.5 * l.s} transform={`rotate(${l.r} ${l.x} ${l.y})`}
+          fill={i % 3 === 0 ? "#8ea47c" : i % 3 === 1 ? "#a6b896" : "#97ab86"} stroke="#7b8f69" strokeWidth="0.6" />
+      ))}
+    </svg>
+  );
+}
+
+function PenDoodle() {
+  return (
+    <svg className="desk-pen" viewBox="0 0 24 220" aria-hidden="true">
+      <rect x="4" y="0" width="16" height="170" rx="7" fill="#D8CCB8" />
+      <rect x="4" y="18" width="16" height="40" rx="3" fill="#C9BCA6" />
+      <rect x="15" y="22" width="3" height="56" rx="1.5" fill="#B5A790" />
+      <path d="M4 168 L12 214 L20 168 Z" fill="#CFC2AC" />
+      <path d="M10 204 L12 216 L14 204 Z" fill="#555" />
     </svg>
   );
 }
