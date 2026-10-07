@@ -342,8 +342,7 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 /* 左下の猫 */
 .nh-cat { width: 31%; height: auto; margin-left: 1.6cqw; overflow: visible; }
 .nh-cat .cat-body, .nh-cat .cat-tail { transform-box: view-box; }
-.nh-cat .cat-tail { transform-origin: 73px 49px; }
-.nh-cat .cat-body { transform-origin: 45px 53px; }
+.nh-cat .cat-body { transform-origin: 45px 60px; }
 .nh-cat.asleep .cat-eyes-open, .nh-cat.awake .cat-eyes-closed, .nh-cat.awake .cat-zzz { display: none; }
 /* 寝ているとき：寝息でふくらむ・Zzz が浮かぶ */
 .nh-cat.asleep .cat-body { animation: cat-breathe 3.6s ease-in-out infinite; }
