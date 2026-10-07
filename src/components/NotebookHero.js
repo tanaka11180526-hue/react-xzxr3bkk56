@@ -196,38 +196,48 @@ function CornerDoodle() {
   );
 }
 
-// ノートの左下の猫。ふだんは丸まって寝ていて（Zzz・寝息）、勉強中は起きてしっぽを振りながら見守る
+// ノートの左下の猫。ふだんは丸まって寝ていて（Zzz・寝息）、勉強中は起きて目を開け、しっぽを振る
+const INK = "#2F2F2F";
+const CATS = {
+  // 黒白のハチワレ猫（イラスト風の太めのグレーの線）
+  tuxedo: {
+    zzz: { x: 44, y: 14, fill: "#3A3F55" },
+    tail: { origin: "62px 52px", el: <path d="M62 52c8 1 14-3 15-10 .6-4-1-7.4-3.6-9.4" fill="none" stroke="#8C8C8C" strokeWidth="2" strokeLinecap="round" /> },
+    body: (
+      <>
+        <g fill="#28304A" stroke="#8C8C8C" strokeWidth="2.2" strokeLinejoin="round">
+          <path d="M40 30c6-5 14-7 22-6 14 2 22 12 21 23-.6 7-4 11-9 12H40z" />
+          <path d="M14 46c-1-8 2-14 5-17l1-13 9 8c3-1 7-1 10 0l9-8 1 13c3 3 6 9 5 17-.8 6-5 11-12 12H26c-7-1-11.4-6-12-12z" />
+        </g>
+        <path d="M21.4 27l.6-6.4 4.4 4z M41.6 24.6l4.4-4 .6 6.4z" fill="#F4A9B4" />
+        <path d="M24 48c1.6-3 4.4-4.6 7.6-4.6s6 1.6 7.6 4.6c1.4 3 .6 6-1.6 8.2H25.6c-2.2-2.2-3-5.2-1.6-8.2z" fill="#FFFFFF" />
+        <path d="M18 58.4c-.6-2.6 1-4.8 3.8-4.8s4.4 2.2 3.8 4.8 M38 58.4c-.6-2.6 1-4.8 3.8-4.8s4.4 2.2 3.8 4.8" fill="#FFFFFF" stroke="#8C8C8C" strokeWidth="1.6" />
+        <path d="M29.6 49c.6 1 1.4 1 2 0 .6 1 1.4 1 2 0" fill="none" stroke="#3A3F55" strokeWidth="1.1" strokeLinecap="round" />
+        <path d="M14.6 44.4h5 M43.6 44.4h5 M15 47.2l4.6-.6 M43.6 46.6l4.6.6" stroke="#FFFFFF" strokeWidth="1.1" strokeLinecap="round" />
+      </>
+    ),
+    eyesClosed: <path d="M21 42.4h6 M36.4 42.4h6" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" />,
+    eyesOpen: <g fill="#FFFFFF"><ellipse cx="24" cy="41.6" rx="1.6" ry="2" /><ellipse cx="39.4" cy="41.6" rx="1.6" ry="2" /></g>,
+  },
+};
+
 function CatDoodle({ awake }) {
+  const cat = CATS.tuxedo;
+  const z = cat.zzz;
   return (
-    <svg className={"nh-cat" + (awake ? " awake" : " asleep")} viewBox="0 0 90 58" aria-hidden="true">
-      <g className="cat-tail">
-        <path d="M73 49c9 0 13-5 12-12-1-5-5-7-8-6" fill="none" stroke="#2F2F2F" strokeWidth="1.4" strokeLinecap="round" />
-      </g>
+    <svg className={"nh-cat" + (awake ? " awake" : " asleep")} viewBox="0 -12 90 76" aria-hidden="true">
       <g className="cat-body">
-        {/* 色（線から少しずらす） */}
-        <path d="M22 51c-1-13 9-22 26-22s28 8 27 22z" fill="#F3D9B1" transform="translate(1.4 1.2)" />
-        <circle cx="25" cy="40" r="10.5" fill="#F3D9B1" transform="translate(1.4 1.2)" />
-        <g fill="none" stroke="#2F2F2F" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M33 30.4c4-1.4 9-2 14.6-1.8 15 .4 26.4 8.8 25.6 22.2" />
-          <path d="M15.4 44.6c-1.8-6.2 1-12.2 5-14.8l-1.6-8.6 6.8 5.6c2-.4 3.8-.2 5.6.4l5-6.6.6 9c3.4 3.4 4.4 9 2.6 14" />
-          <path d="M47 30.6l1 4.4 M55 31.4l-.2 4.6 M62.6 34l-1 4.2" strokeWidth="1.1" />
-          <path d="M28.4 44.6c.6.8 1.4.8 2 0 .6.8 1.4.8 2 0" strokeWidth="1.1" />
-        </g>
-        <g className="cat-eyes-closed" fill="none" stroke="#2F2F2F" strokeWidth="1.2" strokeLinecap="round">
-          <path d="M20.6 40.4c1 1.2 2.6 1.2 3.6 0 M30 40.4c1 1.2 2.6 1.2 3.6 0" />
-        </g>
-        <g className="cat-eyes-open" fill="#2F2F2F">
-          <ellipse cx="22.4" cy="40" rx="1.3" ry="1.6" />
-          <ellipse cx="31.8" cy="40" rx="1.3" ry="1.6" />
-        </g>
-        <path d="M18 43.6l-4 .4 M18.4 45.4l-3.6 1.4 M36.6 43.6l4 .2 M36.2 45.4l3.6 1.2" fill="none" stroke="#2F2F2F" strokeWidth=".9" strokeLinecap="round" />
+        {cat.body}
+        <g className="cat-eyes-closed">{cat.eyesClosed}</g>
+        <g className="cat-eyes-open">{cat.eyesOpen}</g>
       </g>
-      <g className="cat-zzz" fill="#2F2F2F" fontFamily="Caveat, Klee One, sans-serif">
-        <text x="40" y="22" fontSize="8">z</text>
-        <text x="46" y="15" fontSize="10">z</text>
-        <text x="53" y="7" fontSize="12">Z</text>
+      <g className="cat-tail" style={{ transformOrigin: cat.tail.origin }}>{cat.tail.el}</g>
+      <g className="cat-zzz" fill={z.fill} fontFamily="Caveat, Klee One, sans-serif" fontWeight="700">
+        <text x={z.x} y={z.y} fontSize="8">z</text>
+        <text x={z.x + 6} y={z.y - 6} fontSize="10">z</text>
+        <text x={z.x + 13} y={z.y - 13} fontSize="12">Z</text>
       </g>
-      <path d="M4 53.6c24 .6 52 .4 82-.4" fill="none" stroke="#2F2F2F" strokeWidth="1" strokeLinecap="round" />
+      <path d="M2 61.4c26 .6 56 .4 86-.4" fill="none" stroke={INK} strokeWidth="1" strokeLinecap="round" />
     </svg>
   );
 }
