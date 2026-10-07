@@ -340,7 +340,7 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 .nh-doodle { width: 56%; height: auto; margin: 0 1.6cqw 0 0; flex-shrink: 0; }
 
 /* 左下の猫 */
-.nh-cat { width: 31%; height: auto; margin-left: 1.6cqw; overflow: visible; }
+.nh-cat { width: 34%; height: auto; margin-left: 1.6cqw; overflow: visible; }
 .nh-cat .cat-body, .nh-cat .cat-tail { transform-box: view-box; }
 .nh-cat .cat-body { transform-origin: 45px 60px; }
 .nh-cat.asleep .cat-eyes-open, .nh-cat.awake .cat-eyes-closed, .nh-cat.awake .cat-zzz { display: none; }
@@ -355,8 +355,8 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 .nh-cat.awake .cat-eyes-open ellipse { transform-box: fill-box; transform-origin: center; animation: cat-blink 4.5s infinite; }
 @keyframes cat-breathe { 0%, 100% { transform: scale(1, 1); } 45% { transform: scale(1.035, 1.09); } }
 /* 寝ているときは、しばらくじっとしてから、ときどき2回ぱたぱた振る */
-@keyframes cat-tail-sleep { 0%, 62%, 100% { transform: rotate(0deg); } 70% { transform: rotate(-16deg); } 78% { transform: rotate(4deg); } 86% { transform: rotate(-12deg); } 94% { transform: rotate(0deg); } }
-@keyframes cat-tail { 0%, 100% { transform: rotate(4deg); } 50% { transform: rotate(-14deg); } }
+@keyframes cat-tail-sleep { 0%, 62%, 100% { transform: rotate(0deg); } 70% { transform: rotate(-20deg); } 78% { transform: rotate(6deg); } 86% { transform: rotate(-16deg); } 94% { transform: rotate(0deg); } }
+@keyframes cat-tail { 0%, 100% { transform: rotate(6deg); } 50% { transform: rotate(-18deg); } }
 @keyframes cat-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
 @keyframes cat-z { 0% { opacity: 0; transform: translate(0, 3px); } 30%, 60% { opacity: 0.85; } 100% { opacity: 0; transform: translate(2px, -3px); } }
 @media (prefers-reduced-motion: reduce) { .nh-cat *, .nh-doodle * { animation: none !important; } .nh-cat .cat-zzz text { opacity: 0.8; } }
