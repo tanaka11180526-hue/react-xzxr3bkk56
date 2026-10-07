@@ -10,6 +10,10 @@
 // ↓ 自分だけの合言葉に変えてください（アプリの設定にも同じものを入れる）
 const TOKEN = 'ここを自分だけの合言葉に変える';
 
+// スプレッドシートから開かずに script.google.com で作る場合は、対象のスプレッドシートの ID を入れる
+// （URL の /d/ と /edit の間の文字列）。スプレッドシートの「拡張機能」から作った場合は空のままでよい
+const SPREADSHEET_ID = '';
+
 const SCHEDULE_SHEET = '予定';
 const LOG_SHEET = '記録';
 const SCHEDULE_HEADERS = ['日付', '開始', '終了', '科目', '内容', 'メモ'];
@@ -18,9 +22,13 @@ const LOG_TEXT_COLUMNS = 6; // ID〜終了 は文字列として保存する（�
 
 /** 最初に一度だけ実行：シートと見出しを用意する */
 function setup() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = spreadsheet_();
   ensureSheet_(ss, SCHEDULE_SHEET, SCHEDULE_HEADERS);
   ensureSheet_(ss, LOG_SHEET, LOG_HEADERS).getRange(1, 1, 1000, LOG_TEXT_COLUMNS).setNumberFormat('@');
+}
+
+function spreadsheet_() {
+  return SPREADSHEET_ID ? SpreadsheetApp.openById(SPREADSHEET_ID) : SpreadsheetApp.getActiveSpreadsheet();
 }
 
 function doGet(e) {
@@ -70,7 +78,7 @@ function ensureSheet_(ss, name, headers) {
 }
 
 function readSchedule_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = spreadsheet_();
   const sh = ss.getSheetByName(SCHEDULE_SHEET);
   if (!sh || sh.getLastRow() < 2) return [];
   const tz = ss.getSpreadsheetTimeZone();
@@ -106,7 +114,7 @@ function toClock_(s) {
 }
 
 function writeLogs_(upsert, remove) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = spreadsheet_();
   const sh = ensureSheet_(ss, LOG_SHEET, LOG_HEADERS);
   const last = sh.getLastRow();
   const index = {};
