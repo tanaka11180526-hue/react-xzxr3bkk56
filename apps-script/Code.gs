@@ -75,10 +75,15 @@ function json_(obj) {
 
 // ── 読み込み ──
 
-function dateKey_(v, tz) {
-  if (v instanceof Date) return Utilities.formatDate(v, tz, 'yyyy-MM-dd');
-  const m = String(v).trim().match(/^(\d{4})[\/\-.年](\d{1,2})[\/\-.月](\d{1,2})/);
-  return m ? m[1] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[3]).slice(-2) : '';
+// 日付セルを "yyyy-MM-dd" にする。日付オブジェクトとして読めなければ、表示されている文字から読む
+function dateKey_(v, tz, shown) {
+  if (v && typeof v.getTime === 'function' && !isNaN(v.getTime())) return Utilities.formatDate(v, tz, 'yyyy-MM-dd');
+  const texts = [String(v), String(shown || '')];
+  for (let i = 0; i < texts.length; i++) {
+    const m = texts[i].trim().match(/^(\d{4})[\/\-.年](\d{1,2})[\/\-.月](\d{1,2})/);
+    if (m) return m[1] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[3]).slice(-2);
+  }
+  return '';
 }
 
 function readTodo_(ss) {
@@ -93,7 +98,7 @@ function readTodo_(ss) {
   const rows = values.map(function (v, i) {
     return {
       row: TODO_FIRST_ROW + i,
-      date: dateKey_(v[C_DATE - 1], tz),
+      date: dateKey_(v[C_DATE - 1], tz, shown[i][C_DATE - 1]),
       category: String(v[C_CAT - 1]).trim(),
       subject: String(v[C_SUBJECT - 1]).trim(),
       content: String(v[C_CONTENT - 1]).trim(),
@@ -103,7 +108,7 @@ function readTodo_(ss) {
       memo: String(v[C_MEMO - 1]).trim(),
       review: v[C_REVIEW - 1] === true,
       reviews: REVIEWS.map(function (r) {
-        return { date: dateKey_(v[r.date - 1], tz), done: v[r.done - 1] === true, label: r.label };
+        return { date: dateKey_(v[r.date - 1], tz, shown[i][r.date - 1]), done: v[r.done - 1] === true, label: r.label };
       }),
     };
   });
