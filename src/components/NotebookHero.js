@@ -202,7 +202,13 @@ const CATS = {
   // 黒白のハチワレ猫（イラスト風の太めのグレーの線）
   tuxedo: {
     zzz: { x: 44, y: 14, fill: "#3A3F55" },
-    tail: { origin: "62px 52px", el: <path d="M62 52c8 1 14-3 15-10 .6-4-1-7.4-3.6-9.4" fill="none" stroke="#8C8C8C" strokeWidth="2" strokeLinecap="round" /> },
+    // しっぽは体の後ろ（右下）から外に出して、付け根を中心に振る
+    tail: { origin: "78px 56px", el: (
+      <g fill="none" strokeLinecap="round">
+        <path d="M76 56c9 1 14-3 14.4-10 .2-3.4-1-6-3-7.6" stroke="#8C8C8C" strokeWidth="7.4" />
+        <path d="M76 56c9 1 14-3 14.4-10 .2-3.4-1-6-3-7.6" stroke="#28304A" strokeWidth="3.4" />
+      </g>
+    ) },
     body: (
       <>
         <g fill="#28304A" stroke="#8C8C8C" strokeWidth="2.2" strokeLinejoin="round">
@@ -225,12 +231,12 @@ function CatDoodle({ awake }) {
   const cat = CATS.tuxedo;
   const z = cat.zzz;
   return (
-    <svg className={"nh-cat" + (awake ? " awake" : " asleep")} viewBox="0 -12 90 76" aria-hidden="true">
+    <svg className={"nh-cat" + (awake ? " awake" : " asleep")} viewBox="0 -12 100 76" aria-hidden="true">
       <g className="cat-body">
+        <g className="cat-tail" style={{ transformOrigin: cat.tail.origin }}>{cat.tail.el}</g>
         {cat.body}
         <g className="cat-eyes-closed">{cat.eyesClosed}</g>
         <g className="cat-eyes-open">{cat.eyesOpen}</g>
-        <g className="cat-tail" style={{ transformOrigin: cat.tail.origin }}>{cat.tail.el}</g>
       </g>
       <g className="cat-zzz" fill={z.fill} fontFamily="Caveat, Klee One, sans-serif" fontWeight="700">
         <text x={z.x} y={z.y} fontSize="8">z</text>
