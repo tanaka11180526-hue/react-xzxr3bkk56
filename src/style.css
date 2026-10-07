@@ -321,18 +321,21 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 .nh-status { margin: 1.2cqw 0 1.8cqw; font-size: 3cqw; color: #5a554c; min-height: 4.6cqw; text-align: center; }
 .nh-status b { font-weight: 600; color: #2B2B2B; }
 .nh-grid { display: grid; width: 100%; gap: 1.6cqw 1.2cqw; align-content: space-evenly; flex: 1; }
-.nh-grid.cols-2 { grid-template-columns: 1fr 1fr; padding: 0 4cqw; --nh-c: 7.2cqw; --nh-f: 4.6cqw; }
-.nh-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; --nh-c: 6.2cqw; --nh-f: 3.7cqw; }
+.nh-grid.cols-2 { grid-template-columns: 1fr 1fr; padding: 0 4cqw; --nh-c: 7.6cqw; --nh-f: 4.8cqw; }
+.nh-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; --nh-c: 6.5cqw; --nh-f: 3.9cqw; }
 .nh-sub { position: relative; display: flex; align-items: center; gap: 1.2cqw; min-width: 0; background: none; border: none; padding: 0.4cqw 0; color: #2B2B2B; text-align: left; }
 .nh-circle { width: var(--nh-c); height: var(--nh-c); border: 0.38cqw solid #2B2B2B; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .nh-circle svg { width: 62%; height: 62%; }
-.nh-name { display: flex; flex-direction: column; font-size: var(--nh-f); line-height: 1.15; white-space: nowrap; min-width: 0; }
-.nh-name small { font-size: 2.4cqw; color: #6b655b; margin-top: 0.2cqw; }
+/* 科目名は丸ボタンの真横にそろえ、時間はその下にぶら下げる */
+.nh-name { position: relative; display: flex; flex-direction: column; font-size: var(--nh-f); line-height: 1.15; white-space: nowrap; min-width: 0; }
+.nh-name small { position: absolute; left: 0.4cqw; top: 100%; font-size: 2.6cqw; line-height: 1.2; color: #4a463f; margin-top: 0.3cqw; }
 /* 科目の色は、名前の上から引いたマーカーで見せる */
 .nh-hl { align-self: flex-start; padding: 0 0.4cqw; background: linear-gradient(transparent 52%, var(--hl) 52%, var(--hl) 92%, transparent 92%); }
 .nh-controls { display: flex; justify-content: center; gap: 4.5cqw; min-height: 5cqw; margin-top: -0.6cqw; }
 .nh-controls button { background: none; border: none; padding: 0; font-size: 3.2cqw; color: #2B2B2B; text-decoration: underline; text-underline-offset: 0.8cqw; }
-.nh-doodle { width: 92%; height: auto; margin: 1.6cqw 0 0.4cqw; flex-shrink: 0; }
+.nh-corner { position: absolute; top: 1.2cqw; left: 1.8cqw; width: 10.5cqw; height: auto; transform: rotate(-10deg); pointer-events: none; }
+/* 右下に小さく、少し傾けて落書きっぽく */
+.nh-doodle { align-self: flex-end; width: 56%; height: auto; margin: 0.4cqw 1.6cqw 0 0; flex-shrink: 0; transform: rotate(-3deg); }
 .nh-steam path { transform-box: fill-box; transform-origin: 50% 100%; }
 .nh-doodle.steaming .nh-steam path { animation: nh-steam 2.4s ease-in-out infinite; }
 .nh-doodle.steaming .nh-steam path:nth-child(2) { animation-delay: 0.4s; }
