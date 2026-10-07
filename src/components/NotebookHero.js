@@ -47,7 +47,7 @@ export default function NotebookHero({ app }) {
                     {studying ? <PauseMark /> : <PlayMark filled={active} />}
                   </span>
                   <span className="nh-name">
-                    <span><span className={active ? "nh-marked" : ""}>{s.label}</span><i className="nh-color" style={{ background: s.color }} /></span>
+                    <span className="nh-underline" style={{ borderBottomColor: s.color }}><span className={active ? "nh-marked" : ""}>{s.label}</span></span>
                     <small>{today.by[s.id] ? fmtShort(today.by[s.id]) : "\u00a0"}</small>
                   </span>
                 </button>

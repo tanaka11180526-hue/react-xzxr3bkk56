@@ -320,7 +320,8 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 .nh-name { display: flex; flex-direction: column; font-size: var(--nh-f); line-height: 1.15; white-space: nowrap; min-width: 0; }
 .nh-name small { font-size: 2.4cqw; color: #6b655b; margin-top: 0.2cqw; }
 .nh-marked { background: linear-gradient(transparent 58%, var(--marker) 58%, var(--marker) 94%, transparent 94%); }
-.nh-color { display: inline-block; width: 1.2cqw; height: 1.2cqw; border-radius: 50%; margin-left: 0.8cqw; vertical-align: 0.4cqw; }
+/* 科目の色は名前の下の線で見せる */
+.nh-underline { align-self: flex-start; padding-bottom: 0.3cqw; border-bottom: 0.7cqw solid transparent; border-radius: 0.3cqw; }
 .nh-actions { display: flex; flex-direction: column; align-items: center; gap: 0.8cqw; margin-top: 1.2cqw; }
 .nh-main {
   display: flex; align-items: center; gap: 1cqw; background: repeating-linear-gradient(-55deg, rgba(43,43,43,0.06) 0 0.25cqw, transparent 0.25cqw 1.3cqw);
