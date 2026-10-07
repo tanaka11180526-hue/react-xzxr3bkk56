@@ -86,13 +86,13 @@ function SyncSettings({ app }) {
 // シートの「設定」にある科目のうち、計測しないもの
 const NON_STUDY = ["計画", "相談", "手続", "休憩"];
 // 初期設定の科目名とシートの科目名の対応（過去の記録をそのまま引き継ぐため）
-const SHEET_ALIASES = { "財務会計": "財計", "管理会計": "管理", "監査論": "監査", "企業法": "企業", "租税法": "租税", "経営学": "経営" };
+const SHEET_ALIASES = { "財務会計": "財計", "財務計算": "財計", "財務理論": "財理", "管理会計": "管理", "監査論": "監査", "企業法": "企業", "租税法": "租税", "経営学": "経営" };
 
 function SubjectSettings({ app }) {
   const { subjects, setSubjects, logs, queue, schedule } = app;
   const [picking, setPicking] = useState(null);
   const sheetNames = (schedule.sheetSubjects || []).filter((n) => n && !NON_STUDY.includes(n));
-  const matches = sheetNames.length > 0 && sheetNames.length === subjects.length && sheetNames.every((n, i) => subjects[i].label === n);
+  const matches = sheetNames.every((n) => subjects.some((s) => s.label === n));
 
   function adoptSheet() {
     if (!window.confirm("アプリの科目をシートの科目（" + sheetNames.join("・") + "）に合わせますか？\n今までの記録は対応する科目に引き継がれます。")) return;

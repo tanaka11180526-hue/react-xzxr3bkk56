@@ -21,5 +21,8 @@ export const COLOR_PALETTE = [
 // 一時停止がこの時間を超えると休憩に切り替わる
 export const PAUSE_LIMIT_MS = 30000;
 
+// 休憩はこの時間で自動的に終わる（止め忘れ対策）
+export const BREAK_LIMIT_MS = 3 * 3600 * 1000;
+
 // スプレッドシートの科目名がどの科目にも当てはまらないときの色
 export const UNKNOWN_COLOR = "#6B7280";
