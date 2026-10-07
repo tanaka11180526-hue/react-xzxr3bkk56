@@ -53,6 +53,19 @@ function studyBase(t) {
   return t.task ? { subjectId: t.subjectId, task: t.task } : { subjectId: t.subjectId };
 }
 
+// ステータスバーの下まで表示しているのに、表示領域が画面より短いときの差（px）
+export function measureBottomGap() {
+  const standalone = window.navigator.standalone === true || window.matchMedia("(display-mode: standalone)").matches;
+  if (!standalone || window.innerWidth > window.innerHeight) return 0;
+  const probe = document.createElement("div");
+  probe.style.cssText = "position:fixed;top:0;left:0;width:1px;height:env(safe-area-inset-top);visibility:hidden";
+  document.body.appendChild(probe);
+  const insetTop = probe.getBoundingClientRect().height;
+  probe.remove();
+  const gap = Math.round(window.screen.height - window.innerHeight);
+  return insetTop > 0 && gap > 0 && gap <= 80 ? gap : 0;
+}
+
 function buildDays(list, getKey) {
   const days = {};
   list.forEach((l) => {
@@ -95,6 +108,14 @@ export default function App() {
   const configured = sync.isConfigured(syncCfg);
 
   useEffect(() => OLD_KEYS.forEach(removeKey), []);
+
+  // ホーム画面から開いたとき、画面の一番下にすき間ができる端末があるので、その分だけ下のタブを下げる
+  useEffect(() => {
+    const apply = () => document.documentElement.style.setProperty("--bottom-gap", measureBottomGap() + "px");
+    apply();
+    window.addEventListener("resize", apply);
+    return () => window.removeEventListener("resize", apply);
+  }, []);
 
   // ── 時計 ──
   useEffect(() => {
