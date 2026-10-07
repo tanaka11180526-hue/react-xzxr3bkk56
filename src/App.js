@@ -38,6 +38,10 @@ function loadTimer() {
 }
 const OLD_KEYS = ["cpa_active_subject", "cpa_timer_start", "cpa_paused_subject", "cpa_paused_timer_start", "cpa_paused_at", "cpa_break_start"];
 
+function studyBase(t) {
+  return t.task ? { subjectId: t.subjectId, task: t.task } : { subjectId: t.subjectId };
+}
+
 function buildDays(list, getKey) {
   const days = {};
   list.forEach((l) => {
@@ -118,27 +122,28 @@ export default function App() {
     queue([...logs.map((l) => [l.id, "study"]), ...breaks.map((l) => [l.id, "break"])]);
   }
 
-  // ── タイマー操作 ──
+  // ── タイマー操作（task はシートの「やること」。予定から計測を始めたときだけ入る）──
   function finalize(t, at) {
-    if (t.mode === "study") addEntries("study", { subjectId: t.subjectId }, t.start, at);
+    if (t.mode === "study") addEntries("study", studyBase(t), t.start, at);
     else if (t.mode === "paused") {
-      addEntries("study", { subjectId: t.subjectId }, t.start, t.pausedAt);
+      addEntries("study", studyBase(t), t.start, t.pausedAt);
       addEntries("break", {}, t.pausedAt, at);
     } else if (t.mode === "break") addEntries("break", {}, t.start, at);
   }
   const timerActions = {
-    toggleSubject(subjectId) {
-      if (timer.mode === "study" && timer.subjectId === subjectId) return timerActions.pause();
-      if (timer.mode === "paused" && timer.subjectId === subjectId) return timerActions.resume();
+    toggleSubject(subjectId, task = "") {
+      const same = timer.subjectId === subjectId && (timer.task || "") === task;
+      if (timer.mode === "study" && same) return timerActions.pause();
+      if (timer.mode === "paused" && same) return timerActions.resume();
       const at = Date.now();
       finalize(timer, at);
-      setTimer({ mode: "study", subjectId, start: at });
+      setTimer(task ? { mode: "study", subjectId, task, start: at } : { mode: "study", subjectId, start: at });
     },
     pause() {
       if (timer.mode === "study") setTimer({ ...timer, mode: "paused", pausedAt: Date.now() });
     },
     resume() {
-      if (timer.mode === "paused") setTimer({ mode: "study", subjectId: timer.subjectId, start: timer.start });
+      if (timer.mode === "paused") setTimer({ ...studyBase(timer), mode: "study", start: timer.start });
     },
     startBreak() {
       const at = Date.now();
@@ -158,7 +163,7 @@ export default function App() {
     mounted.current = true;
     const t0 = dayStart(todayKey());
     if (timer.mode === "study" && timer.start < t0) {
-      addEntries("study", { subjectId: timer.subjectId }, timer.start, t0);
+      addEntries("study", studyBase(timer), timer.start, t0);
       setTimer(IDLE);
     }
   }, []);
@@ -168,7 +173,7 @@ export default function App() {
   useEffect(() => {
     if (timer.mode === "paused" && now - timer.pausedAt >= PAUSE_LIMIT_MS && handledPause.current !== timer.pausedAt) {
       handledPause.current = timer.pausedAt;
-      addEntries("study", { subjectId: timer.subjectId }, timer.start, timer.pausedAt);
+      addEntries("study", studyBase(timer), timer.start, timer.pausedAt);
       setTimer({ mode: "break", start: timer.pausedAt });
     } else if (timer.mode === "break" && timer.start < dayStart(toKey(new Date(now)))) {
       setTimer(IDLE);
@@ -220,8 +225,8 @@ export default function App() {
     if (!configured) return;
     setScheduleState({ status: "loading" });
     try {
-      const items = await sync.fetchSchedule(syncCfg);
-      setSchedule({ items, at: Date.now() });
+      const { items, subjects: sheetSubjects } = await sync.fetchSchedule(syncCfg);
+      setSchedule({ items, sheetSubjects, at: Date.now() });
       setScheduleState({ status: "ok" });
     } catch (e) {
       setScheduleState({ status: "error", message: e.message });

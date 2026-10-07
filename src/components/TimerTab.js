@@ -55,7 +55,7 @@ export default function TimerTab({ app }) {
             <div key={s.id} className={"subject-row" + (isRunning ? " running" : "")} style={isRunning ? { "--c": s.color } : null}>
               {isToday ? (
                 <button className="play-btn" style={{ background: isRunning && !isPaused ? "var(--surface-2)" : s.color }}
-                  onClick={() => timerActions.toggleSubject(s.id)} aria-label={(isRunning && !isPaused ? "一時停止 " : "開始 ") + s.label}>
+                  onClick={() => (isRunning ? (isPaused ? timerActions.resume() : timerActions.pause()) : timerActions.toggleSubject(s.id))} aria-label={(isRunning && !isPaused ? "一時停止 " : "開始 ") + s.label}>
                   {isRunning && !isPaused ? <span className="pause-icon" style={{ borderColor: s.color }} /> : <span className="play-icon" />}
                 </button>
               ) : (
@@ -93,6 +93,7 @@ function NowCard({ app, dayTotal }) {
     return (
       <div className="card now-card" style={{ "--c": s.color }}>
         <div className="now-label accent">計測中・{s.label}</div>
+        {timer.task && <div className="now-task">{timer.task}</div>}
         <div className="now-time accent">{fmtHMS((now - timer.start) / 1000)}</div>
         <div className="now-sub">今日の合計 {fmtHMS(dayTotal)}</div>
         <div className="now-actions">
@@ -109,6 +110,7 @@ function NowCard({ app, dayTotal }) {
     return (
       <div className="card now-card" style={{ "--c": breakColor }}>
         <div className="now-label accent">一時停止中・{s.label}</div>
+        {timer.task && <div className="now-task">{timer.task}</div>}
         <div className="now-time accent">{fmtHMS((timer.pausedAt - timer.start) / 1000)}</div>
         <div className="now-sub">あと{left}秒以内に再開すれば続きとして記録。過ぎると休憩に切り替わります</div>
         <div className="now-actions">

@@ -24,7 +24,7 @@ export async function ping(cfg) {
 
 export async function fetchSchedule(cfg) {
   const data = await readJson(await fetch(withQuery(cfg.url, { action: "schedule", token: cfg.token })));
-  return data.items || [];
+  return { items: data.items || [], subjects: data.subjects || [] };
 }
 
 // Content-Type を text/plain にすると CORS のプリフライトが発生しない
@@ -45,9 +45,10 @@ export function toRow(log, type, subjects) {
     date: toKey(new Date(log.start)),
     start: fmtClock(log.start),
     end: fmtClock(log.end),
-    minutes: Math.round((log.end - log.start) / 60000),
+    minutes: Math.round((log.end - log.start) / 6000) / 10,
     subject: type === "break" ? "休憩" : sub ? sub.label : "（削除した科目）",
     subjectId: log.subjectId || "",
+    task: log.task || "",
     manual: !!log.manual,
   };
 }

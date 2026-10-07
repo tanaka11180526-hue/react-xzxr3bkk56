@@ -4,13 +4,17 @@ import Sheet from "./Sheet";
 
 // 記録の手動追加・編集。editor.id があれば編集、なければ追加
 export default function LogEditor({ app, editor, onClose }) {
-  const { subjects, logs, breaks, breakColor, addEntries, updateEntry, deleteEntry } = app;
+  const { subjects, logs, breaks, breakColor, addEntries, updateEntry, deleteEntry, scheduleByDate, getSub } = app;
   const existing = editor.id ? (editor.kind === "study" ? logs : breaks).find((l) => l.id === editor.id) : null;
   const [kind, setKind] = useState(editor.kind);
   const [subjectId, setSubjectId] = useState(existing ? existing.subjectId : editor.subjectId || (subjects[0] && subjects[0].id));
   const [date, setDate] = useState(existing ? toKey(new Date(existing.start)) : editor.date);
   const [start, setStart] = useState(existing ? fmtClock(existing.start) : editor.start || "");
   const [end, setEnd] = useState(existing ? fmtClock(existing.end) : "");
+  const [task, setTask] = useState(existing ? existing.task || "" : "");
+  const subLabel = subjectId ? getSub(subjectId).label : "";
+  const tasks = (scheduleByDate[date] || []).filter((p) => !p.review && p.content && p.subject === subLabel).map((p) => p.content);
+  if (task && !tasks.includes(task)) tasks.push(task);
 
   if (editor.id && !existing) return null;
   const range = clockRange(date, start, end);
@@ -19,8 +23,8 @@ export default function LogEditor({ app, editor, onClose }) {
 
   function save() {
     if (!valid) return;
-    if (existing) updateEntry(kind, existing.id, kind === "study" ? { subjectId, ...range } : range);
-    else addEntries(kind, kind === "study" ? { subjectId, manual: true } : { manual: true }, range.start, range.end);
+    if (existing) updateEntry(kind, existing.id, kind === "study" ? { subjectId, task, ...range } : range);
+    else addEntries(kind, kind === "study" ? { subjectId, manual: true, ...(task ? { task } : {}) } : { manual: true }, range.start, range.end);
     onClose();
   }
   function remove() {
@@ -44,13 +48,22 @@ export default function LogEditor({ app, editor, onClose }) {
             const on = kind === "study" && subjectId === s.id;
             return (
               <button key={s.id} className={"choice" + (on ? " on" : "")} style={on ? { "--c": s.color } : null}
-                disabled={!!existing && editor.kind === "break"} onClick={() => { setKind("study"); setSubjectId(s.id); }}>{s.label}</button>
+                disabled={!!existing && editor.kind === "break"} onClick={() => { setKind("study"); if (s.id !== subjectId) setTask(""); setSubjectId(s.id); }}>{s.label}</button>
             );
           })}
           <button className={"choice" + (kind === "break" ? " on" : "")} style={kind === "break" ? { "--c": breakColor } : null}
             disabled={!!existing && editor.kind === "study"} onClick={() => setKind("break")}>☕ 休憩</button>
         </div>
       </div>
+      {kind === "study" && tasks.length > 0 && (
+        <div className="field">
+          <label>どの予定の実績にする？</label>
+          <select value={task} onChange={(e) => setTask(e.target.value)}>
+            <option value="">指定しない（科目だけ）</option>
+            {tasks.map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </div>
+      )}
       <div className="field">
         <label>時間帯</label>
         <div className="time-range">
