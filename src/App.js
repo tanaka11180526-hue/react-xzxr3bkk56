@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { load, save, remove as removeKey, makeId, usePersisted } from "./lib/storage";
 import { dayStart, nextMidnight, splitByDay, toKey, todayKey } from "./lib/time";
+import { syncTaskNames } from "./lib/tasks";
 import * as sync from "./lib/sync";
 import { BREAK_LIMIT_MS, DEFAULT_SUBJECTS, PAUSE_LIMIT_MS } from "./lib/constants";
 import TimerTab from "./components/TimerTab";
@@ -333,6 +334,23 @@ export default function App() {
     if (!n) return null;
     return subjects.find((s) => s.label === n || s.short === n || s.id === n) || null;
   }, [subjects]);
+
+  // シートで予定の「やること」が書き換えられたら、その予定から計った記録も合わせる（アプリ記録シートにも送り直す）
+  useEffect(() => {
+    if (!schedule.items || !schedule.items.length) return;
+    const { next, changed } = syncTaskNames(logs, schedule.items, matchSubject);
+    if (!changed.length) return;
+    setLogs(next);
+    queue(changed.map((id) => [id, "study"]));
+  }, [schedule.items, logs, matchSubject, setLogs, queue]);
+
+  // 開きっぱなしでもシートの変更が届くように、表示中は5分ごとに予定を読み直す
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (document.visibilityState === "visible") refreshSchedule();
+    }, 5 * 60000);
+    return () => clearInterval(id);
+  }, [refreshSchedule]);
 
   function openDay(key) {
     setViewDate(key);

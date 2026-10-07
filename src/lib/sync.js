@@ -23,7 +23,7 @@ export async function ping(cfg) {
 }
 
 export async function fetchSchedule(cfg) {
-  const data = await readJson(await fetch(withQuery(cfg.url, { action: "schedule", token: cfg.token })));
+  const data = await readJson(await fetch(withQuery(cfg.url, { action: "schedule", token: cfg.token, _: Date.now() }), { cache: "no-store" }));
   return { items: data.items || [], subjects: data.subjects || [] };
 }
 
