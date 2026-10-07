@@ -1,8 +1,13 @@
 import React, { useState } from "react";
-import { addDays, fmtHM, keyToDate, toKey, todayKey } from "../lib/time";
+import { DAY_NAMES, addDays, fmtHM, keyToDate, toKey, todayKey } from "../lib/time";
 import { isTaskDone } from "../lib/tasks";
 
-const LIST_MAX = 8;
+const LIST_MAX = 10;
+const LISTS = [
+  { id: "left", label: "これから" },
+  { id: "late", label: "遅れ" },
+  { id: "done", label: "終わった" },
+];
 
 function periodOf(kind, today) {
   const d = keyToDate(today);
@@ -14,11 +19,15 @@ function periodOf(kind, today) {
 }
 
 const md = (key) => { const d = keyToDate(key); return d.getMonth() + 1 + "/" + d.getDate(); };
+const mdw = (key) => md(key) + "（" + DAY_NAMES[keyToDate(key).getDay()] + "）";
 
 // 計画の時間ではなく、タスクが終わったかどうかで進み具合を見る
 export default function ProgressCard({ app }) {
   const { schedule, logs, days, subjects, matchSubject, canMarkDone, markDone } = app;
   const [kind, setKind] = useState("week");
+  const [list, setList] = useState("left");
+  const [only, setOnly] = useState(null); // 科目で絞り込み
+  const [more, setMore] = useState(false);
   const today = todayKey();
   const { from, to } = periodOf(kind, today);
 
@@ -52,6 +61,11 @@ export default function ProgressCard({ app }) {
 
   const pct = tasks.length ? Math.round((done.length / tasks.length) * 100) : 0;
 
+  const pick = (arr) => (only ? arr.filter((t) => t.sub.id === only) : arr);
+  const lists = { left: pick(left), late: pick(late), done: pick(done).slice().reverse() };
+  const current = lists[list];
+  const shown = more ? current : current.slice(0, LIST_MAX);
+
   return (
     <section className="section">
       <div className="section-head">
@@ -80,58 +94,71 @@ export default function ProgressCard({ app }) {
         {rows.length > 0 && (
           <div className="pg-subjects">
             {rows.map(({ s, total, done: n, secs }) => (
-              <div key={s.id} className="pg-row">
+              <button key={s.id} className={"pg-row" + (only === s.id ? " on" : only ? " dim" : "")}
+                onClick={() => { setOnly(only === s.id ? null : s.id); setMore(false); }}>
                 <i style={{ background: s.color }} />
                 <span className="pg-name">{s.label}</span>
                 <span className="pg-mini">{total ? <><b>{n}</b>/{total}件</> : "予定なし"}</span>
                 <span className="pg-time">{fmtHM(secs)}</span>
-              </div>
+              </button>
             ))}
+            <div className="pg-tip">{only ? "もう一回押すと全部の科目に戻ります" : "科目を押すと、その科目のタスクだけ出します"}</div>
           </div>
         )}
 
-        {late.length > 0 && (
+        {tasks.length > 0 && (
           <>
-            <div className="section-title pg-title">遅れてるタスク</div>
-            {late.slice(0, LIST_MAX).map((t, i) => (
-              <div key={i} className="pg-task">
-                <span className="pg-date">{md(t.date)}</span>
-                <i style={{ background: t.sub.color }} />
-                <span className="pg-content">{t.content}</span>
-                {canMarkDone && t.row && <button className="done-btn" onClick={() => markDone(t, true)} aria-label="終わった">✓</button>}
-              </div>
-            ))}
-            {late.length > LIST_MAX && <div className="pg-more">ほか {late.length - LIST_MAX}件</div>}
-          </>
-        )}
-
-        {done.length > 0 && (
-          <>
-            <div className="section-title pg-title">終わったタスク<span className="muted">計画 → かかった時間</span></div>
-            {done.slice(-LIST_MAX).reverse().map((t, i) => {
-              const plan = parseFloat(t.plan);
-              const fromApp = Math.round(spentOf(t));
-              const sheet = parseFloat(t.actual);
-              const spent = fromApp || (sheet > 0 ? sheet : 0);
-              const diff = plan > 0 && spent > 0 ? spent - plan : null;
+            <div className="seg pg-lists">
+              {LISTS.map((l) => (
+                <button key={l.id} className={list === l.id ? "on" : ""} onClick={() => { setList(l.id); setMore(false); }}>
+                  {l.label} {lists[l.id].length}
+                </button>
+              ))}
+            </div>
+            {shown.length === 0 && <p className="empty">{list === "left" ? "これからのタスクはありません" : list === "late" ? "遅れてるタスクはありません" : "終わったタスクはまだありません"}</p>}
+            {shown.map((t, i) => {
+              const head = list !== "done" && (i === 0 || shown[i - 1].date !== t.date);
               return (
-                <div key={i} className="pg-task">
-                  <span className="pg-date">{md(t.date)}</span>
-                  <i style={{ background: t.sub.color }} />
-                  <span className="pg-content">{t.content}</span>
-                  <span className="pg-spent">
-                    {plan > 0 ? plan + "分" : "—"} → {spent > 0 ? spent + "分" : "記録なし"}
-                    {!fromApp && spent > 0 && <small>（シート）</small>}
-                    {diff !== null && diff < 0 && <em className="pg-fast">{-diff}分早い</em>}
-                  </span>
-                </div>
+                <React.Fragment key={t.date + t.row + (t.reviewIndex ?? "") + t.content}>
+                  {head && <div className={"pg-day" + (t.date === today ? " today" : "")}>{t.date === today ? "今日・" + mdw(t.date) : mdw(t.date)}</div>}
+                  <TaskRow t={t} list={list} spent={list === "done" ? spentOf(t) : 0} canMarkDone={canMarkDone} markDone={markDone} />
+                </React.Fragment>
               );
             })}
-            {done.length > LIST_MAX && <div className="pg-more">ほか {done.length - LIST_MAX}件</div>}
+            {current.length > shown.length && (
+              <button className="pg-more" onClick={() => setMore(true)}>もっと見る（ほか {current.length - shown.length}件）</button>
+            )}
           </>
         )}
         <p className="hint">終わったかどうかはシートの「達成」と復習の済チェックで数えます（予定の ✓ で付けられます）。時間がかからず終わったタスクも1件は1件です</p>
       </div>
     </section>
+  );
+}
+
+function TaskRow({ t, list, spent, canMarkDone, markDone }) {
+  const plan = parseFloat(t.plan);
+  const fromApp = Math.round(spent);
+  const sheet = parseFloat(t.actual);
+  const used = fromApp || (sheet > 0 ? sheet : 0);
+  const diff = plan > 0 && used > 0 ? used - plan : null;
+  return (
+    <div className={"pg-task" + (t.done ? " is-done" : "")}>
+      {list === "done" && <span className="pg-date">{md(t.date)}</span>}
+      {canMarkDone && t.row ? (
+        <button className={"done-btn" + (t.done ? " on" : "")} onClick={() => markDone(t, !t.done)}
+          aria-label={t.done ? "終わったを取り消す" : "終わった"}>{t.done ? "✓" : ""}</button>
+      ) : <i style={{ background: t.sub.color }} />}
+      <span className="pg-content">
+        <span className="pg-subj" style={{ color: t.sub.color }}>{t.sub.label}</span>{t.content}
+      </span>
+      {list === "done" ? (
+        <span className="pg-spent">
+          {plan > 0 ? plan + "分" : "—"} → {used > 0 ? used + "分" : "記録なし"}
+          {!fromApp && used > 0 && <small>（シート）</small>}
+          {diff !== null && diff < 0 && <em className="pg-fast">{-diff}分早い</em>}
+        </span>
+      ) : plan > 0 && <span className="pg-plan">{plan}分</span>}
+    </div>
   );
 }

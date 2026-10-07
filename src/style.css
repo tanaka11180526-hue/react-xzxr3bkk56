@@ -391,3 +391,19 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 
 /* 画面下の短いお知らせ */
 .toast { position: fixed; left: 16px; right: 16px; bottom: calc(var(--tabbar-h) + 24px); z-index: 80; background: #2B2B2B; color: #FBF8F1; border-radius: 12px; padding: 12px 14px; font-size: 13px; box-shadow: 0 6px 18px rgba(0,0,0,0.2); }
+
+/* 進み具合：科目の絞り込みと、これから／遅れ／終わった の切り替え */
+button.pg-row { width: 100%; background: none; border: none; padding: 4px 6px; margin: 0 -6px; width: calc(100% + 12px); border-radius: 8px; text-align: left; color: inherit; }
+button.pg-row.on { background: #EEF3E4; }
+button.pg-row.dim { opacity: 0.45; }
+.pg-tip { font-size: 11px; color: var(--muted); }
+.pg-lists { margin-top: 8px; }
+.pg-lists button { flex: 1; }
+.pg-day { font-size: 12px; font-weight: 700; color: var(--text-2); margin-top: 6px; }
+.pg-day.today { color: var(--text); }
+.pg-day.today::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--ok); margin-right: 6px; vertical-align: middle; }
+.pg-task { padding: 2px 0; }
+.pg-subj { font-size: 11px; font-weight: 800; margin-right: 6px; }
+.pg-plan { font-size: 11px; color: var(--muted); }
+.pg-task.is-done .pg-content { color: var(--muted); }
+button.pg-more { background: none; border: none; padding: 6px 0 0 30px; text-align: left; text-decoration: underline; text-underline-offset: 3px; }
