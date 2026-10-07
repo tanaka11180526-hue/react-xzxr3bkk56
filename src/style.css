@@ -332,6 +332,7 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 .nh-hl { align-self: flex-start; padding: 0 0.4cqw; background: linear-gradient(transparent 52%, var(--hl) 52%, var(--hl) 92%, transparent 92%); }
 .nh-controls { display: flex; justify-content: center; gap: 4.5cqw; min-height: 5cqw; margin-top: -0.6cqw; }
 .nh-controls button { background: none; border: none; padding: 0; font-size: 3.2cqw; color: #2B2B2B; text-decoration: underline; text-underline-offset: 0.8cqw; }
+.nh-corner { position: absolute; top: 1.2cqw; left: 1.8cqw; width: 10.5cqw; height: auto; transform: rotate(-10deg); pointer-events: none; }
 /* 右下に小さく、少し傾けて落書きっぽく */
 .nh-doodle { align-self: flex-end; width: 56%; height: auto; margin: 0.4cqw 1.6cqw 0 0; flex-shrink: 0; transform: rotate(-3deg); }
 .nh-steam path { transform-box: fill-box; transform-origin: 50% 100%; }

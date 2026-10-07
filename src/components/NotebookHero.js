@@ -41,6 +41,7 @@ export default function NotebookHero({ app, dateKey }) {
     <div className="desk hero-desk">
       <div className="notebook">
         <div className="nh-frame">
+          <CornerDoodle />
           <div className="nh-label">
             <Sparks />
             <span>{isToday ? "合計時間" : fmtMD(dateKey) + "の合計"}</span>
@@ -147,6 +148,20 @@ function DeskDoodle({ steaming }) {
         <path d="M155.2 32.6c6.6.4 10.4-4.2 10.2-9.6-6.2 0-10 3.4-10.2 9.6z" />
         <path d="M155 27.8c-2.6-4-1.4-8.6.2-11 1.8 2.6 2.4 7.4-.2 11z" />
         <path d="M4 61.6c20 .6 52 .2 80-.4 M98 61.4c26 .4 50 .2 72-.6" strokeWidth="1" />
+      </g>
+    </svg>
+  );
+}
+
+// ノートの左上の落書き（星とキラキラ）
+function CornerDoodle() {
+  return (
+    <svg className="nh-corner" viewBox="0 0 60 50" aria-hidden="true">
+      <path d="M21 9.5l4.6 9.6 10.2 1.2-7.6 7 2.2 10.2-9.2-5.2-9 5.4 1.8-10.4-7.8-6.8 10.4-1.4z" fill="#F6D58A" stroke="none" transform="translate(1.6 1.4)" opacity="0.9" />
+      <g fill="none" stroke="#2F2F2F" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 8l4.6 9.8 10.4 1.2-7.8 7.2 2.3 10.4-9.4-5.4-9.2 5.6 1.9-10.6-7.9-7 10.6-1.4z" />
+        <path d="M44 10v8 M40 14h8" />
+        <path d="M47 30.5v5 M44.5 33h5" strokeWidth="1.1" />
       </g>
     </svg>
   );
