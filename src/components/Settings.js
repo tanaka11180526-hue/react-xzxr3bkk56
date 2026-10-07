@@ -75,7 +75,7 @@ function SyncSettings({ app }) {
           {syncState.status === "error" && <div className="error-text">送信エラー：{syncState.message}</div>}
           <div className="row">
             <button className="btn small" onClick={() => { flush(); refreshSchedule(); }}>今すぐ同期</button>
-            <button className="btn small ghost" onClick={() => window.confirm("すべての記録をシートに送り直しますか？") && queueAll()}>全記録を送り直す</button>
+            <button className="btn small ghost" onClick={() => window.confirm("すべての記録をシートに送り直しますか？\n（手で入れた実績は上書きされません）") && queueAll()}>全記録を送り直す</button>
           </div>
         </div>
       )}
@@ -89,7 +89,7 @@ const NON_STUDY = ["計画", "相談", "手続", "休憩"];
 const SHEET_ALIASES = { "財務会計": "財計", "管理会計": "管理", "監査論": "監査", "企業法": "企業", "租税法": "租税", "経営学": "経営" };
 
 function SubjectSettings({ app }) {
-  const { subjects, setSubjects, logs, queue, schedule, queueAll } = app;
+  const { subjects, setSubjects, logs, queue, schedule } = app;
   const [picking, setPicking] = useState(null);
   const sheetNames = (schedule.sheetSubjects || []).filter((n) => n && !NON_STUDY.includes(n));
   const matches = sheetNames.length > 0 && sheetNames.length === subjects.length && sheetNames.every((n, i) => subjects[i].label === n);
@@ -114,7 +114,6 @@ function SubjectSettings({ app }) {
       }
     });
     setSubjects([...next, ...rest]);
-    queueAll();
   }
 
   const update = (id, fields) => setSubjects((p) => p.map((s) => (s.id === id ? { ...s, ...fields } : s)));
