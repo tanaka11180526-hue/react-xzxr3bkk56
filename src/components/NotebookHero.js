@@ -63,9 +63,10 @@ export default function NotebookHero({ app, dateKey }) {
             <Sparks flip />
           </div>
           <div className="nh-oval">{fmtHMS(today.total)}</div>
-          <div className="nh-status">{status}</div>
+          {/* 計測中の表示と操作は今日を見ているときだけ（ほかの日は高さだけ空けておく） */}
+          <div className="nh-status">{isToday ? status : null}</div>
           <div className="nh-controls">
-            {controls.map((c) => <button key={c.label} onClick={c.on}>{c.label}</button>)}
+            {isToday && controls.map((c) => <button key={c.label} onClick={c.on}>{c.label}</button>)}
           </div>
 
           <div className={"nh-grid cols-" + cols}>
