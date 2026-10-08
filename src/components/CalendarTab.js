@@ -5,6 +5,9 @@ import Sheet from "./Sheet";
 import ScheduleItem from "./ScheduleItem";
 
 const MAX_CHIPS = 3;
+// この時間以上勉強した日に、カレンダーにシールを貼る（どのシールかは日付で決まる）
+const STICKER_SECS = 3 * 3600;
+const STICKERS = ["star", "hanamaru", "paw", "heart", "flower"];
 // 月曜はじまりで並べる（記録タブの「今週」・シートの週次とそろえる）
 const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
@@ -53,6 +56,7 @@ export default function CalendarTab({ app }) {
           const secs = (days[key] || { total: 0 }).total;
           return (
             <button key={key} className={"cal-cell" + (key === today ? " today" : "")} onClick={() => setSelected(key)}>
+              {secs >= STICKER_SECS && <Sticker kind={STICKERS[(i * 7 + m) % STICKERS.length]} tilt={((i * 37) % 30) - 15} />}
               <span className={"cal-day" + (dow === 0 ? " sun" : dow === 6 ? " sat" : "")}>{i + 1}</span>
               {secs > 0 && <span className="cal-secs">{fmtHM(secs)}</span>}
               {plans.slice(0, MAX_CHIPS).map((p, j) => {
@@ -112,5 +116,19 @@ function DaySheet({ app, dateKey, onClose }) {
       <button className="btn block" onClick={() => { openDay(dateKey); onClose(); }}>この日のタイムラインを開く</button>
       <button className="btn block" onClick={() => { openReport(dateKey); onClose(); }}>📓 この日のレポートを見る</button>
     </Sheet>
+  );
+}
+
+function Sticker({ kind, tilt }) {
+  const ink = { stroke: "#2F2F2F", strokeWidth: 1.1, strokeLinejoin: "round", strokeLinecap: "round" };
+  return (
+    <svg className="cal-sticker" viewBox="0 0 24 24" style={{ transform: `rotate(${tilt}deg)` }} aria-hidden="true">
+      <circle cx="12" cy="12" r="11" fill="#FFFDF7" stroke="#E6DCCB" strokeWidth="1" />
+      {kind === "star" && <path d="M12 4.4l2.2 4.6 5 .6-3.7 3.4 1 5-4.5-2.5-4.5 2.5 1-5L4.8 9.6l5-.6z" fill="#F6D58A" {...ink} />}
+      {kind === "hanamaru" && <g fill="none" stroke="#E06666" strokeWidth="1.4" strokeLinecap="round"><path d="M7 12c0-3 2.4-5 5-5s5 2 5 5-2.4 5-5 5-5-2-5-5z" /><path d="M5 12c0-4.2 3.2-7.2 7-7.2s7.4 3 7 7.4c-.4 4-3.6 6.8-7.4 6.6" /></g>}
+      {kind === "paw" && <g fill="#3B4560"><ellipse cx="12" cy="14.6" rx="4" ry="3.4" /><circle cx="7.6" cy="10" r="1.7" /><circle cx="10.4" cy="7.4" r="1.7" /><circle cx="13.6" cy="7.4" r="1.7" /><circle cx="16.4" cy="10" r="1.7" /></g>}
+      {kind === "heart" && <path d="M12 18c-4-3-6.4-5.4-6.4-8 0-2 1.6-3.4 3.4-3.4 1.3 0 2.4.8 3 1.8.6-1 1.7-1.8 3-1.8 1.8 0 3.4 1.4 3.4 3.4 0 2.6-2.4 5-6.4 8z" fill="#F28B9B" {...ink} />}
+      {kind === "flower" && <g {...ink} fill="#F6C1CC">{[0, 72, 144, 216, 288].map((a) => <ellipse key={a} cx="12" cy="7.6" rx="2.6" ry="3.4" transform={`rotate(${a} 12 12)`} />)}<circle cx="12" cy="12" r="2" fill="#F2C14E" /></g>}
+    </svg>
   );
 }
