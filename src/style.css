@@ -433,14 +433,29 @@ button.pg-more { background: none; border: none; padding: 6px 0 0 30px; text-ali
 /* アプリを開いたときのアニメーション（ノートの表紙がめくれて開く） */
 .splash { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; perspective: 1400px;
   background: radial-gradient(120% 80% at 30% 0%, rgba(255,255,255,0.35), transparent 60%), repeating-linear-gradient(97deg, rgba(120,95,60,0.04) 0 2px, transparent 2px 9px), var(--bg);
-  animation: splash-out 0.45s ease-in 1.45s forwards; }
+  animation: splash-out 0.45s ease-in 2.05s forwards; }
 .splash.leaving { animation: splash-out 0.25s ease-in forwards; }
-.splash-book { position: relative; width: min(68vw, 300px); aspect-ratio: 3 / 4; transform-style: preserve-3d; animation: splash-in 0.35s ease-out both, splash-zoom 0.5s ease-in 1.4s forwards; }
+.splash-book { position: relative; width: min(68vw, 300px); aspect-ratio: 3 / 4; transform-style: preserve-3d; animation: splash-in 0.35s ease-out both, splash-zoom 0.5s ease-in 2s forwards; }
 .splash-page, .splash-cover { position: absolute; inset: 0; border-radius: 4px 14px 14px 4px; }
 .splash-page { background: #FBF8F1 radial-gradient(#ece6da 0.9px, transparent 1.2px); background-size: 14px 14px; box-shadow: 0 10px 24px rgba(80,60,30,0.25), inset 0 0 0 1px rgba(0,0,0,0.05); }
 .splash-sticky { position: absolute; top: 9%; left: 12%; padding: 4px 8px; background: #F7E6A0; border: 1.3px solid #2F2F2F; transform: rotate(-8deg); font-family: "Klee One", sans-serif; font-size: 13px; }
 .splash-lines { position: absolute; left: 14%; right: 12%; top: 32%; height: 40%; border: 1.6px solid #2B2B2B; border-radius: 12px; opacity: 0.8; }
-.splash-cover { transform-origin: left center; transform-style: preserve-3d; animation: splash-open 0.85s cubic-bezier(.55,.05,.3,1) 0.45s forwards; }
+.splash-cover { z-index: 10; transform-origin: left center; transform-style: preserve-3d; animation: splash-open 0.75s cubic-bezier(.55,.05,.3,1) 0.45s forwards; }
+/* 表紙のあとにめくれるページ。あとからめくれるページほど角度を浅くして、左側で上に重なるようにする */
+.splash-leaf { position: absolute; inset: 1.5% 1% 1.5% 0; border-radius: 3px 12px 12px 3px; transform-origin: left center; transform-style: preserve-3d;
+  --to: calc(-170deg + var(--i) * 3deg);
+  animation: splash-flip 0.42s cubic-bezier(.5,.05,.35,1) calc(0.95s + var(--i) * 0.16s) forwards; }
+.splash-leaf-front, .splash-leaf-back { position: absolute; inset: 0; border-radius: inherit; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.splash-leaf-front { background: #FBF8F1 radial-gradient(#ece6da 0.9px, transparent 1.2px); background-size: 14px 14px; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06), 2px 0 4px rgba(80,60,30,0.08); padding: 18% 14%; display: flex; flex-direction: column; gap: 9%; }
+/* めくれる途中で影がつく（角度が立つほど暗く） */
+.splash-leaf-front::after, .splash-cover-front::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0;
+  background: linear-gradient(90deg, rgba(60,40,20,0.05), rgba(60,40,20,0.35)); }
+.splash-leaf-front::after { animation: splash-shade 0.42s ease-in-out calc(0.95s + var(--i) * 0.16s) both; }
+.splash-cover-front { position: absolute; }
+.splash-cover-front::after { animation: splash-shade 0.75s ease-in-out 0.45s both; }
+.splash-leaf-front i { display: block; height: 2px; border-radius: 2px; background: rgba(43,43,43,0.28); }
+.splash-leaf-front i:nth-child(1) { width: 70%; } .splash-leaf-front i:nth-child(2) { width: 88%; } .splash-leaf-front i:nth-child(3) { width: 54%; } .splash-leaf-front i:nth-child(4) { width: 76%; }
+.splash-leaf-back { background: #F4EEE2; transform: rotateY(180deg); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06); }
 .splash-cover-front, .splash-cover-back { position: absolute; inset: 0; border-radius: 4px 14px 14px 4px; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
 .splash-cover-front { background: #C9AE84 repeating-linear-gradient(97deg, rgba(90,60,30,0.06) 0 2px, transparent 2px 7px); box-shadow: 0 10px 24px rgba(80,60,30,0.28), inset 0 0 0 1px rgba(60,40,20,0.15); display: flex; align-items: center; justify-content: center; }
 .splash-cover-back { background: #E9DDC6; transform: rotateY(180deg); box-shadow: inset 0 0 0 1px rgba(60,40,20,0.12); }
@@ -448,9 +463,11 @@ button.pg-more { background: none; border: none; padding: 6px 0 0 30px; text-ali
 .splash-eyebrow { font-family: "Caveat", sans-serif; font-size: 16px; letter-spacing: 4px; color: #6b655b; }
 .splash-title { font-family: "Caveat", sans-serif; font-weight: 700; font-size: 38px; line-height: 1; color: #2B2B2B; background: linear-gradient(transparent 60%, var(--marker) 60%, var(--marker) 92%, transparent 92%); padding: 0 4px; }
 .splash-sub { font-family: "Caveat", sans-serif; font-size: 13px; letter-spacing: 6px; color: #6b655b; margin-top: 4px; }
-.splash-rings { position: absolute; left: -9px; top: 4%; bottom: 4%; width: 18px; transform: translateZ(2px);
+.splash-rings { position: absolute; z-index: 20; left: -9px; top: 4%; bottom: 4%; width: 18px; transform: translateZ(12px);
   background: repeating-linear-gradient(180deg, transparent 0 5px, #2B2B2B 5px 8px, #8a8a8a 8px 9px, transparent 9px 14px); border-radius: 6px; }
 @keyframes splash-in { from { opacity: 0; transform: translateY(10px) scale(0.96); } to { opacity: 1; transform: none; } }
-@keyframes splash-open { from { transform: rotateY(0deg); } to { transform: rotateY(-168deg); } }
+@keyframes splash-open { from { transform: rotateY(0deg); } to { transform: rotateY(-174deg); } }
+@keyframes splash-shade { 0% { opacity: 0; } 60% { opacity: 1; } 100% { opacity: 1; } }
+@keyframes splash-flip { from { transform: rotateY(0deg); } to { transform: rotateY(var(--to)); } }
 @keyframes splash-zoom { to { transform: scale(1.12); } }
 @keyframes splash-out { to { opacity: 0; visibility: hidden; } }

@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 
-const DURATION_MS = 1900;
+const DURATION_MS = 2500;
+// 表紙のあとにパラパラめくれるページの枚数
+const LEAVES = 4;
 
-// アプリを開いたときのアニメーション：机の上の閉じたノートの表紙がめくれて開き、そのままアプリの画面になる。
+// アプリを開いたときのアニメーション：机の上の閉じたノートの表紙がめくれ、ページが数枚パラパラめくれて、そのままアプリの画面になる。
 // タップで飛ばせる。「視差効果を減らす」の設定の端末では出さない
 export default function Splash({ onDone }) {
   const [leaving, setLeaving] = useState(false);
@@ -17,6 +19,12 @@ export default function Splash({ onDone }) {
           <div className="splash-sticky">合格!</div>
           <div className="splash-lines" />
         </div>
+        {Array.from({ length: LEAVES }, (_, i) => (
+          <div key={i} className="splash-leaf" style={{ "--i": i, zIndex: LEAVES - i }}>
+            <div className="splash-leaf-front"><i /><i /><i /><i /></div>
+            <div className="splash-leaf-back" />
+          </div>
+        ))}
         <div className="splash-cover">
           <div className="splash-cover-front">
             <div className="splash-label">
