@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Sheet from "./Sheet";
 import { isTaskDone } from "../lib/tasks";
+import { dayMessage } from "../lib/dayMessage";
 import { PAUSE_LIMIT_MS } from "../lib/constants";
 import { fmtHMS, keyToDate, todayKey } from "../lib/time";
 
@@ -63,8 +64,8 @@ export default function NotebookHero({ app, dateKey }) {
             <Sparks flip />
           </div>
           <div className="nh-oval">{fmtHMS(today.total)}</div>
-          {/* 計測中の表示と操作は今日を見ているときだけ（ほかの日は高さだけ空けておく） */}
-          <div className="nh-status">{isToday ? status : null}</div>
+          {/* 計測中の表示と操作は今日を見ているときだけ。ほかの日はその日のひとことを出す */}
+          <div className={"nh-status" + (isToday ? "" : " nh-message")}>{isToday ? status : dayMessage(dateKey, today, getSub)}</div>
           <div className="nh-controls">
             {isToday && controls.map((c) => <button key={c.label} onClick={c.on}>{c.label}</button>)}
           </div>
