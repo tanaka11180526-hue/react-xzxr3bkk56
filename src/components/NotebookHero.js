@@ -143,30 +143,14 @@ function Sparks({ flip }) {
   );
 }
 
-// 試し：色を線からずらさずに塗る版（見比べ用）
-function noShift() {
-  try { return localStorage.getItem("cpa_noshift") === "1"; } catch { return false; }
-}
-
 // 猫の左に積んだ本と、その上のマグカップ。色はわざと線からずらして塗る。勉強中はマグの湯気がゆらぐ
 function BooksDoodle({ steaming }) {
-  const flat = noShift();
   return (
     <svg className={"nh-books" + (steaming ? " steaming" : "")} viewBox="4 -8 56 72" aria-hidden="true">
       <g stroke="none" opacity="0.85">
-        {flat ? (
-          <>
-            <path d="M8.6 49.6l47-.2.2 8.2-47 .2z" fill="#EBD9B4" />
-            <path d="M13 41l41 .1v8.4l-41 .1z" fill="#C9D7B0" />
-            <path d="M10.2 31.8l44.8 0 .1 8.8-44.8 0z" fill="#D5E0EA" />
-          </>
-        ) : (
-          <>
-            <path d="M11 51l45-1 1 8-46 1z" fill="#EBD9B4" />
-            <path d="M16 42l39 0 0 8-39 1z" fill="#C9D7B0" />
-            <path d="M13 33l42-1 1 8-43 1z" fill="#D5E0EA" />
-          </>
-        )}
+        <path d="M11 51l45-1 1 8-46 1z" fill="#EBD9B4" />
+        <path d="M16 42l39 0 0 8-39 1z" fill="#C9D7B0" />
+        <path d="M13 33l42-1 1 8-43 1z" fill="#D5E0EA" />
       </g>
       <g fill="none" stroke="#2F2F2F" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
         <path d="M8 49.5c14-.6 32-.4 48 .2 M8.5 57.8c16 .4 31 .2 47.5-.4 M9 49.8c-.6 2.6-.5 5.2-.2 8 M55.6 49.4c.5 2.8.4 5.6-.1 8.4" />
@@ -176,7 +160,7 @@ function BooksDoodle({ steaming }) {
         <path d="M5 61.4c18 .4 36 .3 54-.2" strokeWidth="1" />
       </g>
       <g transform="translate(-45.5 -12.4) scale(0.75)">
-        <path d={flat ? "M105.2 35.6c8-.4 15-.4 21.8 0 .1 5.4.1 10.8-.1 16.2-.2 3.4-1.8 5.6-4.8 6.4-2.6.6-6 .6-9.6.4-3.4-.2-5.8-2-6.4-5.4-.7-5.4-.8-11.4-.9-17.6z" : "M108 37l20 0-1 17c-1 4-3 5-7 5h-7c-4 0-5-2-5-6z"} fill="#FFFDF7" opacity="0.95" />
+        <path d="M108 37l20 0-1 17c-1 4-3 5-7 5h-7c-4 0-5-2-5-6z" fill="#FFFDF7" opacity="0.95" />
         <g fill="none" stroke="#2F2F2F" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
           <path d="M105 35.4c8-.4 15-.4 22 .2 M105.4 35.6c-.4 6-.3 12 .4 17.4 .6 3.4 3 5.2 6.4 5.4 3.6.2 7 .2 9.6-.4 3-.8 4.6-3 4.8-6.4.2-5.4.2-10.8.1-16.2" />
           <path d="M127 39.6c5-.6 7.8 1.8 7.6 5-.2 3.2-3.4 5.2-7.6 4.8" />
@@ -208,34 +192,8 @@ function CornerDoodle() {
 // ノートの右下の猫。ふだんは丸まって寝ていて（Zzz・寝息）、勉強中は起きて目を開け、しっぽを振る
 const INK = "#2F2F2F";
 const CATS = {
-  // 黒白のハチワレ猫（イラスト風の太めのグレーの線）
+  // 黒白のハチワレ猫。本やマグと同じ描き方（細い黒の手描き線、色は線から少しずらして塗る）
   tuxedo: {
-    zzz: { x: 44, y: 14, fill: "#3A3F55" },
-    // しっぽは体の後ろ（右下）から外に出して、付け根を中心に振る
-    tail: { origin: "78px 56px", el: (
-      <g fill="none" strokeLinecap="round">
-        <path d="M76 56c9 1 14-3 14.4-10 .2-3.4-1-6-3-7.6" stroke="#8C8C8C" strokeWidth="7.4" />
-        <path d="M76 56c9 1 14-3 14.4-10 .2-3.4-1-6-3-7.6" stroke="#28304A" strokeWidth="3.4" />
-      </g>
-    ) },
-    body: (
-      <>
-        <g fill="#28304A" stroke="#8C8C8C" strokeWidth="2.2" strokeLinejoin="round">
-          <path d="M40 30c6-5 14-7 22-6 14 2 22 12 21 23-.6 7-4 11-9 12H40z" />
-          <path d="M14 46c-1-8 2-14 5-17l1-13 9 8c3-1 7-1 10 0l9-8 1 13c3 3 6 9 5 17-.8 6-5 11-12 12H26c-7-1-11.4-6-12-12z" />
-        </g>
-        <path d="M21.4 27l.6-6.4 4.4 4z M41.6 24.6l4.4-4 .6 6.4z" fill="#F4A9B4" />
-        <path d="M24 48c1.6-3 4.4-4.6 7.6-4.6s6 1.6 7.6 4.6c1.4 3 .6 6-1.6 8.2H25.6c-2.2-2.2-3-5.2-1.6-8.2z" fill="#FFFFFF" />
-        <path d="M18 58.4c-.6-2.6 1-4.8 3.8-4.8s4.4 2.2 3.8 4.8 M38 58.4c-.6-2.6 1-4.8 3.8-4.8s4.4 2.2 3.8 4.8" fill="#FFFFFF" stroke="#8C8C8C" strokeWidth="1.6" />
-        <path d="M29.6 49c.6 1 1.4 1 2 0 .6 1 1.4 1 2 0" fill="none" stroke="#3A3F55" strokeWidth="1.1" strokeLinecap="round" />
-        <path d="M14.6 44.4h5 M43.6 44.4h5 M15 47.2l4.6-.6 M43.6 46.6l4.6.6" stroke="#FFFFFF" strokeWidth="1.1" strokeLinecap="round" />
-      </>
-    ),
-    eyesClosed: <path d="M21 42.4h6 M36.4 42.4h6" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" />,
-    eyesOpen: <g fill="#FFFFFF"><ellipse cx="24" cy="41.6" rx="1.6" ry="2" /><ellipse cx="39.4" cy="41.6" rx="1.6" ry="2" /></g>,
-  },
-  // 試し：本やマグと同じ描き方（細い黒の手描き線、色は線から少しずらして塗る）
-  tuxedoInk: {
     zzz: { x: 44, y: 14, fill: INK },
     tail: { origin: "78px 56px", el: (
       <g fill="none" strokeLinecap="round">
@@ -245,7 +203,7 @@ const CATS = {
     ) },
     body: (
       <>
-        <g fill="#3B4560" className="cat-fill">
+        <g fill="#3B4560" transform="translate(1.4 1.2)">
           <path d="M40 30c6-5 14-7 22-6 14 2 22 12 21 23-.6 7-4 11-9 12H40z" />
           <path d="M14 46c-1-8 2-14 5-17l1-13 9 8c3-1 7-1 10 0l9-8 1 13c3 3 6 9 5 17-.8 6-5 11-12 12H26c-7-1-11.4-6-12-12z" />
         </g>
@@ -270,13 +228,10 @@ const CATS = {
 };
 
 function CatDoodle({ awake }) {
-  let pick = "tuxedo";
-  try { pick = localStorage.getItem("cpa_cat") || pick; } catch {}
-  const cat = CATS[pick] || CATS.tuxedo;
-  const flat = noShift();
+  const cat = CATS.tuxedo;
   const z = cat.zzz;
   return (
-    <svg className={"nh-cat" + (awake ? " awake" : " asleep") + (flat ? " flat" : "")} viewBox="0 -12 100 76" aria-hidden="true">
+    <svg className={"nh-cat" + (awake ? " awake" : " asleep")} viewBox="0 -12 100 76" aria-hidden="true">
       <g className="cat-body">
         <g className="cat-tail" style={{ transformOrigin: cat.tail.origin }}>{cat.tail.el}</g>
         {cat.body}
