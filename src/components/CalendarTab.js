@@ -5,9 +5,17 @@ import Sheet from "./Sheet";
 import ScheduleItem from "./ScheduleItem";
 
 const MAX_CHIPS = 3;
-// この時間以上勉強した日に、カレンダーにシールを貼る（どのシールかは日付で決まる）
-const STICKER_SECS = 3 * 3600;
+// この時間以上勉強した日に、カレンダーにシールを貼る
+const STICKER_SECS = 7 * 3600;
 const STICKERS = ["star", "hanamaru", "paw", "heart", "flower"];
+
+// どのシールを何度傾けて貼るかは、日付から作った乱数で決める（同じ日はいつ開いても同じシール）
+function stickerFor(key) {
+  let h = 2166136261;
+  for (let i = 0; i < key.length; i++) h = Math.imul(h ^ key.charCodeAt(i), 16777619) >>> 0;
+  h = Math.imul(h ^ (h >>> 13), 0x5bd1e995) >>> 0;
+  return { kind: STICKERS[h % STICKERS.length], tilt: ((h >>> 8) % 31) - 15 };
+}
 // 月曜はじまりで並べる（記録タブの「今週」・シートの週次とそろえる）
 const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
@@ -56,7 +64,7 @@ export default function CalendarTab({ app }) {
           const secs = (days[key] || { total: 0 }).total;
           return (
             <button key={key} className={"cal-cell" + (key === today ? " today" : "")} onClick={() => setSelected(key)}>
-              {secs >= STICKER_SECS && <Sticker kind={STICKERS[(i * 7 + m) % STICKERS.length]} tilt={((i * 37) % 30) - 15} />}
+              {secs >= STICKER_SECS && <Sticker {...stickerFor(key)} />}
               <span className={"cal-day" + (dow === 0 ? " sun" : dow === 6 ? " sat" : "")}>{i + 1}</span>
               {secs > 0 && <span className="cal-secs">{fmtHM(secs)}</span>}
               {plans.slice(0, MAX_CHIPS).map((p, j) => {
