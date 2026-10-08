@@ -337,7 +337,7 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 .nh-hl { align-self: flex-start; padding: 0 0.4cqw; background: linear-gradient(transparent 52%, var(--hl) 52%, var(--hl) 92%, transparent 92%); }
 .nh-controls { display: flex; justify-content: center; gap: 4.5cqw; min-height: 5cqw; margin-top: -0.6cqw; }
 .nh-controls button { background: none; border: none; padding: 0; font-size: 3.2cqw; color: #2B2B2B; text-decoration: underline; text-underline-offset: 0.8cqw; }
-.nh-corner { position: absolute; top: 1.2cqw; left: 1.8cqw; width: 10.5cqw; height: auto; transform: rotate(-10deg); pointer-events: none; }
+.nh-corner { position: absolute; top: 0.8cqw; left: 1cqw; width: 16.5cqw; height: auto; transform: rotate(-10deg); pointer-events: none; }
 /* ノートの右下の猫 */
 .nh-bottom { position: relative; display: flex; align-items: flex-end; justify-content: flex-end; width: 100%; margin-top: 0.4cqw; flex-shrink: 0; }
 .nh-season { width: 11%; height: auto; margin-right: 0.6cqw; overflow: visible; }
