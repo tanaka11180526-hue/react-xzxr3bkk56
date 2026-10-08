@@ -364,6 +364,44 @@ details.card > summary { cursor: pointer; font-weight: 700; }
   };
 
   function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  /* 解析結果はlocalStorageではなくIndexedDBに置く（同じドメインのトラッカーの記録の容量を圧迫しないため） */
+  var IDB = {
+    open: function () {
+      return new Promise(function (res) {
+        try {
+          var r = indexedDB.open('zairi-reader', 1);
+          r.onupgradeneeded = function () { r.result.createObjectStore('docs'); };
+          r.onsuccess = function () { res(r.result); };
+          r.onerror = function () { res(null); };
+        } catch (e) { res(null); }
+      });
+    },
+    get: function (k) {
+      return IDB.open().then(function (db) {
+        if (!db) return null;
+        return new Promise(function (res) {
+          try {
+            var q = db.transaction('docs').objectStore('docs').get(k);
+            q.onsuccess = function () { res(q.result || null); };
+            q.onerror = function () { res(null); };
+          } catch (e) { res(null); }
+        });
+      });
+    },
+    set: function (k, v) {
+      return IDB.open().then(function (db) {
+        if (!db) return false;
+        return new Promise(function (res) {
+          try {
+            var tx = db.transaction('docs', 'readwrite');
+            tx.objectStore('docs').put(v, k);
+            tx.oncomplete = function () { res(true); };
+            tx.onerror = function () { res(false); };
+          } catch (e) { res(false); }
+        });
+      });
+    }
+  };
   function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* 容量超過などは無視 */ } }
 
   /* ---------- 設定の復元 ---------- */
@@ -594,10 +632,8 @@ details.card > summary { cursor: pointer; font-weight: 700; }
   async function onFile(file) {
     if (!file) return;
     var key = file.name + ':' + file.size;
-    var cached = lsGet('zr:doc:' + key);
-    if (cached) {
-      try { var c = JSON.parse(cached); applyDoc(c, key, file.name + '：前回の解析結果を使いました。' + summary(c)); return; } catch (e) { /* 解析し直す */ }
-    }
+    var c = await IDB.get('doc:' + key);
+    if (c && c.length) { applyDoc(c, key, file.name + '：前回の解析結果を使いました。' + summary(c)); return; }
     try {
       setStatus('PDFを開いています…');
       if (typeof pdfjsLib === 'undefined') throw new Error('PDF読み込みライブラリを取得できませんでした。通信を確認してください。');
@@ -609,7 +645,7 @@ details.card > summary { cursor: pointer; font-weight: 700; }
         return;
       }
       var slim = all.filter(function (s) { return s.ron !== 'C' || s.tan !== 'C'; });
-      lsSet('zr:doc:' + key, JSON.stringify(slim));
+      IDB.set('doc:' + key, slim);
       applyDoc(all, key, file.name + '：' + summary(all));
     } catch (e) {
       $('prog').hidden = true;
