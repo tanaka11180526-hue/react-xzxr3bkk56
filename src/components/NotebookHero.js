@@ -93,7 +93,7 @@ export default function NotebookHero({ app, dateKey }) {
     <div className="desk hero-desk">
       <div className="notebook">
         <div className="nh-frame">
-          <CornerDoodle />
+          <CornerDoodle daysLeft={app.examDate ? Math.ceil((keyToDate(app.examDate) - keyToDate(todayKey())) / 86400000) : null} />
           {milestone && <MilestoneStamp hours={milestone} />}
           <div className="nh-label">
             <Sparks />
@@ -217,15 +217,18 @@ function BooksDoodle({ steaming }) {
 }
 
 // ノートの左上の落書き（「合格!」の付箋）
-function CornerDoodle() {
+function CornerDoodle({ daysLeft }) {
   return (
-    <svg className="nh-corner" viewBox="0 0 60 50" aria-hidden="true">
-      <path d="M9 9l36-2 2 32-35 3z" fill="#F7E6A0" stroke="none" transform="translate(1.6 1.4)" />
+    <svg className="nh-corner" viewBox="0 0 64 56" aria-hidden="true">
+      <path d="M7 9l46-2 1.6 38-45.6 3z" fill="#F7E6A0" stroke="none" transform="translate(1.6 1.4)" />
       <g fill="none" stroke="#2F2F2F" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M8.6 8.6c12-.8 24-1.4 36.2-1.8 .6 10.6 1.2 21.4 1.6 32-11.6 .8-23 1.6-34.6 2.6-1-11-2-22-3.2-32.8" />
-        <path d="M33.6 40.4c1.4-3.6 4.6-5.4 12.6-1.2" />
+        <path d="M6.6 8.6c15.4-.8 30.6-1.4 46-1.8.6 12.6 1.2 25.4 1.6 38-15 .8-30 1.6-45 2.6-1-13-1.6-26-2.6-38.8" />
+        <path d="M41.6 46.2c1.4-3.6 4.6-5.4 12.6-1.2" />
       </g>
-      <text x="27" y="28.5" textAnchor="middle" fontSize="11.5" fontFamily="Klee One, sans-serif" fill="#2F2F2F" transform="rotate(-4 27 25)">合格!</text>
+      <g transform="rotate(-4 30 26)" fontFamily="Klee One, sans-serif" fill="#2F2F2F" textAnchor="middle">
+        <text x="30" y="23" fontSize="12">合格!</text>
+        {daysLeft != null && <text x="30.6" y="39" fontSize="7.4">あと<tspan fontSize="11.5" fontWeight="700" dx="0.6">{daysLeft}</tspan><tspan dx="0.6">日</tspan></text>}
+      </g>
     </svg>
   );
 }
