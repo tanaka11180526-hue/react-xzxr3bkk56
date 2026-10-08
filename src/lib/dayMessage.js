@@ -1,5 +1,5 @@
 // 今日以外の日を見ているときに、ノートに出すひとこと。
-// その日の勉強時間・一番やった科目・科目の数・曜日から候補を集めて、日付から1つ選ぶ（同じ日はいつ開いても同じ文）
+// 記録がない日は決まった文。それ以外は、その日の勉強時間・一番やった科目・科目の数・曜日から候補を集めて、日付から1つ選ぶ（同じ日はいつ開いても同じ文）
 const H = 3600;
 
 function hash(key) {
@@ -10,18 +10,6 @@ function hash(key) {
 
 // 時間ごとのひとこと（{s} は一番やった科目）
 const BY_TIME = [
-  { max: 60, list: [
-    "この日はおやすみ。休むのも大事やで",
-    "充電の日。次の日に期待やな",
-    "ノートは真っ白。猫と昼寝してたんかな",
-    "休んだ分、また走ればええ",
-    "空白の一日も、長い勉強の一部や",
-    "たまには脳みそも休ませたらな",
-    "この日の猫：ずっと寝てた",
-    "休養日。えらい人ほどちゃんと休む",
-    "何もしてない日があるから続くんや",
-    "ノートさんも今日はお休み",
-  ] },
   { max: H, list: [
     "{s}をちょこっと。ゼロやないのがえらい",
     "短くても机に向かった日",
@@ -90,17 +78,16 @@ const MONDAY = ["月曜からエンジンかかってたな", "週の始まり�
 
 export function dayMessage(dateKey, day, getSub) {
   const total = day.total || 0;
+  // 記録がない日は、決まった文だけ
+  if (total < 60) return "この日は記録がないな";
   const ranked = Object.entries(day.by || {}).filter(([, s]) => s > 0).sort((a, b) => b[1] - a[1]);
   const top = ranked.length ? getSub(ranked[0][0]).label : "";
   const pool = [...BY_TIME.find((t) => total < t.max).list];
-
-  if (total >= 60) {
-    BY_SUBJECT.forEach((g) => { if (g.match.some((m) => top.includes(m))) pool.push(...g.list); });
-    if (ranked.length >= 3) pool.push(...MANY);
-    if (ranked.length === 1 && total >= H) pool.push(...ONE);
-    const dow = new Date(dateKey + "T00:00:00").getDay();
-    if (dow === 0 || dow === 6) pool.push(...WEEKEND);
-    if (dow === 1) pool.push(...MONDAY);
-  }
+  BY_SUBJECT.forEach((g) => { if (g.match.some((m) => top.includes(m))) pool.push(...g.list); });
+  if (ranked.length >= 3) pool.push(...MANY);
+  if (ranked.length === 1 && total >= H) pool.push(...ONE);
+  const dow = new Date(dateKey + "T00:00:00").getDay();
+  if (dow === 0 || dow === 6) pool.push(...WEEKEND);
+  if (dow === 1) pool.push(...MONDAY);
   return pool[hash(dateKey) % pool.length].replace(/\{s\}/g, top);
 }
