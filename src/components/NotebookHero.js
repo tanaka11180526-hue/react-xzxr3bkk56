@@ -235,14 +235,17 @@ const CATS = {
         </g>
         <path d="M21.4 27l.6-6.4 4.4 4z M41.6 24.6l4.4-4 .6 6.4z" fill="#F4A9B4" />
         <path d="M24 48c1.6-3 4.4-4.6 7.6-4.6s6 1.6 7.6 4.6c1.4 3 .6 6-1.6 8.2H25.6c-2.2-2.2-3-5.2-1.6-8.2z" fill="#FFFFFF" />
-        <path d="M18.4 58.4c-.4-2.6 1.2-4.6 3.6-4.6s4.2 2 3.6 4.6z M38.4 58.4c-.4-2.6 1.2-4.6 3.6-4.6s4.2 2 3.6 4.6z" fill="#FFFFFF" />
         <g fill="none" stroke={INK} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
           <path d="M45 28.4c5-3.4 11.4-4.8 17.6-4.2 13.6 1.4 21.4 11.4 20.6 22.4-.6 7.2-4.2 11.6-9.4 12.4H52" />
           <path d="M14.4 46.6c-1.2-8 1.8-14 4.8-17.2l1.2-12.8 8.6 7.6c3.2-1 6.8-1 10.2 0l8.8-7.8.8 13c3.2 3.2 6 9 5 17.2-.8 6.2-5 11-12 12H26.4c-6.8-1-11.4-5.6-12-12z" />
-          <path d="M18.4 58.6c-.6-2.8 1.2-4.8 3.6-4.8 2.6 0 4.2 2.2 3.6 4.8 M38.4 58.6c-.6-2.8 1.2-4.8 3.6-4.8 2.6 0 4.2 2.2 3.6 4.8" strokeWidth="1.1" />
           <path d="M29.6 49c.6 1 1.4 1 2 0 .6 1 1.4 1 2 0" strokeWidth="1.1" />
         </g>
         <path d="M14.6 44.4h5 M43.6 44.4h5 M15 47.2l4.6-.6 M43.6 46.6l4.6.6" stroke="#FFFFFF" strokeWidth="1.1" strokeLinecap="round" />
+        {/* 前足：顔の下から少しはみ出す丸い足。指の線を2本 */}
+        <g stroke={INK} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M16.8 59.2c-.6-3.2 1.4-5.4 4.6-5.4 3.4 0 5.4 2.4 4.8 5.4z M37 59.2c-.6-3.2 1.4-5.4 4.6-5.4 3.4 0 5.4 2.4 4.8 5.4z" fill="#FFFFFF" />
+          <path d="M20.2 59v-1.8 M23 59v-1.8 M40.4 59v-1.8 M43.2 59v-1.8" fill="none" strokeWidth=".9" />
+        </g>
       </>
     ),
     eyesClosed: <path d="M21 42.4c1.6 1 4.4 1 6 0 M36.4 42.4c1.6 1 4.4 1 6 0" fill="none" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" />,
