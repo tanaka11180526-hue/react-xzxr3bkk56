@@ -5,6 +5,8 @@ import Sheet from "./Sheet";
 import ScheduleItem from "./ScheduleItem";
 
 const MAX_CHIPS = 3;
+// 月曜はじまりで並べる（記録タブの「今週」・シートの週次とそろえる）
+const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
 export default function CalendarTab({ app }) {
   const { days, scheduleByDate, matchSubject, configured, schedule, scheduleState, refreshSchedule } = app;
@@ -42,8 +44,8 @@ export default function CalendarTab({ app }) {
       </div>
 
       <div className="cal" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-        {DAY_NAMES.map((d, i) => <div key={d} className={"cal-dow" + (i === 0 ? " sun" : i === 6 ? " sat" : "")}>{d}</div>)}
-        {Array.from({ length: firstDow }, (_, i) => <div key={"e" + i} />)}
+        {WEEK_ORDER.map((i) => <div key={i} className={"cal-dow" + (i === 0 ? " sun" : i === 6 ? " sat" : "")}>{DAY_NAMES[i]}</div>)}
+        {Array.from({ length: (firstDow + 6) % 7 }, (_, i) => <div key={"e" + i} />)}
         {Array.from({ length: daysInMonth }, (_, i) => {
           const key = toKey(new Date(year, m, i + 1));
           const dow = (firstDow + i) % 7;
