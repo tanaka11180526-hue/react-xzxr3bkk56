@@ -159,7 +159,7 @@ function BooksDoodle({ steaming }) {
         <path d="M16 54h14 M19 45.3h11 M15 36h12" strokeWidth="1" />
         <path d="M5 61.4c18 .4 36 .3 54-.2" strokeWidth="1" />
       </g>
-      <g transform="translate(-84 -27)">
+      <g transform="translate(-45.5 -12.4) scale(0.75)">
         <path d="M108 37l20 0-1 17c-1 4-3 5-7 5h-7c-4 0-5-2-5-6z" fill="#FFFDF7" opacity="0.95" />
         <g fill="none" stroke="#2F2F2F" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
           <path d="M105 35.4c8-.4 15-.4 22 .2 M105.4 35.6c-.4 6-.3 12 .4 17.4 .6 3.4 3 5.2 6.4 5.4 3.6.2 7 .2 9.6-.4 3-.8 4.6-3 4.8-6.4.2-5.4.2-10.8.1-16.2" />
