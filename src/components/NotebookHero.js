@@ -1,9 +1,15 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { CatHat, SeasonDoodle } from "./Season";
 import Sheet from "./Sheet";
 import { isTaskDone } from "../lib/tasks";
 import { dayMessage } from "../lib/dayMessage";
 import { PAUSE_LIMIT_MS } from "../lib/constants";
 import { fmtHMS, keyToDate, todayKey } from "../lib/time";
+
+// 累計の勉強時間の区切り（時間）。その区切りを超えた日のノートに「達成」のはんこを押す
+const MILESTONES = [10, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000];
+// これ以上続けて計った勉強を止めたら、猫が「おつかれ」を言う
+const PRAISE_MIN = 25;
 
 // タイマー画面の一番上。机の上のノート（写真）に、合計時間・科目ボタン・計測ボタンを手書き風に重ねる
 export default function NotebookHero({ app, dateKey }) {
@@ -17,6 +23,36 @@ export default function NotebookHero({ app, dateKey }) {
     || (logs.length ? logs.reduce((a, b) => (b.end > a.end ? b : a)).subjectId : null)
     || (subjects[0] && subjects[0].id);
   const cols = subjects.length > 8 ? 3 : 2;
+  const viewKey = dateKey || todayKey();
+  const month = keyToDate(viewKey).getMonth() + 1;
+
+  // その日で累計の区切りを超えたか（計測中の分も含む）
+  const milestone = useMemo(() => {
+    let before = 0;
+    Object.keys(days).forEach((k) => { if (k < viewKey) before += days[k].total; });
+    const after = before + (days[viewKey] ? days[viewKey].total : 0);
+    const hit = MILESTONES.filter((h) => before < h * 3600 && after >= h * 3600);
+    return hit.length ? hit[hit.length - 1] : null;
+  }, [days, viewKey]);
+
+  // 勉強の計測がひと区切りついたら（休憩・終了・別の科目へ）、長く続いていれば猫が声をかける
+  const [praise, setPraise] = useState(null);
+  const prevTimer = useRef(timer);
+  useEffect(() => {
+    const p = prevTimer.current;
+    prevTimer.current = timer;
+    const wasOn = p.mode === "study" || p.mode === "paused";
+    const sameRun = (timer.mode === "study" || timer.mode === "paused") && timer.start === p.start;
+    if (!wasOn || sameRun) return;
+    const mins = Math.floor(((p.mode === "paused" ? p.pausedAt : Date.now()) - p.start) / 60000);
+    if (mins < PRAISE_MIN) return;
+    setPraise(praiseText(mins));
+  }, [timer]);
+  useEffect(() => {
+    if (!praise) return;
+    const t = setTimeout(() => setPraise(null), 6000);
+    return () => clearTimeout(t);
+  }, [praise]);
 
   // 科目の ▷：今日その科目の予定（終わってないもの）が1つならそれとして計る。2つ以上なら選ぶ
   function pressSubject(s) {
@@ -58,6 +94,7 @@ export default function NotebookHero({ app, dateKey }) {
       <div className="notebook">
         <div className="nh-frame">
           <CornerDoodle />
+          {milestone && <MilestoneStamp hours={milestone} />}
           <div className="nh-label">
             <Sparks />
             <span>{isToday ? "合計時間" : fmtMD(dateKey) + "の合計"}</span>
@@ -89,8 +126,10 @@ export default function NotebookHero({ app, dateKey }) {
             })}
           </div>
           <div className="nh-bottom">
+            <SeasonDoodle month={month} />
             <BooksDoodle steaming={timer.mode === "study"} />
-            <CatDoodle awake={timer.mode === "study"} />
+            <CatDoodle awake={timer.mode === "study" || !!praise} month={month} />
+            {praise && isToday && <div className="nh-bubble">{praise}</div>}
           </div>
         </div>
       </div>
@@ -229,17 +268,36 @@ const CATS = {
   },
 };
 
-function CatDoodle({ awake }) {
+// 猫をタップすると、ハートが出てしっぽをぱたぱた振る
+function CatDoodle({ awake, month }) {
   const cat = CATS.tuxedo;
   const z = cat.zzz;
+  const [pet, setPet] = useState(0);
+  useEffect(() => {
+    if (!pet) return;
+    const t = setTimeout(() => setPet(0), 1800);
+    return () => clearTimeout(t);
+  }, [pet]);
   return (
-    <svg className={"nh-cat" + (awake ? " awake" : " asleep")} viewBox="0 -12 100 72" aria-hidden="true">
+    <svg className={"nh-cat" + (awake ? " awake" : " asleep") + (pet ? " petted" : "")} viewBox="0 -12 100 72"
+      role="button" aria-label="猫をなでる" onClick={() => setPet(Date.now())}>
       <g className="cat-body">
         <g className="cat-tail" style={{ transformOrigin: cat.tail.origin }}>{cat.tail.el}</g>
         {cat.body}
         <g className="cat-eyes-closed">{cat.eyesClosed}</g>
         <g className="cat-eyes-open">{cat.eyesOpen}</g>
+        <g className="cat-eyes-happy">
+          <path d="M21 43c1.6-1.6 4.4-1.6 6 0 M36.4 43c1.6-1.6 4.4-1.6 6 0" fill="none" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" />
+        </g>
+        <CatHat month={month} />
       </g>
+      {pet ? (
+        <g key={pet} className="cat-hearts" fill="#F28B9B" stroke={INK} strokeWidth=".8">
+          {[[30, 14], [44, 8], [56, 16]].map(([x, y], i) => (
+            <path key={i} d={`M${x} ${y + 3}c-3-2-5-4-5-6 0-1.6 1.2-2.6 2.6-2.6 1 0 1.8.6 2.4 1.4.6-.8 1.4-1.4 2.4-1.4 1.4 0 2.6 1 2.6 2.6 0 2-2 4-5 6z`} />
+          ))}
+        </g>
+      ) : null}
       <g className="cat-zzz" fill={z.fill} fontFamily="Caveat, Klee One, sans-serif" fontWeight="700">
         <text x={z.x} y={z.y} fontSize="8">z</text>
         <text x={z.x + 6} y={z.y - 6} fontSize="10">z</text>
@@ -247,5 +305,28 @@ function CatDoodle({ awake }) {
       </g>
       <path d="M2 59.6c26 .2 56 .2 86-.1" fill="none" stroke={INK} strokeWidth="1" strokeLinecap="round" />
     </svg>
+  );
+}
+
+// 勉強を止めたときの猫のひとこと
+function praiseText(mins) {
+  const h = Math.floor(mins / 60), m = mins % 60;
+  const t = h ? h + "時間" + (m ? m + "分" : "") : m + "分";
+  const list = mins >= 120
+    ? ["すごっ、" + t + "も！おつかれ", t + "の大仕事、おつかれさん", "ようやった！" + t + "やで"]
+    : mins >= 60
+      ? ["おつかれ！" + t + "がんばったな", "ナイス集中、" + t, t + "やりきったな、えらい"]
+      : ["おつかれ！" + t + "ナイスやで", t + "集中できたな", "ええ調子、" + t + "おつかれ"];
+  return list[mins % list.length];
+}
+
+// 累計の区切りを超えた日に押す、はんこ
+function MilestoneStamp({ hours }) {
+  return (
+    <div className="nh-stamp" aria-label={"累計" + hours + "時間 達成"}>
+      <span>累計</span>
+      <b>{hours}<small>h</small></b>
+      <span>達成</span>
+    </div>
   );
 }
