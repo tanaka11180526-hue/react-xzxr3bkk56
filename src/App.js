@@ -6,7 +6,6 @@ import * as sync from "./lib/sync";
 import { BREAK_LIMIT_MS, DEFAULT_SUBJECTS, PAUSE_LIMIT_MS } from "./lib/constants";
 import TimerTab from "./components/TimerTab";
 import LongStudyCheck from "./components/LongStudyCheck";
-import Splash, { shouldShowSplash } from "./components/Splash";
 import CalendarTab from "./components/CalendarTab";
 import StatsTab from "./components/StatsTab";
 import Settings from "./components/Settings";
@@ -144,8 +143,6 @@ export default function App() {
   const [notesOutbox, setNotesOutbox] = usePersisted("cpa_notes_outbox", {});
   const [toast, setToast] = useState(null);
   const [longCheck, setLongCheck] = useState(null);
-  const [splash, setSplash] = useState(shouldShowSplash);
-  const endSplash = useCallback(() => setSplash(false), []);
 
   const getSub = useCallback((id) => subjects.find((s) => s.id === id) || { id, label: "（削除した科目）", short: "？", color: "#6B7280" }, [subjects]);
   const configured = sync.isConfigured(syncCfg);
@@ -550,7 +547,6 @@ export default function App() {
         <LongStudyCheck app={app} onClose={() => setLongCheck(null)} />
       )}
       {toast && <div className="toast" onClick={() => setToast(null)}>{toast}</div>}
-      {splash && <Splash onDone={endSplash} />}
     </div>
   );
 }
