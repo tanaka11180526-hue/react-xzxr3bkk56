@@ -7,7 +7,7 @@ import ScheduleItem from "./ScheduleItem";
 const MAX_CHIPS = 3;
 // この時間以上勉強した日に、カレンダーにシールを貼る
 const STICKER_SECS = 7 * 3600;
-const STICKERS = ["star", "hanamaru", "paw", "heart", "flower"];
+const STICKERS = ["star", "hanamaru", "paw", "heart", "flower", "clover", "crown", "cat", "rainbow", "sun"];
 
 // どのシールを何度傾けて貼るかは、日付から作った乱数で決める（同じ日はいつ開いても同じシール）
 function stickerFor(key) {
@@ -136,6 +136,11 @@ function Sticker({ kind, tilt }) {
       {kind === "hanamaru" && <g fill="none" stroke="#E06666" strokeWidth="1.4" strokeLinecap="round"><path d="M7 12c0-3 2.4-5 5-5s5 2 5 5-2.4 5-5 5-5-2-5-5z" /><path d="M5 12c0-4.2 3.2-7.2 7-7.2s7.4 3 7 7.4c-.4 4-3.6 6.8-7.4 6.6" /></g>}
       {kind === "paw" && <g fill="#3B4560"><ellipse cx="12" cy="14.6" rx="4" ry="3.4" /><circle cx="7.6" cy="10" r="1.7" /><circle cx="10.4" cy="7.4" r="1.7" /><circle cx="13.6" cy="7.4" r="1.7" /><circle cx="16.4" cy="10" r="1.7" /></g>}
       {kind === "heart" && <path d="M12 18c-4-3-6.4-5.4-6.4-8 0-2 1.6-3.4 3.4-3.4 1.3 0 2.4.8 3 1.8.6-1 1.7-1.8 3-1.8 1.8 0 3.4 1.4 3.4 3.4 0 2.6-2.4 5-6.4 8z" fill="#F28B9B" {...ink} />}
+      {kind === "clover" && <g {...ink} fill="#9CC98A">{[0, 90, 180, 270].map((a) => <path key={a} d="M12 12c-1.6-1.4-4.6-1.8-4.6-4.2 0-1.6 1.4-2.6 2.6-2.4 1 .2 1.6 1 2 2 .4-1 1-1.8 2-2 1.2-.2 2.6.8 2.6 2.4 0 2.4-3 2.8-4.6 4.2z" transform={`rotate(${a} 12 12)`} />)}<path d="M12 12c1 2.4 2.4 4.6 4.4 6.6" fill="none" /></g>}
+      {kind === "crown" && <path d="M5.4 16.6l-1-8.4 4.4 3.6L12 6l3.2 5.8 4.4-3.6-1 8.4z M5.6 18.6h12.8" fill="#F6D58A" {...ink} />}
+      {kind === "cat" && <g {...ink}><path d="M5.6 18.4c-1-3.4-.4-6.6 1.2-8.6L7 5l3.6 3c1-.3 2-.3 3 0L17 5l.2 4.8c1.6 2 2.2 5.2 1.2 8.6z" fill="#3B4560" /><path d="M9.4 18.4c.4-1.8 1.4-2.8 2.6-2.8s2.2 1 2.6 2.8z" fill="#FFFFFF" stroke="none" /><path d="M8.6 12.6h2 M13.4 12.6h2" stroke="#FFFFFF" strokeWidth="1.2" /><path d="M7.6 6.6l.2 2 1.4-.8z M16.4 6.6l-.2 2-1.4-.8z" fill="#F4A9B4" stroke="none" /></g>}
+      {kind === "rainbow" && <g fill="none" strokeLinecap="round" strokeWidth="2"><path d="M4 16a8 8 0 0 1 16 0" stroke="#E06666" /><path d="M6.4 16a5.6 5.6 0 0 1 11.2 0" stroke="#F2C14E" /><path d="M8.8 16a3.2 3.2 0 0 1 6.4 0" stroke="#6CB6E0" /><path d="M3 16.8h5 M16 16.8h5" stroke="#B7C9DC" strokeWidth="2.4" /></g>}
+      {kind === "sun" && <g {...ink}><circle cx="12" cy="12" r="4.2" fill="#F2B84B" /><path d="M12 3.4v2.4 M12 18.2v2.4 M3.4 12h2.4 M18.2 12h2.4 M5.9 5.9l1.7 1.7 M16.4 16.4l1.7 1.7 M5.9 18.1l1.7-1.7 M16.4 7.6l1.7-1.7" fill="none" /></g>}
       {kind === "flower" && <g {...ink} fill="#F6C1CC">{[0, 72, 144, 216, 288].map((a) => <ellipse key={a} cx="12" cy="7.6" rx="2.6" ry="3.4" transform={`rotate(${a} 12 12)`} />)}<circle cx="12" cy="12" r="2" fill="#F2C14E" /></g>}
     </svg>
   );
