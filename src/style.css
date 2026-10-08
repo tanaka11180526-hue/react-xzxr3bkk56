@@ -305,7 +305,7 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 /* タイマー画面上部：机の上のノート */
 .hero-frame { position: relative; width: 100%; aspect-ratio: 3 / 4; overflow: hidden; border-radius: 10px; box-shadow: 0 4px 14px rgba(80,60,30,0.18); }
 /* 写真ごと 1.26 倍に拡大して、ノートが枠いっぱいになる位置に寄せる（ページ中心を左右中央、上端を少し下に） */
-.hero-desk { position: absolute; left: 0; top: 0; transform-origin: 0 0; transform: translate(-14.5%, -12.3%) scale(1.26); border-radius: 0; }
+.hero-desk { position: absolute; left: 0; top: 0; transform-origin: 0 0; transform: translate(-12.4%, -12.3%) scale(1.26); border-radius: 0; }
 .nh-frame {
   position: absolute; inset: 3.2cqw 3.2cqw 3.2cqw 3.6cqw; border: 0.42cqw solid #2B2B2B; border-radius: 6cqw 5cqw 6.5cqw 5.5cqw;
   display: flex; flex-direction: column; align-items: center; padding: 3cqw 2.6cqw 2.6cqw; color: #2B2B2B;
