@@ -334,13 +334,9 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 .nh-controls { display: flex; justify-content: center; gap: 4.5cqw; min-height: 5cqw; margin-top: -0.6cqw; }
 .nh-controls button { background: none; border: none; padding: 0; font-size: 3.2cqw; color: #2B2B2B; text-decoration: underline; text-underline-offset: 0.8cqw; }
 .nh-corner { position: absolute; top: 1.2cqw; left: 1.8cqw; width: 10.5cqw; height: auto; transform: rotate(-10deg); pointer-events: none; }
-/* ノートの下の段：左に猫、右に机の落書き */
-.nh-bottom { display: flex; align-items: flex-end; justify-content: space-between; width: 100%; margin-top: 0.4cqw; flex-shrink: 0; }
-/* 右下に小さく、落書きっぽく */
-.nh-doodle { width: 56%; height: auto; margin: 0 1.6cqw 0 0; flex-shrink: 0; }
-
-/* 左下の猫 */
-.nh-cat { width: 34%; height: auto; margin-left: 1.6cqw; overflow: visible; }
+/* ノートの右下の猫 */
+.nh-bottom { display: flex; align-items: flex-end; justify-content: flex-end; width: 100%; margin-top: 0.4cqw; flex-shrink: 0; }
+.nh-cat { width: 34%; height: auto; margin-right: 1.6cqw; overflow: visible; }
 .nh-cat .cat-body, .nh-cat .cat-tail { transform-box: view-box; }
 .nh-cat .cat-body { transform-origin: 45px 60px; }
 .nh-cat.asleep .cat-eyes-open, .nh-cat.awake .cat-eyes-closed, .nh-cat.awake .cat-zzz { display: none; }
@@ -359,12 +355,7 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 @keyframes cat-tail { 0%, 100% { transform: rotate(6deg); } 50% { transform: rotate(-18deg); } }
 @keyframes cat-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
 @keyframes cat-z { 0% { opacity: 0; transform: translate(0, 3px); } 30%, 60% { opacity: 0.85; } 100% { opacity: 0; transform: translate(2px, -3px); } }
-@media (prefers-reduced-motion: reduce) { .nh-cat *, .nh-doodle * { animation: none !important; } .nh-cat .cat-zzz text { opacity: 0.8; } }
-.nh-steam path { transform-box: fill-box; transform-origin: 50% 100%; }
-.nh-doodle.steaming .nh-steam path { animation: nh-steam 2.4s ease-in-out infinite; }
-.nh-doodle.steaming .nh-steam path:nth-child(2) { animation-delay: 0.4s; }
-.nh-doodle.steaming .nh-steam path:nth-child(3) { animation-delay: 0.8s; }
-@keyframes nh-steam { 0%, 100% { opacity: 0.35; transform: translateY(1px) scaleY(0.85); } 50% { opacity: 1; transform: translateY(-1.5px) scaleY(1); } }
+@media (prefers-reduced-motion: reduce) { .nh-cat * { animation: none !important; } .nh-cat .cat-zzz text { opacity: 0.8; } }
 
 /* 紙のカード */
 .sheet { background: var(--surface) var(--paper-dots); background-size: 16px 16px; }

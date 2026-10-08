@@ -88,7 +88,6 @@ export default function NotebookHero({ app, dateKey }) {
           </div>
           <div className="nh-bottom">
             <CatDoodle awake={timer.mode === "study"} />
-            <DeskDoodle steaming={timer.mode === "study"} />
           </div>
         </div>
       </div>
@@ -143,45 +142,6 @@ function Sparks({ flip }) {
   );
 }
 
-// ノートの右下の落書き（本・鉛筆・マグカップ・観葉植物）。色はわざと線からずらして塗る。勉強中はマグの湯気がゆらぐ
-function DeskDoodle({ steaming }) {
-  return (
-    <svg className={"nh-doodle" + (steaming ? " steaming" : "")} viewBox="0 0 180 64" aria-hidden="true">
-      {/* 色（線から少しずらす） */}
-      <g stroke="none" opacity="0.85">
-        <path d="M11 51l45-1 1 8-46 1z" fill="#EBD9B4" />
-        <path d="M16 42l39 0 0 8-39 1z" fill="#C9D7B0" />
-        <path d="M13 33l42-1 1 8-43 1z" fill="#D5E0EA" />
-        <path d="M66 58l27-6 1 3-27 6z" fill="#F4CB78" />
-        <path d="M108 37l20 0-1 17c-1 4-3 5-7 5h-7c-4 0-5-2-5-6z" fill="#FFFDF7" />
-        <path d="M146 47l20 0-3 12h-14z" fill="#EBD9B4" />
-        <path d="M157 38c-6 0-9-4-9-9 6 0 9 3 9 9z M157 34c6 0 9-4 9-9-6 0-9 3-9 9z" fill="#C9D7B0" />
-      </g>
-      {/* 線（ちょっとはみ出す・すき間がある手描き風） */}
-      <g fill="none" stroke="#2F2F2F" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M8 49.5c14-.6 32-.4 48 .2 M8.5 57.8c16 .4 31 .2 47.5-.4 M9 49.8c-.6 2.6-.5 5.2-.2 8 M55.6 49.4c.5 2.8.4 5.6-.1 8.4" />
-        <path d="M13 40.8c13-.4 27-.3 41 .3 M13.2 49.4l-.3-8.3 M54 41c.4 2.6.3 5.6 0 8.6" />
-        <path d="M10 31.6c15-.5 30-.5 45 .2 M10.3 40.6c-.4-2.8-.4-5.8-.2-8.8 M55 31.8c.5 2.9.4 5.9 0 8.9" />
-        <path d="M16 54h14 M19 45.3h11 M15 36h12" strokeWidth="1" />
-        <path d="M62 60.5l30-6.6 M63 57.2l29.4-6.4 M92.3 50.8c1 1 1.4 2.1.3 3.2 M62.6 57.2l-3.6 2.2 3.4 1.2" />
-        <path d="M105 35.4c8-.4 15-.4 22 .2 M105.4 35.6c-.4 6-.3 12 .4 17.4 .6 3.4 3 5.2 6.4 5.4 3.6.2 7 .2 9.6-.4 3-.8 4.6-3 4.8-6.4.2-5.4.2-10.8.1-16.2" />
-        <path d="M127 39.6c5-.6 7.8 1.8 7.6 5-.2 3.2-3.4 5.2-7.6 4.8" />
-        <g className="nh-steam" strokeWidth="1.1">
-          <path d="M110.5 30c-2.6-3.4 2.4-5.4.2-9" />
-          <path d="M116 29c-2.6-3.4 2.4-5.4.2-9" />
-          <path d="M121.5 30c-2.6-3.4 2.4-5.4.2-9" />
-        </g>
-        <path d="M143 45.6c8-.4 15.6-.4 23.6.3 M143.4 45.8l3.4 13.4c4.4.4 9 .4 13.4-.2l3.8-13.2" />
-        <path d="M155 45.4c.4-5.4.2-11 0-17.6" />
-        <path d="M155 37c-7 .6-10.6-4.2-10.4-9.4 6.4-.2 10.2 3.2 10.4 9.4z" />
-        <path d="M155.2 32.6c6.6.4 10.4-4.2 10.2-9.6-6.2 0-10 3.4-10.2 9.6z" />
-        <path d="M155 27.8c-2.6-4-1.4-8.6.2-11 1.8 2.6 2.4 7.4-.2 11z" />
-        <path d="M4 61.6c20 .6 52 .2 80-.4 M98 61.4c26 .4 50 .2 72-.6" strokeWidth="1" />
-      </g>
-    </svg>
-  );
-}
-
 // ノートの左上の落書き（「合格!」の付箋）
 function CornerDoodle() {
   return (
@@ -196,7 +156,7 @@ function CornerDoodle() {
   );
 }
 
-// ノートの左下の猫。ふだんは丸まって寝ていて（Zzz・寝息）、勉強中は起きて目を開け、しっぽを振る
+// ノートの右下の猫。ふだんは丸まって寝ていて（Zzz・寝息）、勉強中は起きて目を開け、しっぽを振る
 const INK = "#2F2F2F";
 const CATS = {
   // 黒白のハチワレ猫（イラスト風の太めのグレーの線）
