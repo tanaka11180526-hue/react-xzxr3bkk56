@@ -336,6 +336,7 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 .nh-corner { position: absolute; top: 1.2cqw; left: 1.8cqw; width: 10.5cqw; height: auto; transform: rotate(-10deg); pointer-events: none; }
 /* ノートの右下の猫 */
 .nh-bottom { display: flex; align-items: flex-end; justify-content: flex-end; width: 100%; margin-top: 0.4cqw; flex-shrink: 0; }
+.nh-books { width: 17%; height: auto; margin-right: -0.4cqw; }
 .nh-cat { width: 34%; height: auto; margin-right: 1.6cqw; overflow: visible; }
 .nh-cat .cat-body, .nh-cat .cat-tail { transform-box: view-box; }
 .nh-cat .cat-body { transform-origin: 45px 60px; }
