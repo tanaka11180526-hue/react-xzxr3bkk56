@@ -166,7 +166,7 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 .cal-dow { text-align: center; font-size: 12px; font-weight: 700; color: var(--muted); padding-bottom: 4px; }
 .cal-dow.sun, .cal-day.sun { color: var(--danger); }
 .cal-dow.sat, .cal-day.sat { color: var(--accent); }
-.cal-cell { min-height: 84px; background: none; border: none; border-top: 1px solid var(--border); padding: 4px 2px; display: flex; flex-direction: column; align-items: stretch; gap: 2px; text-align: center; overflow: hidden; }
+.cal-cell { position: relative; min-height: 84px; background: none; border: none; border-top: 1px solid var(--border); padding: 4px 2px; display: flex; flex-direction: column; align-items: stretch; gap: 2px; text-align: center; overflow: hidden; }
 .cal-cell.today { background: #F3EAD6; border-radius: 6px; }
 .cal-day { font-size: 13px; line-height: 22px; }
 .cal-cell.today .cal-day { background: #2B2B2B; color: #FBF8F1; border-radius: 50%; width: 22px; margin: 0 auto; font-weight: 800; }
@@ -454,3 +454,5 @@ button.pg-row.dim { opacity: 0.45; }
 .pg-plan { font-size: 11px; color: var(--muted); }
 .pg-task.is-done .pg-content { color: var(--muted); }
 button.pg-more { background: none; border: none; padding: 6px 0 0 30px; text-align: left; text-decoration: underline; text-underline-offset: 3px; }
+
+.cal-sticker { position: absolute; top: 1px; right: 1px; width: 20px; height: 20px; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.12)); pointer-events: none; }
