@@ -87,7 +87,7 @@ export default function NotebookHero({ app, dateKey }) {
             })}
           </div>
           <div className="nh-bottom">
-            <BooksDoodle />
+            <BooksDoodle steaming={timer.mode === "study"} />
             <CatDoodle awake={timer.mode === "study"} />
           </div>
         </div>
@@ -143,10 +143,10 @@ function Sparks({ flip }) {
   );
 }
 
-// 猫の左に積んだ本。色はわざと線からずらして塗る
-function BooksDoodle() {
+// 猫の左に積んだ本と、その上のマグカップ。色はわざと線からずらして塗る。勉強中はマグの湯気がゆらぐ
+function BooksDoodle({ steaming }) {
   return (
-    <svg className="nh-books" viewBox="4 26 56 38" aria-hidden="true">
+    <svg className={"nh-books" + (steaming ? " steaming" : "")} viewBox="4 -8 56 72" aria-hidden="true">
       <g stroke="none" opacity="0.85">
         <path d="M11 51l45-1 1 8-46 1z" fill="#EBD9B4" />
         <path d="M16 42l39 0 0 8-39 1z" fill="#C9D7B0" />
@@ -158,6 +158,18 @@ function BooksDoodle() {
         <path d="M10 31.6c15-.5 30-.5 45 .2 M10.3 40.6c-.4-2.8-.4-5.8-.2-8.8 M55 31.8c.5 2.9.4 5.9 0 8.9" />
         <path d="M16 54h14 M19 45.3h11 M15 36h12" strokeWidth="1" />
         <path d="M5 61.4c18 .4 36 .3 54-.2" strokeWidth="1" />
+      </g>
+      <g transform="translate(-84 -27)">
+        <path d="M108 37l20 0-1 17c-1 4-3 5-7 5h-7c-4 0-5-2-5-6z" fill="#FFFDF7" opacity="0.95" />
+        <g fill="none" stroke="#2F2F2F" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M105 35.4c8-.4 15-.4 22 .2 M105.4 35.6c-.4 6-.3 12 .4 17.4 .6 3.4 3 5.2 6.4 5.4 3.6.2 7 .2 9.6-.4 3-.8 4.6-3 4.8-6.4.2-5.4.2-10.8.1-16.2" />
+          <path d="M127 39.6c5-.6 7.8 1.8 7.6 5-.2 3.2-3.4 5.2-7.6 4.8" />
+          <g className="nh-steam" strokeWidth="1.1">
+            <path d="M110.5 30c-2.6-3.4 2.4-5.4.2-9" />
+            <path d="M116 29c-2.6-3.4 2.4-5.4.2-9" />
+            <path d="M121.5 30c-2.6-3.4 2.4-5.4.2-9" />
+          </g>
+        </g>
       </g>
     </svg>
   );
