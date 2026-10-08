@@ -325,6 +325,9 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 .nh-grid.cols-2 { grid-template-columns: 1fr 1fr; padding: 0 4cqw; --nh-c: 7.6cqw; --nh-f: 4.8cqw; }
 .nh-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; --nh-c: 6.5cqw; --nh-f: 3.9cqw; }
 .nh-sub { position: relative; display: flex; align-items: center; gap: 1.2cqw; min-width: 0; background: none; border: none; padding: 0.4cqw 0; color: #2B2B2B; text-align: left; }
+/* 今日以外の日は押せない。丸ボタンだけ薄くして、科目名と時間はそのまま読めるようにする */
+.nh-sub:disabled { opacity: 1; cursor: default; }
+.nh-sub:disabled .nh-circle { opacity: 0.3; }
 .nh-circle { width: var(--nh-c); height: var(--nh-c); border: 0.38cqw solid #2B2B2B; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .nh-circle svg { width: 62%; height: 62%; }
 /* 科目名は丸ボタンの真横にそろえ、時間はその下にぶら下げる */

@@ -76,7 +76,7 @@ export default function NotebookHero({ app, dateKey }) {
               const studying = active && timer.mode === "study";
               return (
                 <button key={s.id} className={"nh-sub" + (active ? " active" : "")} onClick={() => pressSubject(s)}
-                  aria-label={(studying ? "一時停止 " : "開始 ") + s.label}>
+                  disabled={!isToday} aria-label={(studying ? "一時停止 " : "開始 ") + s.label}>
                   <span className="nh-circle" style={active ? { background: "#2B2B2B" } : null}>
                     {studying ? <PauseMark /> : <PlayMark filled={active} />}
                   </span>
