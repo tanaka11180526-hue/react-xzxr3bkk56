@@ -458,19 +458,7 @@ button.pg-more { background: none; border: none; padding: 6px 0 0 30px; text-ali
 .cal-sticker { position: absolute; top: 1px; right: 1px; width: 20px; height: 20px; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.12)); pointer-events: none; }
 
 /* 答練 */
-.ex-picks { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
-.ex-picks button { flex-shrink: 0; border: 1px solid var(--border); background: transparent; border-radius: 8px; padding: 4px 10px; font-size: 12px; font-weight: 700; color: var(--text-2); display: flex; align-items: center; gap: 5px; }
-.ex-picks button.on { background: var(--marker); border-color: #2B2B2B; color: #2B2B2B; }
-.ex-picks i { width: 8px; height: 8px; border-radius: 2px; }
 .ex-grade { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 6px; color: #fff; font-size: 12px; font-weight: 800; border: 1.5px solid #2B2B2B; flex-shrink: 0; }
-.ex-grade.big { width: 40px; height: 40px; font-size: 22px; border-radius: 10px; transform: rotate(-4deg); }
-.ex-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-.ex-name { font-size: 16px; font-weight: 800; }
-.ex-meta { font-size: 12px; color: var(--muted); font-weight: 700; }
-.ex-total { margin: 6px 0 10px; display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 4px; }
-.ex-total b { font-size: 30px; }
-.ex-total small { font-size: 13px; color: var(--text-2); }
-.ex-total-sub { width: 100%; font-size: 12px; color: var(--muted); }
 .ex-parts { display: flex; flex-direction: column; gap: 10px; }
 .ex-part-top { display: flex; align-items: center; gap: 6px; font-size: 13px; }
 .ex-part-name { font-weight: 800; flex-shrink: 0; }
@@ -507,7 +495,6 @@ button.pg-more { background: none; border: none; padding: 6px 0 0 30px; text-ali
 .ex-item-nums b { color: var(--text); font-size: 14px; }
 .ex-item-nums em { font-style: normal; color: var(--danger); font-weight: 800; margin-left: 6px; }
 .ex-item-memo { font-size: 11.5px; color: var(--text-2); background: #F3EEDF; border-left: 3px solid var(--warn); padding: 3px 7px; margin-top: 4px; border-radius: 0 6px 6px 0; line-height: 1.5; }
-.ex-item-from { font-size: 11px; color: var(--muted); margin-top: 2px; }
 .ex-more { padding-left: 0; }
 .ex-field { margin-bottom: 9px; }
 .ex-field-top { display: flex; justify-content: space-between; font-size: 13px; }
@@ -521,3 +508,18 @@ button.pg-more { background: none; border: none; padding: 6px 0 0 30px; text-ali
 .ex-field-bars span { position: absolute; left: 6px; top: 0; font-size: 10.5px; line-height: 14px; color: #2B2B2B; font-weight: 700; }
 .ex-subs { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
 .ex-subs button { flex-shrink: 0; white-space: nowrap; }
+.ex-list { padding: 4px 12px 10px; }
+.ex-row-wrap { border-bottom: 1px dashed var(--border); }
+.ex-row { width: 100%; display: flex; align-items: center; gap: 8px; padding: 10px 2px; background: none; border: 0; text-align: left; color: var(--text); font-size: 13.5px; }
+.ex-row i { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.ex-row-date { width: 40px; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.ex-row-name { flex: 1; min-width: 0; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ex-row-name small { margin-left: 6px; font-size: 11px; color: var(--muted); font-weight: 400; }
+.ex-row-score { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.ex-row-score b { font-size: 15px; color: var(--text); }
+.ex-row-arrow { width: 12px; color: var(--muted); font-size: 12px; }
+.ex-row-wrap.open .ex-row { font-weight: 800; }
+.ex-detail { padding: 2px 2px 12px; display: flex; flex-direction: column; gap: 14px; }
+.ex-list > .hint { margin-top: 8px; }
+
+.ex-total-sub { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
