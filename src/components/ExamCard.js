@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { keyToDate } from "../lib/time";
 
 // 答練の結果（シートの「答練結果」「答練の小問」タブを Claude が書き、アプリは読むだけ）
-const LIST_STEP = 10; // 答練の一覧で最初に出す数・「もっと見る」で増やす数
+const DOTS_MAX = 10; // めくる位置の点は、この回数までなら出す
+const NEAR = 2; // 今のカードの前後この枚数だけ中身を描く（回数が多くても重くならないように）
 const CHART_MAX = 10; // グラフに出す直近の回数
 const CHART_LABELS = 5; // 日付は多くてもこの数まで
 const SUBJECT_ALIAS = { 財務: "財計" }; // 答練は財務会計論で1科目。色は財計に合わせる
@@ -35,8 +36,9 @@ function groupExams(results) {
 export default function ExamCard({ app }) {
   const { exams, matchSubject } = app;
   const [only, setOnly] = useState(null);
-  const [open, setOpen] = useState(null); // 詳細を開いている答練（1つだけ）
-  const [shown, setShown] = useState(LIST_STEP);
+  const [index, setIndex] = useState(0); // 今見ているカード（0 が一番新しい）
+  const [openLow, setOpenLow] = useState(null); // 「落とした小問」を開いている答練
+  const track = useRef(null);
   if (!exams) return null;
 
   const all = groupExams(exams.results || []);
@@ -45,11 +47,25 @@ export default function ExamCard({ app }) {
   const ids = new Set(list.map((e) => e.id));
   const items = (exams.items || []).filter((it) => ids.has(it.id));
   const colorOf = (s) => { const m = matchSubject(s) || matchSubject(SUBJECT_ALIAS[s]); return m ? m.color : "#8C8274"; };
-  const opened = list.find((e) => e.id === open);
-  // グラフは1科目ずつ（「全部」のときは開いている答練か、一番新しい答練の科目）
-  const chartSubject = only || (opened || list[0] || {}).subject;
+  const at = Math.min(index, Math.max(0, list.length - 1));
+  const current = list[at];
+  // グラフは1科目ずつ（「全部」のときは今見ている答練の科目）
+  const chartSubject = only || (current || {}).subject;
   const chartExams = list.filter((e) => e.subject === chartSubject).slice(0, CHART_MAX).reverse();
-  const pickSubject = (s) => { setOnly(s); setOpen(null); setShown(LIST_STEP); };
+
+  const pickSubject = (s) => {
+    setOnly(s); setIndex(0); setOpenLow(null);
+    if (track.current) track.current.scrollLeft = 0;
+  };
+  const goTo = (i) => {
+    const el = track.current;
+    if (el) el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
+  };
+  const onScroll = (e) => {
+    const el = e.currentTarget;
+    const i = Math.round(el.scrollLeft / el.clientWidth);
+    if (i !== at) setIndex(i);
+  };
 
   return (
     <section className="section">
@@ -67,31 +83,42 @@ export default function ExamCard({ app }) {
         <div className="card"><p className="empty">答練の結果はまだありません</p></div>
       ) : (
         <>
-          <div className="card ex-list">
-            {list.slice(0, shown).map((e) => {
-              const t = e.total, isOpen = e.id === open;
+          <div className="ex-track" ref={track} onScroll={onScroll}>
+            {list.map((e, i) => {
+              if (Math.abs(i - at) > NEAR) return <div key={e.id} className="ex-slide" />;
+              const low = lowOf((exams.items || []).filter((it) => it.id === e.id));
+              const lowOpen = openLow === e.id;
               return (
-                <div key={e.id} className={"ex-row-wrap" + (isOpen ? " open" : "")}>
-                  <button className="ex-row" onClick={() => setOpen(isOpen ? null : e.id)} aria-expanded={isOpen}>
-                    <i style={{ background: colorOf(e.subject) }} />
-                    <span className="ex-row-date">{md(e.date)}</span>
-                    <span className="ex-row-name">{e.name}{subjects.length > 1 && !only && <small>{e.subject}</small>}</span>
-                    {t && <span className="ex-row-score"><b>{t.score}</b>/{t.full}</span>}
-                    {t && <Grade g={t.grade} />}
-                    <span className="ex-row-arrow">{isOpen ? "▾" : "▸"}</span>
-                  </button>
-                  {isOpen && (
-                    <div className="ex-detail">
-                      <ExamResult exam={e} />
-                      <LowItems items={(exams.items || []).filter((it) => it.id === e.id)} />
+                <div key={e.id} className="ex-slide">
+                  <div className="card ex-result">
+                    <div className="ex-head">
+                      <div className="ex-head-name">
+                        <div className="ex-name">{e.name}</div>
+                        <div className="ex-meta"><span style={{ color: colorOf(e.subject) }}>{e.subject}</span>・{md(e.date)}</div>
+                      </div>
+                      {e.total && <div className="ex-head-score"><b>{e.total.score}</b>/{e.total.full}</div>}
+                      {e.total && <Grade g={e.total.grade} />}
                     </div>
-                  )}
+                    <ExamResult exam={e} />
+                    <button className={"ex-low-toggle" + (lowOpen ? " open" : "")} onClick={() => setOpenLow(lowOpen ? null : e.id)} aria-expanded={lowOpen}>
+                      平均より大きく落とした小問<span className="muted">{low.length}問</span><span className="ex-row-arrow">{lowOpen ? "▾" : "▸"}</span>
+                    </button>
+                    {lowOpen && <LowItems low={low} />}
+                  </div>
                 </div>
               );
             })}
-            {list.length > shown && <button className="pg-more ex-more" onClick={() => setShown((n) => n + LIST_STEP)}>もっと見る（ほか {list.length - shown}回）</button>}
-            <p className="hint">押すと、その回の大問ごとの点数と、平均より落とした小問が出ます</p>
           </div>
+          {list.length > 1 && (
+            <div className="ex-pager">
+              <button onClick={() => goTo(at - 1)} disabled={at === 0} aria-label="新しい答練">‹</button>
+              {list.length <= DOTS_MAX
+                ? <span className="ex-dots">{list.map((e, i) => <i key={e.id} className={i === at ? "on" : ""} onClick={() => goTo(i)} />)}</span>
+                : null}
+              <span className="ex-count">{at + 1} / {list.length}</span>
+              <button onClick={() => goTo(at + 1)} disabled={at === list.length - 1} aria-label="前の答練">›</button>
+            </div>
+          )}
           <DevChart exams={chartExams} subject={subjects.length > 1 ? chartSubject : ""} />
           <Fields items={items} />
         </>
@@ -189,14 +216,16 @@ function DevChart({ exams, subject }) {
 }
 
 // その回で平均より大きく落とした小問（差が大きい順）
-function LowItems({ items }) {
-  const low = items
+function lowOf(items) {
+  return items
     .map((it) => ({ ...it, d: num(it.score) !== null && num(it.avg) !== null ? num(it.score) - num(it.avg) : null }))
     .filter((it) => it.d !== null && it.d <= LOW_DIFF)
     .sort((a, b) => a.d - b.d);
+}
+
+function LowItems({ low }) {
   return (
     <div className="ex-low">
-      <div className="ex-sub-title">平均より大きく落とした小問<span className="muted">{low.length}問</span></div>
       {low.length === 0 && <p className="empty">平均を大きく下回った小問はありません</p>}
       {low.map((it, i) => (
         <div key={qLabel(it) + i} className={"ex-item" + (it.reviewed === true ? " done" : "")}>
