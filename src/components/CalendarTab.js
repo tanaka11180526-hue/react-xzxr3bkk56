@@ -16,8 +16,8 @@ function stickerFor(key) {
   h = Math.imul(h ^ (h >>> 13), 0x5bd1e995) >>> 0;
   return { kind: STICKERS[h % STICKERS.length], tilt: ((h >>> 8) % 31) - 15 };
 }
-// 月曜はじまりで並べる（記録タブの「今週」・シートの週次とそろえる）
-const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];
+// 表示は日曜はじまり（記録タブの「今週」は月曜はじまりのまま）
+const WEEK_ORDER = [0, 1, 2, 3, 4, 5, 6];
 
 export default function CalendarTab({ app }) {
   const { days, scheduleByDate, matchSubject, configured, schedule, scheduleState, refreshSchedule } = app;
@@ -56,7 +56,7 @@ export default function CalendarTab({ app }) {
 
       <div className="cal" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         {WEEK_ORDER.map((i) => <div key={i} className={"cal-dow" + (i === 0 ? " sun" : i === 6 ? " sat" : "")}>{DAY_NAMES[i]}</div>)}
-        {Array.from({ length: (firstDow + 6) % 7 }, (_, i) => <div key={"e" + i} />)}
+        {Array.from({ length: firstDow }, (_, i) => <div key={"e" + i} />)}
         {Array.from({ length: daysInMonth }, (_, i) => {
           const key = toKey(new Date(year, m, i + 1));
           const dow = (firstDow + i) % 7;
