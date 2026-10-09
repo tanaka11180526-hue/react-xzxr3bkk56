@@ -220,7 +220,7 @@ function BooksDoodle({ steaming }) {
 function CornerDoodle({ daysLeft }) {
   return (
     <svg className="nh-corner" viewBox="0 0 64 56" aria-hidden="true">
-      <path d="M7 9l46-2 1.6 38-45.6 3z" fill="#F7E6A0" stroke="none" transform="translate(1.6 1.4)" />
+      <path d="M6.6 8.6c15.4-.8 30.6-1.4 46-1.8.6 12.6 1.2 25.4 1.6 38-15 .8-30 1.6-45 2.6-1-13-1.6-26-2.6-38.8z" fill="#F7E6A0" stroke="none" />
       <g fill="none" stroke="#2F2F2F" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
         <path d="M6.6 8.6c15.4-.8 30.6-1.4 46-1.8.6 12.6 1.2 25.4 1.6 38-15 .8-30 1.6-45 2.6-1-13-1.6-26-2.6-38.8" />
         <path d="M41.6 46.2c1.4-3.6 4.6-5.4 12.6-1.2" />
