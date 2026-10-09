@@ -33,7 +33,25 @@ function groupExams(results) {
   return Object.values(map).sort((a, b) => (b.date || "").localeCompare(a.date || ""));
 }
 
-export default function ExamCard({ app }) {
+// 記録タブのボタン（今日のレポートと同じ形）。押すと答練のページが開く
+export function ExamButton({ app, onOpen }) {
+  if (!app.exams) return null;
+  const latest = groupExams(app.exams.results || [])[0];
+  const t = latest && latest.total;
+  return (
+    <button className="report-cta" onClick={onOpen}>
+      <span>📝</span>
+      <span>
+        <b>答練</b>
+        <small>{latest ? groupExams(app.exams.results).length + "回分・最新 " + latest.name + (t ? " " + t.score + "/" + t.full + (t.grade ? " " + t.grade : "") : "") : "結果はまだありません"}</small>
+      </span>
+      <span>›</span>
+    </button>
+  );
+}
+
+// 答練のページ（今日のレポートと同じく、画面に重ねて開く）
+export default function ExamPage({ app, onClose }) {
   const { exams, matchSubject } = app;
   const [only, setOnly] = useState(null);
   const [index, setIndex] = useState(0); // 今見ているカード（0 が一番新しい）
@@ -44,8 +62,6 @@ export default function ExamCard({ app }) {
   const all = groupExams(exams.results || []);
   const subjects = [...new Set(all.map((e) => e.subject))];
   const list = only ? all.filter((e) => e.subject === only) : all;
-  const ids = new Set(list.map((e) => e.id));
-  const items = (exams.items || []).filter((it) => ids.has(it.id));
   const colorOf = (s) => { const m = matchSubject(s) || matchSubject(SUBJECT_ALIAS[s]); return m ? m.color : "#8C8274"; };
   const at = Math.min(index, Math.max(0, list.length - 1));
   const current = list[at];
@@ -68,62 +84,67 @@ export default function ExamCard({ app }) {
   };
 
   return (
-    <section className="section">
-      <div className="section-head">
-        <div className="section-title">答練<span className="muted">{all.length ? all.length + "回分" : ""}</span></div>
-      </div>
-      {subjects.length > 1 && (
-        <div className="seg ex-subs">
-          <button className={!only ? "on" : ""} onClick={() => pickSubject(null)}>全部</button>
-          {subjects.map((s) => <button key={s} className={only === s ? "on" : ""} onClick={() => pickSubject(s)}>{s}</button>)}
+    <div className="report-overlay ex-overlay" onClick={onClose}>
+      <div className="report-wrap" onClick={(e) => e.stopPropagation()}>
+        <div className="report-nav">
+          <div className="ex-page-title">答練<span className="muted">{all.length ? all.length + "回分" : ""}</span></div>
+          <button className="btn small ghost" onClick={onClose}>閉じる</button>
         </div>
-      )}
-
-      {!list.length ? (
-        <div className="card"><p className="empty">答練の結果はまだありません</p></div>
-      ) : (
-        <>
-          <div className="ex-track" ref={track} onScroll={onScroll}>
-            {list.map((e, i) => {
-              if (Math.abs(i - at) > NEAR) return <div key={e.id} className="ex-slide" />;
-              const low = lowOf((exams.items || []).filter((it) => it.id === e.id));
-              const lowOpen = openLow === e.id;
-              return (
-                <div key={e.id} className="ex-slide">
-                  <div className="card ex-result">
-                    <div className="ex-head">
-                      <div className="ex-head-name">
-                        <div className="ex-name">{e.name}</div>
-                        <div className="ex-meta"><span style={{ color: colorOf(e.subject) }}>{e.subject}</span>・{md(e.date)}</div>
-                      </div>
-                      {e.total && <div className="ex-head-score"><b>{e.total.score}</b>/{e.total.full}</div>}
-                      {e.total && <Grade g={e.total.grade} />}
-                    </div>
-                    <ExamResult exam={e} />
-                    <button className={"ex-low-toggle" + (lowOpen ? " open" : "")} onClick={() => setOpenLow(lowOpen ? null : e.id)} aria-expanded={lowOpen}>
-                      平均より大きく落とした小問<span className="muted">{low.length}問</span><span className="ex-row-arrow">{lowOpen ? "▾" : "▸"}</span>
-                    </button>
-                    {lowOpen && <LowItems low={low} />}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          {list.length > 1 && (
-            <div className="ex-pager">
-              <button onClick={() => goTo(at - 1)} disabled={at === 0} aria-label="新しい答練">‹</button>
-              {list.length <= DOTS_MAX
-                ? <span className="ex-dots">{list.map((e, i) => <i key={e.id} className={i === at ? "on" : ""} onClick={() => goTo(i)} />)}</span>
-                : null}
-              <span className="ex-count">{at + 1} / {list.length}</span>
-              <button onClick={() => goTo(at + 1)} disabled={at === list.length - 1} aria-label="前の答練">›</button>
+        <section className="section">
+          {subjects.length > 1 && (
+            <div className="seg ex-subs">
+              <button className={!only ? "on" : ""} onClick={() => pickSubject(null)}>全部</button>
+              {subjects.map((s) => <button key={s} className={only === s ? "on" : ""} onClick={() => pickSubject(s)}>{s}</button>)}
             </div>
           )}
-          <DevChart exams={chartExams} subject={subjects.length > 1 ? chartSubject : ""} />
-          <Fields items={items} />
-        </>
-      )}
-    </section>
+
+          {!list.length ? (
+            <div className="card"><p className="empty">答練の結果はまだありません</p></div>
+          ) : (
+            <>
+              <div className="ex-track" ref={track} onScroll={onScroll}>
+                {list.map((e, i) => {
+                  if (Math.abs(i - at) > NEAR) return <div key={e.id} className="ex-slide" />;
+                  const low = lowOf((exams.items || []).filter((it) => it.id === e.id));
+                  const lowOpen = openLow === e.id;
+                  return (
+                    <div key={e.id} className="ex-slide">
+                      <div className="card ex-result">
+                        <div className="ex-head">
+                          <div className="ex-head-name">
+                            <div className="ex-name">{e.name}</div>
+                            <div className="ex-meta"><span style={{ color: colorOf(e.subject) }}>{e.subject}</span>・{md(e.date)}</div>
+                          </div>
+                          {e.total && <div className="ex-head-score"><b>{e.total.score}</b>/{e.total.full}</div>}
+                          {e.total && <Grade g={e.total.grade} />}
+                        </div>
+                        <ExamResult exam={e} />
+                        <button className={"ex-low-toggle" + (lowOpen ? " open" : "")} onClick={() => setOpenLow(lowOpen ? null : e.id)} aria-expanded={lowOpen}>
+                          平均より大きく落とした小問<span className="muted">{low.length}問</span><span className="ex-row-arrow">{lowOpen ? "▾" : "▸"}</span>
+                        </button>
+                        {lowOpen && <LowItems low={low} />}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {list.length > 1 && (
+                <div className="ex-pager">
+                  <button onClick={() => goTo(at - 1)} disabled={at === 0} aria-label="新しい答練">‹</button>
+                  {list.length <= DOTS_MAX
+                    ? <span className="ex-dots">{list.map((e, i) => <i key={e.id} className={i === at ? "on" : ""} onClick={() => goTo(i)} />)}</span>
+                    : null}
+                  <span className="ex-count">{at + 1} / {list.length}</span>
+                  <button onClick={() => goTo(at + 1)} disabled={at === list.length - 1} aria-label="前の答練">›</button>
+                </div>
+              )}
+              <DevChart exams={chartExams} subject={subjects.length > 1 ? chartSubject : ""} />
+              {current && <Fields items={(exams.items || []).filter((it) => it.id === current.id)} name={current.name} />}
+            </>
+          )}
+        </section>
+      </div>
+    </div>
   );
 }
 
@@ -247,8 +268,8 @@ function LowItems({ low }) {
   );
 }
 
-// 分野ごとの得点率（平均点がわかる小問だけで比べる）
-function Fields({ items }) {
+// 今見ている回の、分野ごとの得点率（平均点がわかる小問だけで比べる）
+function Fields({ items, name }) {
   const map = {};
   items.forEach((it) => {
     const full = num(it.full), score = num(it.score), avg = num(it.avg);
@@ -262,7 +283,7 @@ function Fields({ items }) {
   if (!rows.length) return null;
   return (
     <div className="card ex-fields">
-      <div className="ex-sub-title">分野ごとの得点率<span className="muted">平均との差が大きい順</span></div>
+      <div className="ex-sub-title">分野ごとの得点率<span className="muted">{name}・平均との差が大きい順</span></div>
       {rows.map((f) => (
         <div key={f.field} className="ex-field">
           <div className="ex-field-top">
