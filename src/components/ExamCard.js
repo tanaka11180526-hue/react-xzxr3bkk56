@@ -2,7 +2,11 @@ import React, { useState } from "react";
 import { keyToDate } from "../lib/time";
 
 // 答練の結果（シートの「答練結果」「答練の小問」タブを Claude が書き、アプリは読むだけ）
-const LOW_LIST_MAX = 5;
+const LOW_LIST_STEP = 10; // 「もっと見る」で増やす数
+const LOW_LIST_FIRST = 5;
+const CHART_MAX = 10; // グラフに出す直近の回数
+const CHART_LABELS = 5; // 日付は多くてもこの数まで
+const SUBJECT_ALIAS = { 財務: "財計" }; // 答練は財務会計論で1科目。色は財計に合わせる
 const LOW_DIFF = -1; // 平均よりこれ以上低い小問を「落とした小問」に出す
 const PARTS_COLOR = ["#C0563F", "#3E7CB1", "#5E8A3C", "#C9952B", "#8A5FB0"];
 const GRADE_COLOR = { A: "#5E8A3C", B: "#8DAA5B", C: "#C9952B", D: "#D9783F", E: "#B4432F" };
@@ -33,7 +37,7 @@ export default function ExamCard({ app }) {
   const { exams, matchSubject } = app;
   const [only, setOnly] = useState(null);
   const [pick, setPick] = useState(null);
-  const [more, setMore] = useState(false);
+  const [shownLow, setShownLow] = useState(LOW_LIST_FIRST);
   if (!exams) return null;
 
   const all = groupExams(exams.results || []);
@@ -42,19 +46,22 @@ export default function ExamCard({ app }) {
   const exam = list.find((e) => e.id === pick) || list[0];
   const ids = new Set(list.map((e) => e.id));
   const items = (exams.items || []).filter((it) => ids.has(it.id));
-  const colorOf = (s) => { const m = matchSubject(s); return m ? m.color : "#8C8274"; };
+  const colorOf = (s) => { const m = matchSubject(s) || matchSubject(SUBJECT_ALIAS[s]); return m ? m.color : "#8C8274"; };
+  // グラフは1科目ずつ（「全部」のときは一番新しい答練の科目）
+  const chartSubject = only || exam?.subject;
+  const chartExams = list.filter((e) => e.subject === chartSubject).slice(0, CHART_MAX).reverse();
 
   return (
     <section className="section">
       <div className="section-head">
         <div className="section-title">答練<span className="muted">{all.length ? all.length + "回分" : ""}</span></div>
-        {subjects.length > 1 && (
-          <div className="seg">
-            <button className={!only ? "on" : ""} onClick={() => { setOnly(null); setPick(null); }}>全部</button>
-            {subjects.map((s) => <button key={s} className={only === s ? "on" : ""} onClick={() => { setOnly(s); setPick(null); }}>{s}</button>)}
-          </div>
-        )}
       </div>
+      {subjects.length > 1 && (
+        <div className="seg ex-subs">
+          <button className={!only ? "on" : ""} onClick={() => { setOnly(null); setPick(null); setShownLow(LOW_LIST_FIRST); }}>全部</button>
+          {subjects.map((s) => <button key={s} className={only === s ? "on" : ""} onClick={() => { setOnly(s); setPick(null); setShownLow(LOW_LIST_FIRST); }}>{s}</button>)}
+        </div>
+      )}
 
       {!exam ? (
         <div className="card"><p className="empty">答練の結果はまだありません</p></div>
@@ -70,8 +77,8 @@ export default function ExamCard({ app }) {
             </div>
           )}
           <ExamResult exam={exam} color={colorOf(exam.subject)} />
-          <DevChart exams={list.slice().reverse()} />
-          <LowItems items={items} exams={list} more={more} setMore={setMore} />
+          <DevChart exams={chartExams} subject={subjects.length > 1 ? chartSubject : ""} />
+          <LowItems items={items} exams={list} shownCount={shownLow} showMore={() => setShownLow((n) => n + LOW_LIST_STEP)} />
           <Fields items={items} />
         </>
       )}
@@ -130,8 +137,15 @@ function ExamResult({ exam, color }) {
   );
 }
 
+// 日付を出す回（最初と最後と、そのあいだを等間隔に）
+function labelAt(i, n) {
+  if (n <= CHART_LABELS) return true;
+  const step = (n - 1) / (CHART_LABELS - 1);
+  return Array.from({ length: CHART_LABELS }, (_, k) => Math.round(k * step)).includes(i);
+}
+
 // 大問ごとの偏差点の推移（答練が2回以上で線になる）
-function DevChart({ exams }) {
+function DevChart({ exams, subject }) {
   const parts = [...new Set(exams.flatMap((e) => e.parts.map((p) => p.part)))].sort();
   const W = 300, H = 120, L = 26, R = 8, T = 8, B = 20;
   const lo = 30, hi = 70;
@@ -139,7 +153,7 @@ function DevChart({ exams }) {
   const y = (v) => T + ((hi - Math.min(hi, Math.max(lo, v))) * (H - T - B)) / (hi - lo);
   return (
     <div className="card ex-chart">
-      <div className="ex-sub-title">偏差点の推移</div>
+      <div className="ex-sub-title">偏差点の推移<span className="muted">{subject}{exams.length > 1 ? " 直近" + exams.length + "回" : ""}</span></div>
       <svg viewBox={`0 0 ${W} ${H}`} className="ex-svg">
         {[30, 40, 50, 60, 70].map((v) => (
           <g key={v}>
@@ -147,7 +161,7 @@ function DevChart({ exams }) {
             <text x={L - 4} y={y(v) + 3} className="ax">{v}</text>
           </g>
         ))}
-        {exams.map((e, i) => (
+        {exams.map((e, i) => labelAt(i, exams.length) && (
           <text key={e.id} x={x(i)} y={H - 5} className="ax mid-x"
             style={{ textAnchor: exams.length > 1 && i === exams.length - 1 ? "end" : exams.length > 1 && i === 0 ? "start" : "middle" }}>{md(e.date)}</text>
         ))}
@@ -171,12 +185,12 @@ function DevChart({ exams }) {
 }
 
 // 平均より大きく下回った小問（差が大きい順）
-function LowItems({ items, exams, more, setMore }) {
+function LowItems({ items, exams, shownCount, showMore }) {
   const low = items
     .map((it) => ({ ...it, d: num(it.score) !== null && num(it.avg) !== null ? num(it.score) - num(it.avg) : null }))
     .filter((it) => it.d !== null && it.d <= LOW_DIFF)
     .sort((a, b) => a.d - b.d);
-  const shown = more ? low : low.slice(0, LOW_LIST_MAX);
+  const shown = low.slice(0, shownCount);
   const nameOf = (id) => { const e = exams.find((x) => x.id === id); return e ? md(e.date) + " " + e.name : ""; };
   return (
     <div className="card ex-low">
@@ -199,7 +213,7 @@ function LowItems({ items, exams, more, setMore }) {
           {exams.length > 1 && <div className="ex-item-from">{nameOf(it.id)}</div>}
         </div>
       ))}
-      {low.length > shown.length && <button className="pg-more ex-more" onClick={() => setMore(true)}>もっと見る（ほか {low.length - shown.length}問）</button>}
+      {low.length > shown.length && <button className="pg-more ex-more" onClick={showMore}>もっと見る（ほか {low.length - shown.length}問）</button>}
     </div>
   );
 }

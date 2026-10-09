@@ -519,3 +519,5 @@ button.pg-more { background: none; border: none; padding: 6px 0 0 30px; text-ali
 .ex-field-bars .me i { background: var(--marker); }
 .ex-field-bars .them i { background: #C9D6E3; }
 .ex-field-bars span { position: absolute; left: 6px; top: 0; font-size: 10.5px; line-height: 14px; color: #2B2B2B; font-weight: 700; }
+.ex-subs { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
+.ex-subs button { flex-shrink: 0; white-space: nowrap; }

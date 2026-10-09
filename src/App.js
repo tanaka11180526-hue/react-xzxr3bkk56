@@ -113,6 +113,8 @@ function sameItem(a, b) {
   return a.row === b.row && !!a.review === !!b.review && (a.reviewIndex ?? null) === (b.reviewIndex ?? null) && a.date === b.date;
 }
 
+const EXAM_REFRESH_MS = 30 * 60 * 1000;
+
 const TABS = [
   { id: "timer", icon: "⏱", label: "タイマー" },
   { id: "calendar", icon: "📅", label: "カレンダー" },
@@ -362,7 +364,6 @@ export default function App() {
       const { items, subjects: sheetSubjects, version } = await sync.fetchSchedule(syncCfg);
       setSchedule({ items, sheetSubjects, version, at: Date.now() });
       setScheduleState({ status: "ok" });
-      if (version >= sync.EXAM_VERSION) sync.fetchExams(syncCfg).then(setExams).catch(() => {});
     } catch (e) {
       setScheduleState({ status: "error", message: e.message });
     }
@@ -433,6 +434,15 @@ export default function App() {
   }, [refreshSchedule]);
 
   // ── 予定を「終わった」にする（シートの達成 H列／復習の済チェックだけを書き換える）──
+  // 答練は記録タブを開いたときだけ読む（一度読んだら EXAM_REFRESH_MS は読み直さない）
+  const examsAt = useRef(0);
+  useEffect(() => {
+    if (tab !== "stats" || !configured || (schedule.version || 0) < sync.EXAM_VERSION) return;
+    if (Date.now() - examsAt.current < EXAM_REFRESH_MS) return;
+    examsAt.current = Date.now();
+    sync.fetchExams(syncCfg).then(setExams).catch(() => { examsAt.current = 0; });
+  }, [tab, configured, schedule.version, syncCfg]);
+
   const canMarkDone = configured && (schedule.version || 0) >= sync.FEATURE_VERSION;
   const setItemDone = useCallback((item, value) => {
     setSchedule((sc) => ({
