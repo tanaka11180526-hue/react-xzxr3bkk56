@@ -4,7 +4,9 @@ import { useEffect, useRef } from "react";
 // 左にスライドで onNext、右にスライドで onPrev。カレンダーの月めくりと同じ判定。
 // 動かし始めが横向きなら、その指の動きのあいだは縦にスクロールさせない（横スライド中に画面が上下にぶれないように）。
 // 返す ref をスライドさせたい要素に付ける
-const LOCK_PX = 8; // この距離動いた時点の向きで、横スライドか縦スクロールかを決める
+// 指が動き始めた最初の瞬間の向きで、横スライドか縦スクロールかを決める。
+// 待つとそのあいだに iPhone が縦スクロールを始めてしまい、あとから止められないため
+const LOCK_PX = 1;
 
 export function useSwipe(onPrev, onNext) {
   const ref = useRef(null);
