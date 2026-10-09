@@ -30,7 +30,7 @@ export default function TimerTab({ app }) {
         <button className="nav-btn" onClick={() => setViewDate(addDays(viewDate, 1))} disabled={isToday} aria-label="次の日">›</button>
       </div>
 
-      <div {...swipe}>
+      <div ref={swipe}>
         <NotebookHero app={app} dateKey={viewDate} />
       </div>
 

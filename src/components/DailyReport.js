@@ -48,7 +48,7 @@ export default function DailyReport({ app, dateKey, onClose }) {
 
   return (
     <div className="report-overlay" onClick={onClose}>
-      <div className="report-wrap" onClick={(e) => e.stopPropagation()} {...swipe}>
+      <div className="report-wrap" onClick={(e) => e.stopPropagation()} ref={swipe}>
         <div className="report-nav">
           <button className="nav-btn" onClick={() => { setKey(addDays(key, -1)); setEditing(false); }} aria-label="前の日">‹</button>
           <button className="btn small ghost" onClick={onClose}>閉じる</button>
