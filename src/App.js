@@ -114,6 +114,7 @@ function sameItem(a, b) {
 }
 
 const EXAM_REFRESH_MS = 30 * 60 * 1000;
+const EXAM_RETRY_MS = [2000, 5000]; // 答練の読み込みに失敗したとき、読み直すまでの待ち時間
 
 const TABS = [
   { id: "timer", icon: "⏱", label: "タイマー" },
@@ -433,15 +434,33 @@ export default function App() {
     return () => clearInterval(id);
   }, [refreshSchedule]);
 
-  // ── 予定を「終わった」にする（シートの達成 H列／復習の済チェックだけを書き換える）──
-  // 答練は記録タブを開いたときだけ読む（一度読んだら EXAM_REFRESH_MS は読み直さない）
+  // 答練は記録タブを開いたときだけ読む（一度読んだら EXAM_REFRESH_MS は読み直さない）。
+  // 失敗したら少し待って読み直す（それでもだめなら、答練のボタンを押すと読み直す）
+  const examsOn = configured && (schedule.version || 0) >= sync.EXAM_VERSION;
+  const [examsStatus, setExamsStatus] = useState("idle"); // idle / loading / ok / error
   const examsAt = useRef(0);
-  useEffect(() => {
-    if (tab !== "stats" || !configured || (schedule.version || 0) < sync.EXAM_VERSION) return;
-    if (Date.now() - examsAt.current < EXAM_REFRESH_MS) return;
+  const loadExams = useCallback(async () => {
     examsAt.current = Date.now();
-    sync.fetchExams(syncCfg).then(setExams).catch(() => { examsAt.current = 0; });
-  }, [tab, configured, schedule.version, syncCfg]);
+    setExamsStatus("loading");
+    for (let i = 0; i < EXAM_RETRY_MS.length + 1; i++) {
+      try {
+        setExams(await sync.fetchExams(syncCfg));
+        setExamsStatus("ok");
+        return;
+      } catch {
+        if (i < EXAM_RETRY_MS.length) await new Promise((r) => setTimeout(r, EXAM_RETRY_MS[i]));
+      }
+    }
+    examsAt.current = 0;
+    setExamsStatus("error");
+  }, [syncCfg]);
+  useEffect(() => {
+    if (tab !== "stats" || !examsOn) return;
+    if (Date.now() - examsAt.current < EXAM_REFRESH_MS) return;
+    loadExams();
+  }, [tab, examsOn, loadExams]);
+
+  // ── 予定を「終わった」にする（シートの達成 H列／復習の済チェックだけを書き換える）──
 
   const canMarkDone = configured && (schedule.version || 0) >= sync.FEATURE_VERSION;
   const setItemDone = useCallback((item, value) => {
@@ -517,7 +536,7 @@ export default function App() {
     examDate, setExamDate, days, breakDays, scheduleByDate, schedule, scheduleState, refreshSchedule, matchSubject,
     viewDate, setViewDate, openDay, setEditor, openReport: setReport, syncCfg, setSyncCfg, syncState, pending, flush, queueAll, configured,
     addEntries, updateEntry, deleteEntry, setLogs, setBreaks, queue,
-    canMarkDone, markDone, notes, setNote, exams,
+    canMarkDone, markDone, notes, setNote, exams, examsOn, examsStatus, loadExams,
   };
 
   const syncError = syncState.status === "error" || scheduleState.status === "error";

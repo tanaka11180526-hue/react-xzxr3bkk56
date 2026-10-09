@@ -35,8 +35,20 @@ function groupExams(results) {
 
 // 記録タブのボタン（今日のレポートと同じ形）。押すと答練のページが開く
 export function ExamButton({ app, onOpen }) {
-  if (!app.exams) return null;
-  const all = groupExams(app.exams.results || []);
+  const { exams, examsOn, examsStatus, loadExams } = app;
+  if (!examsOn) return null;
+  // まだ読めていないとき：読み込み中か、読めなかったこと（押すと読み直す）を出す
+  if (!exams) {
+    const failed = examsStatus === "error";
+    return (
+      <button className="report-cta" onClick={failed ? loadExams : undefined} disabled={!failed}>
+        <span>📝</span>
+        <span><b>答練</b><small>{failed ? "読み込めませんでした。押すともう一度読みます" : "読み込み中…"}</small></span>
+        <span>{failed ? "↻" : ""}</span>
+      </button>
+    );
+  }
+  const all = groupExams(exams.results || []);
   // 科目ごとの回数（多い順）。例：4回分（財務3・管理1）
   const count = {};
   all.forEach((e) => { count[e.subject] = (count[e.subject] || 0) + 1; });
