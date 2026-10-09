@@ -134,6 +134,7 @@ export default function App() {
   const [schedule, setSchedule] = usePersisted("cpa_schedule", { items: [], at: 0 });
   const [syncState, setSyncState] = useState({ status: "idle" });
   const [scheduleState, setScheduleState] = useState({ status: "idle" });
+  const [exams, setExams] = useState(null); // 答練の結果（大きくなるので localStorage には入れない）
   const [viewDate, setViewDate] = useState(todayKey());
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [editor, setEditor] = useState(null);
@@ -361,6 +362,7 @@ export default function App() {
       const { items, subjects: sheetSubjects, version } = await sync.fetchSchedule(syncCfg);
       setSchedule({ items, sheetSubjects, version, at: Date.now() });
       setScheduleState({ status: "ok" });
+      if (version >= sync.EXAM_VERSION) sync.fetchExams(syncCfg).then(setExams).catch(() => {});
     } catch (e) {
       setScheduleState({ status: "error", message: e.message });
     }
@@ -505,7 +507,7 @@ export default function App() {
     examDate, setExamDate, days, breakDays, scheduleByDate, schedule, scheduleState, refreshSchedule, matchSubject,
     viewDate, setViewDate, openDay, setEditor, openReport: setReport, syncCfg, setSyncCfg, syncState, pending, flush, queueAll, configured,
     addEntries, updateEntry, deleteEntry, setLogs, setBreaks, queue,
-    canMarkDone, markDone, notes, setNote,
+    canMarkDone, markDone, notes, setNote, exams,
   };
 
   const syncError = syncState.status === "error" || scheduleState.status === "error";

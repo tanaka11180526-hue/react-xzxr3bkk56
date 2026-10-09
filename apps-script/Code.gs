@@ -5,12 +5,13 @@
  * ・アプリで計測した勉強時間・休憩を「アプリ記録」タブに1件ずつ書き込む
  * ・アプリで「終わった」を押したタスクは、「ToDo・実績」の達成（H列）か復習の済チェックだけを書き換える
  * ・レポートの「ひとこと」を「アプリメモ」タブに書き込む
+ * ・「答練結果」「答練の小問」タブ（Claude が書く）を読み、アプリの記録タブに渡す
  *
  * 設定方法は apps-script/README.md を参照。
  */
 
 // このスクリプトの版。アプリはこの数字を見て、使える機能を決める
-const VERSION = 6;
+const VERSION = 7;
 
 // アプリの設定にも同じ合言葉を入れる
 const TOKEN = 'ここを自分だけの合言葉に変える';
@@ -39,6 +40,12 @@ const NOTE_SHEET = 'アプリメモ';
 const NOTE_HEADERS = ['日付', 'ひとこと', '更新'];
 const DONE_MARK = '〇';
 
+// 答練（Claude が書くタブ。アプリは読むだけ）
+const EXAM_SHEET = '答練結果';
+const EXAM_KEYS = ['id', 'date', 'subject', 'name', 'part', 'topic', 'score', 'full', 'avg', 'pass', 'dev', 'rate', 'rank', 'takers', 'grade'];
+const EXAM_ITEM_SHEET = '答練の小問';
+const EXAM_ITEM_KEYS = ['id', 'subject', 'part', 'q', 'sub', 'topic', 'kind', 'full', 'score', 'avg', 'diff', 'correct', 'level', 'miss', 'memo', 'reviewed', 'field'];
+
 function spreadsheet_() {
   return SPREADSHEET_ID ? SpreadsheetApp.openById(SPREADSHEET_ID) : SpreadsheetApp.getActiveSpreadsheet();
 }
@@ -50,6 +57,10 @@ function doGet(e) {
   if (p.action === 'schedule') {
     const ss = spreadsheet_();
     return json_({ ok: true, version: VERSION, items: readSchedule_(ss), subjects: readSubjects_(ss) });
+  }
+  if (p.action === 'exams') {
+    const ss = spreadsheet_();
+    return json_({ ok: true, version: VERSION, results: readTable_(ss, EXAM_SHEET, EXAM_KEYS), items: readTable_(ss, EXAM_ITEM_SHEET, EXAM_ITEM_KEYS) });
   }
   return json_({ ok: false, error: '不明な操作です' });
 }
@@ -157,6 +168,25 @@ function readSubjects_(ss) {
   return sh.getRange(SETTINGS_SUBJECT_RANGE).getValues()
     .map(function (r) { return String(r[0]).trim(); })
     .filter(function (s) { return s; });
+}
+
+// 1行目が見出しの表を、keys の名前を付けて読む（数字は数のまま、日付は yyyy-mm-dd）
+function readTable_(ss, name, keys) {
+  const sh = ss.getSheetByName(name);
+  if (!sh || sh.getLastRow() < 2) return [];
+  const tz = ss.getSpreadsheetTimeZone();
+  const cols = Math.min(keys.length, sh.getMaxColumns());
+  const range = sh.getRange(2, 1, sh.getLastRow() - 1, cols);
+  const values = range.getValues();
+  const shown = range.getDisplayValues();
+  return values.filter(function (v) { return String(v[0]).trim(); }).map(function (v, i) {
+    const o = {};
+    keys.forEach(function (k, j) {
+      const x = j < cols ? v[j] : '';
+      o[k] = k === 'date' ? dateKey_(x, tz, j < cols ? shown[i][j] : '') : typeof x === 'number' || typeof x === 'boolean' ? x : String(x).trim();
+    });
+    return o;
+  });
 }
 
 // ── 書き込み ──

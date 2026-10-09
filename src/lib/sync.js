@@ -54,6 +54,15 @@ export async function pushNotes(cfg, notes) {
   await post(cfg, "notes", { notes });
 }
 
+// ここから下はスクリプトの版 7 以上で使える
+export const EXAM_VERSION = 7;
+
+// 答練の結果（「答練結果」「答練の小問」タブ）を読む
+export async function fetchExams(cfg) {
+  const data = await readJson(await fetch(withQuery(cfg.url, { action: "exams", token: cfg.token, _: Date.now() }), { cache: "no-store" }));
+  return { results: data.results || [], items: data.items || [] };
+}
+
 export function toRow(log, type, subjects) {
   const sub = subjects.find((s) => s.id === log.subjectId);
   return {

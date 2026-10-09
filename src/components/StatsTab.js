@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { DAY_NAMES, addDays, fmtHM, keyToDate, todayKey } from "../lib/time";
 import { STREAK_MIN_SECS } from "../lib/constants";
 import ProgressCard from "./ProgressCard";
+import ExamCard from "./ExamCard";
 
 const RANGES = [7, 14, 30];
 
@@ -58,6 +59,8 @@ export default function StatsTab({ app }) {
       </div>
 
       <ProgressCard app={app} />
+
+      <ExamCard app={app} />
 
       <section className="section">
         <div className="section-head">
