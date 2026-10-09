@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { keyToDate } from "../lib/time";
 
 // 答練の結果（シートの「答練結果」「答練の小問」タブを Claude が書き、アプリは読むだけ）
-const LOW_LIST_STEP = 10; // 「もっと見る」で増やす数
-const LOW_LIST_FIRST = 5;
+const LIST_STEP = 10; // 答練の一覧で最初に出す数・「もっと見る」で増やす数
 const CHART_MAX = 10; // グラフに出す直近の回数
 const CHART_LABELS = 5; // 日付は多くてもこの数まで
 const SUBJECT_ALIAS = { 財務: "財計" }; // 答練は財務会計論で1科目。色は財計に合わせる
@@ -17,9 +16,9 @@ const r1 = (v) => Math.round(v * 10) / 10;
 const signed = (v) => (v > 0 ? "+" : v < 0 ? "−" : "±") + r1(Math.abs(v));
 const qLabel = (it) => [it.part, it.q, it.sub].filter(Boolean).join(" ");
 
-function Grade({ g, big }) {
+function Grade({ g }) {
   if (!g) return null;
-  return <span className={"ex-grade" + (big ? " big" : "")} style={{ background: GRADE_COLOR[g] || "#8C8274" }}>{g}</span>;
+  return <span className="ex-grade" style={{ background: GRADE_COLOR[g] || "#8C8274" }}>{g}</span>;
 }
 
 // 答練1回分（答練ID）にまとめる。新しい順
@@ -36,20 +35,21 @@ function groupExams(results) {
 export default function ExamCard({ app }) {
   const { exams, matchSubject } = app;
   const [only, setOnly] = useState(null);
-  const [pick, setPick] = useState(null);
-  const [shownLow, setShownLow] = useState(LOW_LIST_FIRST);
+  const [open, setOpen] = useState(null); // 詳細を開いている答練（1つだけ）
+  const [shown, setShown] = useState(LIST_STEP);
   if (!exams) return null;
 
   const all = groupExams(exams.results || []);
   const subjects = [...new Set(all.map((e) => e.subject))];
   const list = only ? all.filter((e) => e.subject === only) : all;
-  const exam = list.find((e) => e.id === pick) || list[0];
   const ids = new Set(list.map((e) => e.id));
   const items = (exams.items || []).filter((it) => ids.has(it.id));
   const colorOf = (s) => { const m = matchSubject(s) || matchSubject(SUBJECT_ALIAS[s]); return m ? m.color : "#8C8274"; };
-  // グラフは1科目ずつ（「全部」のときは一番新しい答練の科目）
-  const chartSubject = only || exam?.subject;
+  const opened = list.find((e) => e.id === open);
+  // グラフは1科目ずつ（「全部」のときは開いている答練か、一番新しい答練の科目）
+  const chartSubject = only || (opened || list[0] || {}).subject;
   const chartExams = list.filter((e) => e.subject === chartSubject).slice(0, CHART_MAX).reverse();
+  const pickSubject = (s) => { setOnly(s); setOpen(null); setShown(LIST_STEP); };
 
   return (
     <section className="section">
@@ -58,27 +58,41 @@ export default function ExamCard({ app }) {
       </div>
       {subjects.length > 1 && (
         <div className="seg ex-subs">
-          <button className={!only ? "on" : ""} onClick={() => { setOnly(null); setPick(null); setShownLow(LOW_LIST_FIRST); }}>全部</button>
-          {subjects.map((s) => <button key={s} className={only === s ? "on" : ""} onClick={() => { setOnly(s); setPick(null); setShownLow(LOW_LIST_FIRST); }}>{s}</button>)}
+          <button className={!only ? "on" : ""} onClick={() => pickSubject(null)}>全部</button>
+          {subjects.map((s) => <button key={s} className={only === s ? "on" : ""} onClick={() => pickSubject(s)}>{s}</button>)}
         </div>
       )}
 
-      {!exam ? (
+      {!list.length ? (
         <div className="card"><p className="empty">答練の結果はまだありません</p></div>
       ) : (
         <>
-          {list.length > 1 && (
-            <div className="ex-picks">
-              {list.map((e) => (
-                <button key={e.id} className={e.id === exam.id ? "on" : ""} onClick={() => setPick(e.id)}>
-                  <i style={{ background: colorOf(e.subject) }} />{md(e.date)} {e.name}
-                </button>
-              ))}
-            </div>
-          )}
-          <ExamResult exam={exam} color={colorOf(exam.subject)} />
+          <div className="card ex-list">
+            {list.slice(0, shown).map((e) => {
+              const t = e.total, isOpen = e.id === open;
+              return (
+                <div key={e.id} className={"ex-row-wrap" + (isOpen ? " open" : "")}>
+                  <button className="ex-row" onClick={() => setOpen(isOpen ? null : e.id)} aria-expanded={isOpen}>
+                    <i style={{ background: colorOf(e.subject) }} />
+                    <span className="ex-row-date">{md(e.date)}</span>
+                    <span className="ex-row-name">{e.name}{subjects.length > 1 && !only && <small>{e.subject}</small>}</span>
+                    {t && <span className="ex-row-score"><b>{t.score}</b>/{t.full}</span>}
+                    {t && <Grade g={t.grade} />}
+                    <span className="ex-row-arrow">{isOpen ? "▾" : "▸"}</span>
+                  </button>
+                  {isOpen && (
+                    <div className="ex-detail">
+                      <ExamResult exam={e} />
+                      <LowItems items={(exams.items || []).filter((it) => it.id === e.id)} />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            {list.length > shown && <button className="pg-more ex-more" onClick={() => setShown((n) => n + LIST_STEP)}>もっと見る（ほか {list.length - shown}回）</button>}
+            <p className="hint">押すと、その回の大問ごとの点数と、平均より落とした小問が出ます</p>
+          </div>
           <DevChart exams={chartExams} subject={subjects.length > 1 ? chartSubject : ""} />
-          <LowItems items={items} exams={list} shownCount={shownLow} showMore={() => setShownLow((n) => n + LOW_LIST_STEP)} />
           <Fields items={items} />
         </>
       )}
@@ -87,24 +101,14 @@ export default function ExamCard({ app }) {
 }
 
 // 1回分の結果：合計と大問ごとの点数・判定
-function ExamResult({ exam, color }) {
+function ExamResult({ exam }) {
   const t = exam.total;
   return (
-    <div className="card ex-result">
-      <div className="ex-head">
-        <div>
-          <div className="ex-name">{exam.name}</div>
-          <div className="ex-meta"><span style={{ color }}>{exam.subject}</span>・{md(exam.date)}</div>
-        </div>
-        {t && <Grade g={t.grade} big />}
-      </div>
+    <div className="ex-result">
       {t && (
-        <div className="ex-total">
-          <b>{t.score}</b><small> / {t.full}点</small>
-          <span className="ex-total-sub">
-            平均 {r1(num(t.avg))}・合格 {t.pass}
-            {num(t.rank) !== null && <>・{t.rank}位/{t.takers}人</>}
-          </span>
+        <div className="ex-total-sub">
+          合計の平均 {r1(num(t.avg))}・合格 {t.pass}
+          {num(t.rank) !== null && <>・{t.rank}位/{t.takers}人</>}
         </div>
       )}
       <div className="ex-parts">
@@ -184,20 +188,18 @@ function DevChart({ exams, subject }) {
   );
 }
 
-// 平均より大きく下回った小問（差が大きい順）
-function LowItems({ items, exams, shownCount, showMore }) {
+// その回で平均より大きく落とした小問（差が大きい順）
+function LowItems({ items }) {
   const low = items
     .map((it) => ({ ...it, d: num(it.score) !== null && num(it.avg) !== null ? num(it.score) - num(it.avg) : null }))
     .filter((it) => it.d !== null && it.d <= LOW_DIFF)
     .sort((a, b) => a.d - b.d);
-  const shown = low.slice(0, shownCount);
-  const nameOf = (id) => { const e = exams.find((x) => x.id === id); return e ? md(e.date) + " " + e.name : ""; };
   return (
-    <div className="card ex-low">
+    <div className="ex-low">
       <div className="ex-sub-title">平均より大きく落とした小問<span className="muted">{low.length}問</span></div>
       {low.length === 0 && <p className="empty">平均を大きく下回った小問はありません</p>}
-      {shown.map((it, i) => (
-        <div key={it.id + qLabel(it) + i} className={"ex-item" + (it.reviewed === true ? " done" : "")}>
+      {low.map((it, i) => (
+        <div key={qLabel(it) + i} className={"ex-item" + (it.reviewed === true ? " done" : "")}>
           <div className="ex-item-top">
             <span className="ex-item-q">{qLabel(it)}</span>
             {it.kind && <span className="ex-tag">{it.kind}</span>}
@@ -210,10 +212,8 @@ function LowItems({ items, exams, shownCount, showMore }) {
             {num(it.correct) !== null && <span>・平均得点率 {Math.round(num(it.correct))}%</span>}
           </div>
           {it.memo && <div className="ex-item-memo">{it.memo}</div>}
-          {exams.length > 1 && <div className="ex-item-from">{nameOf(it.id)}</div>}
         </div>
       ))}
-      {low.length > shown.length && <button className="pg-more ex-more" onClick={showMore}>もっと見る（ほか {low.length - shown.length}問）</button>}
     </div>
   );
 }
