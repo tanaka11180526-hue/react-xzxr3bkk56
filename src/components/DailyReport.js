@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { DAY_NAMES, addDays, keyToDate, todayKey } from "../lib/time";
 import { STREAK_MIN_SECS } from "../lib/constants";
+import { useSwipe } from "../lib/swipe";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -39,10 +40,15 @@ export default function DailyReport({ app, dateKey, onClose }) {
   });
   const tasks = Object.values(taskMap).sort((a, b) => b.secs - a.secs);
   const note = notes[key] || "";
+  // ページ全体で横にスライドすると日付を動かす（今日より先には行かない。ひとことを書いている間は動かさない）
+  const swipe = useSwipe(
+    () => { if (!editing) setKey(addDays(key, -1)); },
+    () => { if (!editing && !isToday) setKey(addDays(key, 1)); },
+  );
 
   return (
     <div className="report-overlay" onClick={onClose}>
-      <div className="report-wrap" onClick={(e) => e.stopPropagation()}>
+      <div className="report-wrap" onClick={(e) => e.stopPropagation()} {...swipe}>
         <div className="report-nav">
           <button className="nav-btn" onClick={() => { setKey(addDays(key, -1)); setEditing(false); }} aria-label="前の日">‹</button>
           <button className="btn small ghost" onClick={onClose}>閉じる</button>

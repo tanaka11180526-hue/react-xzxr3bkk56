@@ -2,6 +2,7 @@ import React from "react";
 import { addDays, dayStart, fmtClock, fmtDateJa, fmtHMS, todayKey } from "../lib/time";
 import ScheduleItem from "./ScheduleItem";
 import NotebookHero from "./NotebookHero";
+import { useSwipe } from "../lib/swipe";
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const BLOCK_MS = 5 * 60000;
@@ -15,6 +16,8 @@ export default function TimerTab({ app }) {
   // 上の日付で選んだ日の予定を出す（計測を始められるのは今日の予定だけ）
   const plans = scheduleByDate[viewDate] || [];
   const studied = subjects.filter((s) => day.by[s.id]).sort((a, b) => day.by[b.id] - day.by[a.id]);
+  // ノートの絵の上で横にスライドすると日付を動かす（今日より先には行かない）
+  const swipe = useSwipe(() => setViewDate(addDays(viewDate, -1)), () => { if (!isToday) setViewDate(addDays(viewDate, 1)); });
 
   return (
     <div className="page">
@@ -27,7 +30,9 @@ export default function TimerTab({ app }) {
         <button className="nav-btn" onClick={() => setViewDate(addDays(viewDate, 1))} disabled={isToday} aria-label="次の日">›</button>
       </div>
 
-      <NotebookHero app={app} dateKey={viewDate} />
+      <div {...swipe}>
+        <NotebookHero app={app} dateKey={viewDate} />
+      </div>
 
       {plans.length > 0 && (
         <section className="card section">
