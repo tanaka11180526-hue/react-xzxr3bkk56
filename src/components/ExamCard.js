@@ -188,7 +188,6 @@ function LowItems({ items, exams, more, setMore }) {
             <span className="ex-item-q">{qLabel(it)}</span>
             {it.kind && <span className="ex-tag">{it.kind}</span>}
             {it.level && <span className="ex-tag">難易度{it.level}</span>}
-            {it.miss && <span className="ex-tag miss">{it.miss}</span>}
             {it.reviewed === true && <span className="ex-tag ok">復習済</span>}
           </div>
           <div className="ex-item-topic">{it.topic}</div>
@@ -217,10 +216,7 @@ function Fields({ items }) {
   const rows = Object.values(map)
     .map((f) => ({ ...f, me: (f.score / f.full) * 100, them: (f.avg / f.full) * 100 }))
     .sort((a, b) => (a.me - a.them) - (b.me - b.them));
-  const misses = {};
-  items.forEach((it) => { if (it.miss) misses[it.miss] = (misses[it.miss] || 0) + 1; });
-  const missRows = Object.entries(misses).sort((a, b) => b[1] - a[1]);
-  if (!rows.length && !missRows.length) return null;
+  if (!rows.length) return null;
   return (
     <div className="card ex-fields">
       <div className="ex-sub-title">分野ごとの得点率<span className="muted">平均との差が大きい順</span></div>
@@ -236,12 +232,6 @@ function Fields({ items }) {
           </div>
         </div>
       ))}
-      {missRows.length > 0 ? (
-        <>
-          <div className="ex-sub-title ex-gap">間違いの種類</div>
-          <div className="ex-misses">{missRows.map(([k, n]) => <span key={k} className="ex-tag miss">{k} {n}</span>)}</div>
-        </>
-      ) : <p className="hint">間違いの種類（ケアレス・知識不足など）が入ると、ここに数が出ます</p>}
     </div>
   );
 }
