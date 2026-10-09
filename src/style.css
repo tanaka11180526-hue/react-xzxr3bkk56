@@ -319,7 +319,13 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
   background: repeating-linear-gradient(-55deg, rgba(43,43,43,0.07) 0 0.25cqw, transparent 0.25cqw 1.3cqw);
 }
 .nh-status { margin: 1.2cqw 0 1.8cqw; font-size: 3cqw; color: #5a554c; min-height: 4.6cqw; text-align: center; }
-.nh-message { font-family: "Klee One", sans-serif; font-size: 3.5cqw; line-height: 1.35; color: #2B2B2B; margin-top: 2cqw; min-height: 9.6cqw; display: flex; align-items: center; justify-content: center; }
+/* 今日以外の日のひとこと：少し傾けたマスキングテープの上に書く。長い文は2行に折り返す */
+.nh-message {
+  font-family: "Klee One", sans-serif; font-size: 3.5cqw; line-height: 1.35; color: #2B2B2B; text-align: center; text-wrap: balance;
+  width: fit-content; max-width: 96%; min-height: 0; margin: 2.6cqw auto 1.4cqw; padding: 1.6cqw 4cqw;
+  transform: rotate(-1.5deg); background: rgba(198, 212, 174, 0.75);
+  clip-path: polygon(0 8%, 2% 0, 98% 4%, 100% 0, 99% 50%, 100% 96%, 97% 100%, 2% 94%, 0 100%, 1% 50%);
+}
 .nh-status b { font-weight: 600; color: #2B2B2B; }
 .nh-grid { display: grid; width: 100%; gap: 1.6cqw 1.2cqw; align-content: space-evenly; flex: 1; }
 .nh-grid.cols-2 { grid-template-columns: 1fr 1fr; padding: 0 4cqw; --nh-c: 7.6cqw; --nh-f: 4.8cqw; }
