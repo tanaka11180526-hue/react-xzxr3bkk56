@@ -36,14 +36,17 @@ function groupExams(results) {
 // 記録タブのボタン（今日のレポートと同じ形）。押すと答練のページが開く
 export function ExamButton({ app, onOpen }) {
   if (!app.exams) return null;
-  const latest = groupExams(app.exams.results || [])[0];
-  const t = latest && latest.total;
+  const all = groupExams(app.exams.results || []);
+  // 科目ごとの回数（多い順）。例：4回分（財務3・管理1）
+  const count = {};
+  all.forEach((e) => { count[e.subject] = (count[e.subject] || 0) + 1; });
+  const bySubject = Object.entries(count).sort((a, b) => b[1] - a[1]).map(([s, n]) => s + n).join("・");
   return (
     <button className="report-cta" onClick={onOpen}>
       <span>📝</span>
       <span>
         <b>答練</b>
-        <small>{latest ? groupExams(app.exams.results).length + "回分・最新 " + latest.name + (t ? " " + t.score + "/" + t.full + (t.grade ? " " + t.grade : "") : "") : "結果はまだありません"}</small>
+        <small>{all.length ? all.length + "回分（" + bySubject + "）" : "結果はまだありません"}</small>
       </span>
       <span>›</span>
     </button>
