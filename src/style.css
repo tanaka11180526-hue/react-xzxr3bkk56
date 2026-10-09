@@ -508,18 +508,24 @@ button.pg-more { background: none; border: none; padding: 6px 0 0 30px; text-ali
 .ex-field-bars span { position: absolute; left: 6px; top: 0; font-size: 10.5px; line-height: 14px; color: #2B2B2B; font-weight: 700; }
 .ex-subs { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
 .ex-subs button { flex-shrink: 0; white-space: nowrap; }
-.ex-list { padding: 4px 12px 10px; }
-.ex-row-wrap { border-bottom: 1px dashed var(--border); }
-.ex-row { width: 100%; display: flex; align-items: center; gap: 8px; padding: 10px 2px; background: none; border: 0; text-align: left; color: var(--text); font-size: 13.5px; }
-.ex-row i { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
-.ex-row-date { width: 40px; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; flex-shrink: 0; }
-.ex-row-name { flex: 1; min-width: 0; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ex-row-name small { margin-left: 6px; font-size: 11px; color: var(--muted); font-weight: 400; }
-.ex-row-score { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.ex-row-score b { font-size: 15px; color: var(--text); }
 .ex-row-arrow { width: 12px; color: var(--muted); font-size: 12px; }
-.ex-row-wrap.open .ex-row { font-weight: 800; }
-.ex-detail { padding: 2px 2px 12px; display: flex; flex-direction: column; gap: 14px; }
-.ex-list > .hint { margin-top: 8px; }
 
 .ex-total-sub { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+.ex-track { display: flex; overflow-x: auto; padding-bottom: 8px; scroll-snap-type: x mandatory; scrollbar-width: none; margin: 0 -16px; align-items: flex-start; overscroll-behavior-x: contain; }
+.ex-track::-webkit-scrollbar { display: none; }
+.ex-slide { flex: 0 0 100%; scroll-snap-align: center; scroll-snap-stop: always; padding: 0 16px; box-sizing: border-box; }
+.ex-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.ex-head-name { flex: 1; min-width: 0; }
+.ex-name { font-size: 16px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ex-meta { font-size: 12px; color: var(--muted); font-weight: 700; }
+.ex-head-score { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.ex-head-score b { font-size: 24px; color: var(--text); }
+.ex-low-toggle { width: 100%; display: flex; align-items: baseline; gap: 8px; margin-top: 12px; padding: 10px 0 2px; border: 0; border-top: 1px dashed var(--border); background: none; font-size: 13px; font-weight: 800; color: var(--text); text-align: left; }
+.ex-low-toggle .muted { font-size: 11px; font-weight: 400; color: var(--muted); flex: 1; }
+.ex-pager { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: -2px; }
+.ex-pager button { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); font-size: 18px; line-height: 1; color: var(--text-2); }
+.ex-pager button:disabled { opacity: 0.3; }
+.ex-dots { display: flex; gap: 6px; }
+.ex-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--border); }
+.ex-dots i.on { background: #2B2B2B; }
+.ex-count { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; min-width: 40px; text-align: center; }
