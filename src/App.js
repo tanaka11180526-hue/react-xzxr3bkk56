@@ -434,7 +434,7 @@ export default function App() {
     return () => clearInterval(id);
   }, [refreshSchedule]);
 
-  // 答練は記録タブを開いたときだけ読む（一度読んだら EXAM_REFRESH_MS は読み直さない）。
+  // 答練は、予定を読み終わったときか記録タブを開いたときに読む（一度読んだら EXAM_REFRESH_MS は読み直さない）。
   // 失敗したら少し待って読み直す（それでもだめなら、答練のボタンを押すと読み直す）
   const examsOn = configured && (schedule.version || 0) >= sync.EXAM_VERSION;
   const [examsStatus, setExamsStatus] = useState("idle"); // idle / loading / ok / error
@@ -454,11 +454,13 @@ export default function App() {
     examsAt.current = 0;
     setExamsStatus("error");
   }, [syncCfg]);
+  // 予定を読み終わったら裏で答練も読んでおく（記録タブを開いたときに待たなくていいように）
+  const scheduleOk = scheduleState.status === "ok";
   useEffect(() => {
-    if (tab !== "stats" || !examsOn) return;
+    if (!examsOn || (tab !== "stats" && !scheduleOk)) return;
     if (Date.now() - examsAt.current < EXAM_REFRESH_MS) return;
     loadExams();
-  }, [tab, examsOn, loadExams]);
+  }, [tab, scheduleOk, examsOn, loadExams]);
 
   // ── 予定を「終わった」にする（シートの達成 H列／復習の済チェックだけを書き換える）──
 

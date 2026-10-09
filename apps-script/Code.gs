@@ -11,7 +11,7 @@
  */
 
 // このスクリプトの版。アプリはこの数字を見て、使える機能を決める
-const VERSION = 7;
+const VERSION = 8;
 
 // アプリの設定にも同じ合言葉を入れる
 const TOKEN = 'ここを自分だけの合言葉に変える';
@@ -170,23 +170,32 @@ function readSubjects_(ss) {
     .filter(function (s) { return s; });
 }
 
-// 1行目が見出しの表を、keys の名前を付けて読む（数字は数のまま、日付は yyyy-mm-dd）
+// 1行目が見出しの表を、keys の名前を付けて読む（数字は数のまま、日付は yyyy-mm-dd）。
+// 空の行にもチェックボックスがあると getLastRow が大きくなるので、A列に中身がある最後の行までだけ読む
 function readTable_(ss, name, keys) {
   const sh = ss.getSheetByName(name);
   if (!sh || sh.getLastRow() < 2) return [];
+  const ids = sh.getRange(2, 1, sh.getLastRow() - 1, 1).getValues();
+  let rows = ids.length;
+  while (rows > 0 && !String(ids[rows - 1][0]).trim()) rows--;
+  if (!rows) return [];
   const tz = ss.getSpreadsheetTimeZone();
   const cols = Math.min(keys.length, sh.getMaxColumns());
-  const range = sh.getRange(2, 1, sh.getLastRow() - 1, cols);
+  const range = sh.getRange(2, 1, rows, cols);
   const values = range.getValues();
-  const shown = range.getDisplayValues();
-  return values.filter(function (v) { return String(v[0]).trim(); }).map(function (v, i) {
+  const dateCol = keys.indexOf('date');
+  const shown = dateCol >= 0 && dateCol < cols ? range.getDisplayValues() : null;
+  const out = [];
+  values.forEach(function (v, i) {
+    if (!String(v[0]).trim()) return; // 途中の空行は飛ばす（i は元の行の位置のまま）
     const o = {};
     keys.forEach(function (k, j) {
       const x = j < cols ? v[j] : '';
-      o[k] = k === 'date' ? dateKey_(x, tz, j < cols ? shown[i][j] : '') : typeof x === 'number' || typeof x === 'boolean' ? x : String(x).trim();
+      o[k] = k === 'date' ? dateKey_(x, tz, shown ? shown[i][j] : '') : typeof x === 'number' || typeof x === 'boolean' ? x : String(x).trim();
     });
-    return o;
+    out.push(o);
   });
+  return out;
 }
 
 // ── 書き込み ──
