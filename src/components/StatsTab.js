@@ -3,6 +3,7 @@ import { DAY_NAMES, addDays, fmtHM, keyToDate, todayKey } from "../lib/time";
 import { STREAK_MIN_SECS } from "../lib/constants";
 import ProgressCard from "./ProgressCard";
 import ExamPage, { ExamButton } from "./ExamCard";
+import WeeklyReport from "./WeeklyReport";
 
 const RANGES = [7, 14, 30];
 
@@ -25,6 +26,7 @@ export default function StatsTab({ app }) {
   const [range, setRange] = useState(7);
   const [editingExam, setEditingExam] = useState(false);
   const [examsOpen, setExamsOpen] = useState(false);
+  const [weekOpen, setWeekOpen] = useState(false);
   const today = todayKey();
   const { streak, longest, todayDone } = calcStreak(days, today);
   const graphDays = Array.from({ length: range }, (_, i) => addDays(today, i - range + 1));
@@ -37,6 +39,10 @@ export default function StatsTab({ app }) {
       <button className="report-cta" onClick={() => openReport(today)}>
         <span>📓</span><span><b>今日のレポート</b><small>ノート風にまとめて見る</small></span><span>›</span>
       </button>
+      <button className="report-cta" onClick={() => setWeekOpen(true)}>
+        <span>🗓️</span><span><b>今週のレポート</b><small>1週間（月〜日）をまとめて見る</small></span><span>›</span>
+      </button>
+      {weekOpen && <WeeklyReport app={app} onClose={() => setWeekOpen(false)} />}
       <ExamButton app={app} onOpen={() => setExamsOpen(true)} />
       {examsOpen && <ExamPage app={app} onClose={() => setExamsOpen(false)} />}
       <div className="stat-grid">
