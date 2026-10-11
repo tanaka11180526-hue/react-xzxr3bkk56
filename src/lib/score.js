@@ -12,7 +12,15 @@ export const RANKS = [
   { rank: "D", min: 35 },
   { rank: "E", min: -Infinity },
 ];
-export const RANK_COLOR = { S: "#D4A72C", A: "#5E8A3C", B: "#8DAA5B", C: "#C9952B", D: "#D9783F", E: "#B4432F" };
+// 評価シールの色（S は虹色）。background にそのまま入れる
+export const RANK_COLOR = {
+  S: "linear-gradient(135deg, #E5484D 0%, #F5A524 22%, #F2D43D 40%, #5DB55B 58%, #3E8EDE 76%, #8B5CF6 100%)",
+  A: "#D9443B",
+  B: "#3E7CC9",
+  C: "#8CBF3F",
+  D: "#EE8A2E",
+  E: "#8B5A3C",
+};
 export const rankOf = (score) => RANKS.find((r) => score >= r.min).rank;
 
 const STUDY_DAY_SECS = 60; // 休憩以外で1分以上の記録がある日を「勉強した日」とする

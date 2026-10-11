@@ -567,3 +567,5 @@ button.pg-more { background: none; border: none; padding: 6px 0 0 30px; text-ali
 .rp-weekly .rp-total { margin-bottom: 1.4cqw; }
 .rp-weekly .rp-date { margin-bottom: 1cqw; }
 .rp-weekly .rp-rank-badge { width: 10.5cqw; height: 10.5cqw; font-size: 6cqw; }
+/* 評価シールの文字を、どの色の上でも読めるように */
+.cal-rank, .rp-rank-badge, .rw-rank { text-shadow: 0 1px 1px rgba(0,0,0,0.35); }
