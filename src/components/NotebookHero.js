@@ -66,11 +66,26 @@ export default function NotebookHero({ app, dateKey }) {
     timerActions.toggleSubject(s.id);
   }
 
+  // 計測中・一時停止中・休憩中は、楕円に今の計測（休憩）時間を大きく出し、今日の合計は下に小さく出す
+  const totalText = <>今日の合計 <b>{fmtHMS(today.total)}</b></>;
+  let label = isToday ? "合計時間" : fmtMD(dateKey) + "の合計";
+  let big = fmtHMS(today.total);
   let status;
-  if (timer.mode === "study") status = <><b>{getSub(timer.subjectId).label}</b> 計測中 {fmtHMS((now - timer.start) / 1000)}</>;
-  else if (timer.mode === "paused") status = <>一時停止中・あと{Math.max(0, Math.ceil((PAUSE_LIMIT_MS - (now - timer.pausedAt)) / 1000))}秒で休憩に</>;
-  else if (timer.mode === "break") status = <>☕ 休憩中 {fmtHMS((now - timer.start) / 1000)}</>;
-  else status = <>科目の ▷ を押すと計測が始まるで</>;
+  if (timer.mode === "study") {
+    label = getSub(timer.subjectId).label + " 計測中";
+    big = fmtHMS((now - timer.start) / 1000);
+    status = totalText;
+  } else if (timer.mode === "paused") {
+    label = getSub(timer.subjectId).label + " 一時停止中";
+    big = fmtHMS((timer.pausedAt - timer.start) / 1000);
+    status = <>あと{Math.max(0, Math.ceil((PAUSE_LIMIT_MS - (now - timer.pausedAt)) / 1000))}秒で休憩に・{totalText}</>;
+  } else if (timer.mode === "break") {
+    label = "☕ 休憩中";
+    big = fmtHMS((now - timer.start) / 1000);
+    status = totalText;
+  } else status = <>科目の ▷ を押すと計測が始まるで</>;
+  // 今日以外の日は、その日の合計だけ
+  if (!isToday) { label = fmtMD(dateKey) + "の合計"; big = fmtHMS(today.total); }
 
   // 計測中だけ出す小さな操作ボタン（開始は科目の ▷ から）
   let controls = [];
@@ -95,12 +110,13 @@ export default function NotebookHero({ app, dateKey }) {
         <div className="nh-frame">
           <CornerDoodle daysLeft={app.examDate ? Math.ceil((keyToDate(app.examDate) - keyToDate(todayKey())) / 86400000) : null} />
           {milestone && <MilestoneStamp hours={milestone} />}
-          <div className="nh-label">
-            <Sparks />
-            <span>{isToday ? "合計時間" : fmtMD(dateKey) + "の合計"}</span>
-            <Sparks flip />
+          <div className={"nh-label" + (label.length >= 7 ? " long" : "")}>
+            {/* 計測中・休憩中は見出しが長くなるので、左上の付箋にかぶらないように飾りを外す */}
+            {!(isToday && timer.mode !== "idle") && <Sparks />}
+            <span>{label}</span>
+            {!(isToday && timer.mode !== "idle") && <Sparks flip />}
           </div>
-          <div className="nh-oval">{fmtHMS(today.total)}</div>
+          <div className="nh-oval">{big}</div>
           {/* 計測中の表示と操作は今日を見ているときだけ。ほかの日はその日のひとことを出す */}
           <div className={"nh-status" + (isToday ? "" : " nh-message")}>{isToday ? status : dayMessage(dateKey, today, getSub)}</div>
           <div className="nh-controls">
