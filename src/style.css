@@ -312,6 +312,8 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
   font-family: "Klee One", sans-serif; mix-blend-mode: multiply;
 }
 .nh-label { display: flex; align-items: center; gap: 1.6cqw; font-size: 4.2cqw; letter-spacing: 0.6cqw; }
+/* 「財計 一時停止中」のような長い見出しは、左上の付箋にかぶらないように少し小さく */
+.nh-label.long { font-size: 3.6cqw; letter-spacing: 0.3cqw; }
 .nh-sparks { width: 4.4cqw; height: 4.4cqw; }
 .nh-oval {
   margin-top: 1cqw; width: 90%; padding: 2.6cqw 0; text-align: center; border: 0.42cqw solid #2B2B2B; border-radius: 50%;
