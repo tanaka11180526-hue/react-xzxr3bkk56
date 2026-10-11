@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import { DAY_NAMES, addDays, keyToDate, todayKey } from "../lib/time";
 import { STREAK_MIN_SECS } from "../lib/constants";
 import { useSwipe } from "../lib/swipe";
+import { dayScore, firstStudyDay } from "../lib/score";
+import RankStamp from "./RankStamp";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-function fmtSpaced(secs) {
+export function fmtSpaced(secs) {
   const h = Math.floor(secs / 3600), m = Math.floor((secs % 3600) / 60);
   return h > 0 ? h + "h " + m + "m" : m + "m";
 }
@@ -19,7 +21,7 @@ function streakAt(days, key) {
 
 // ノート風の1日のまとめ
 export default function DailyReport({ app, dateKey, onClose }) {
-  const { days, breakDays, subjects, getSub, logs, notes, setNote } = app;
+  const { days, breakDays, subjects, getSub, logs, notes, setNote, schedule } = app;
   const [key, setKey] = useState(dateKey);
   const [editing, setEditing] = useState(false);
   const isToday = key === todayKey();
@@ -29,6 +31,8 @@ export default function DailyReport({ app, dateKey, onClose }) {
   const ranked = subjects.filter((s) => day.by[s.id]).sort((a, b) => day.by[b.id] - day.by[a.id]);
   const top = ranked.slice(0, 3);
   const streak = streakAt(days, key);
+  const first = firstStudyDay(days);
+  const score = first && key >= first ? dayScore(key, { days, items: schedule.items || [], today: todayKey() }) : null;
 
   // 予定から計った分（やったこと）
   const dayStart = d.getTime(), dayEnd = dayStart + 86400000;
@@ -70,6 +74,7 @@ export default function DailyReport({ app, dateKey, onClose }) {
                   <div className="rp-label">TOTAL STUDY TIME</div>
                   <div className="rp-big"><span className="marker">{fmtSpaced(day.total)}</span></div>
                 </div>
+                {score && <RankStamp score={score} />}
               </div>
 
               <span className="rp-tag tag-sand">TOP 3 SUBJECTS</span>
@@ -124,7 +129,7 @@ export default function DailyReport({ app, dateKey, onClose }) {
   );
 }
 
-function SunDoodle() {
+export function SunDoodle() {
   return (
     <svg className="rp-sun" viewBox="0 0 64 64" aria-hidden="true">
       <circle cx="32" cy="32" r="11" fill="#F6C76B" stroke="#2B2B2B" strokeWidth="2.2" />
@@ -135,7 +140,7 @@ function SunDoodle() {
   );
 }
 
-function ClockDoodle() {
+export function ClockDoodle() {
   return (
     <svg className="rp-clock" viewBox="0 0 64 64" aria-hidden="true">
       <circle cx="32" cy="32" r="26" fill="none" stroke="#2B2B2B" strokeWidth="2.6" />
@@ -144,7 +149,7 @@ function ClockDoodle() {
   );
 }
 
-function MountainDoodle() {
+export function MountainDoodle() {
   return (
     <svg className="rp-mountain" viewBox="0 0 160 80" aria-hidden="true">
       <path d="M4 74 L48 40 L66 54 L96 22 L140 74" fill="none" stroke="#2B2B2B" strokeWidth="2" strokeLinejoin="round" />

@@ -462,9 +462,11 @@ button.pg-row.dim { opacity: 0.45; }
 button.pg-more { background: none; border: none; padding: 6px 0 0 30px; text-align: left; text-decoration: underline; text-underline-offset: 3px; }
 
 /* その日の評価のシール（答練の判定と同じ形）。今日は途中なので薄く点線のふち */
-.cal-rank { position: absolute; top: 2px; right: 2px; width: 17px; height: 17px; border-radius: 5px; border: 1.5px solid #2B2B2B; background: var(--c); color: #fff;
-  font-size: 11px; font-weight: 800; line-height: 14px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.18); pointer-events: none; }
+.cal-rank { position: absolute; top: 2px; right: 1px; width: 16px; height: 16px; border-radius: 5px; border: 1.5px solid #2B2B2B; background: var(--c); color: #fff;
+  font-size: 10.5px; font-weight: 800; line-height: 13px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.18); pointer-events: none; }
 .cal-rank.now { opacity: 0.55; border-style: dashed; box-shadow: none; }
+/* 今日は日付が黒丸なので、シールを少し小さくして丸にかぶらないようにする */
+.cal-cell.today .cal-rank { width: 14px; height: 14px; font-size: 9.5px; line-height: 11px; top: 1px; right: 0; }
 
 /* 答練 */
 .ex-grade { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 6px; color: #fff; font-size: 12px; font-weight: 800; border: 1.5px solid #2B2B2B; flex-shrink: 0; }
@@ -542,22 +544,26 @@ button.pg-more { background: none; border: none; padding: 6px 0 0 30px; text-ali
 .ex-page-title { font-size: 20px; font-weight: 800; display: flex; align-items: baseline; gap: 8px; }
 .ex-page-title .muted { font-size: 12px; font-weight: 400; color: var(--muted); }
 
-/* 週の評価 */
-.ws { border-bottom: 1px dashed var(--border); padding-bottom: 10px; margin-bottom: 10px; }
-.ws-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-.ws-rank { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 10px; border: 1.5px solid #2B2B2B; background: var(--c); color: #fff; font-size: 22px; font-weight: 800; transform: rotate(-4deg); }
-.ws-rank.small { width: 22px; height: 22px; font-size: 12px; border-radius: 6px; transform: rotate(-3deg); }
-.ws-rank.now { opacity: 0.6; border-style: dashed; }
-.ws-score { font-size: 13px; color: var(--text-2); }
-.ws-score b { font-size: 24px; color: var(--text); margin-right: 1px; }
-.ws-score em { font-style: normal; margin-left: 8px; font-size: 11px; font-weight: 700; color: var(--muted); border: 1px dashed var(--muted); border-radius: 5px; padding: 0 5px; }
-.ws-rows { display: flex; flex-direction: column; gap: 3px; }
-.ws-row { display: flex; align-items: baseline; gap: 8px; font-size: 12.5px; }
-.ws-label { flex: 1; color: var(--text-2); }
-.ws-value { color: var(--muted); font-size: 12px; }
-.ws-pt { width: 56px; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
-.ws-pt small { font-weight: 400; color: var(--muted); }
-.ws-month { display: flex; flex-direction: column; gap: 6px; }
-.ws-week { display: flex; align-items: center; gap: 10px; }
-.ws-week-date { width: 92px; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.ws-week .ws-score b { font-size: 16px; }
+/* レポートの評価のハンコ（答練の判定と同じ形）。途中の日・週は薄く点線のふち */
+.rp-rank { margin-left: auto; margin-right: 2cqw; display: flex; flex-direction: column; align-items: center; gap: 0.6cqw; }
+.rp-rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 12cqw; height: 12cqw; border-radius: 2.6cqw; border: 0.45cqw solid #2B2B2B; background: var(--c); color: #fff; font-size: 7cqw; font-weight: 800; transform: rotate(-6deg); box-shadow: 0 0.4cqw 0.8cqw rgba(0,0,0,0.15); }
+.rp-rank.now .rp-rank-badge { opacity: 0.6; border-style: dashed; box-shadow: none; }
+.rp-rank-score { font-family: "Caveat", "Klee One", cursive; font-size: 3.6cqw; line-height: 1; white-space: nowrap; }
+.rp-rank-score em { font-style: normal; font-family: "Klee One", sans-serif; font-size: 2.4cqw; color: #7a7366; margin-left: 0.8cqw; }
+
+/* 今週のレポート：毎日の時間の棒と、その日の評価 */
+.rw-days { display: flex; gap: 1.2cqw; margin: 0 1.6cqw 1.8cqw; }
+.rw-day { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5cqw; }
+.rw-bar-area { width: 100%; height: 8cqw; display: flex; align-items: flex-end; justify-content: center; border-bottom: 0.3cqw solid #2B2B2B; }
+.rw-bar { width: 60%; background: #C6D4AE; border: 0.3cqw solid #2B2B2B; border-bottom: none; border-radius: 1cqw 1cqw 0 0; }
+.rw-dow { font-size: 2.8cqw; }
+.rw-dow.sun { color: #B4432F; }
+.rw-dow.sat { color: #3E7CB1; }
+.rw-time { font-family: "Caveat", "Klee One", cursive; font-size: 3cqw; line-height: 1; }
+.rw-rank { width: 4.8cqw; height: 4.8cqw; border-radius: 1.2cqw; border: 0.3cqw solid #2B2B2B; background: var(--c); color: #fff; font-size: 2.9cqw; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
+.rw-rank.now { opacity: 0.55; border-style: dashed; }
+.rw-rank.none { border-color: transparent; background: none; }
+.rp-weekly .rp-list li { padding: 0.7cqw 0.4cqw; }
+.rp-weekly .rp-total { margin-bottom: 1.4cqw; }
+.rp-weekly .rp-date { margin-bottom: 1cqw; }
+.rp-weekly .rp-rank-badge { width: 10.5cqw; height: 10.5cqw; font-size: 6cqw; }
