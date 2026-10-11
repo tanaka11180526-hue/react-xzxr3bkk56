@@ -6,13 +6,7 @@ import Sheet from "./Sheet";
 import ScheduleItem from "./ScheduleItem";
 
 const MAX_CHIPS = 3;
-// 毎日、その日の評価（S〜E）を書いたシールを貼る。傾きは日付から作った乱数で決める（同じ日はいつ開いても同じ）
-function tiltFor(key) {
-  let h = 2166136261;
-  for (let i = 0; i < key.length; i++) h = Math.imul(h ^ key.charCodeAt(i), 16777619) >>> 0;
-  h = Math.imul(h ^ (h >>> 13), 0x5bd1e995) >>> 0;
-  return ((h >>> 8) % 25) - 12;
-}
+// 毎日、その日の評価（S〜E）を書いたシールを貼る（まっすぐ）
 // 表示は日曜はじまり（記録タブの「今週」は月曜はじまりのまま）
 const WEEK_ORDER = [0, 1, 2, 3, 4, 5, 6];
 
@@ -63,7 +57,7 @@ export default function CalendarTab({ app }) {
           const secs = (days[key] || { total: 0 }).total;
           return (
             <button key={key} className={"cal-cell" + (key === today ? " today" : "")} onClick={() => setSelected(key)}>
-              {first && key >= first && key <= today && studied(days, key) && <RankSticker k={key} s={dayScore(key, { days, items, today })} />}
+              {first && key >= first && key <= today && studied(days, key) && <RankSticker s={dayScore(key, { days, items, today })} />}
               <span className={"cal-day" + (dow === 0 ? " sun" : dow === 6 ? " sat" : "")}>{i + 1}</span>
               {secs > 0 && <span className="cal-secs">{fmtHM(secs)}</span>}
               {plans.slice(0, MAX_CHIPS).map((p, j) => {
@@ -126,9 +120,9 @@ function DaySheet({ app, dateKey, onClose }) {
   );
 }
 
-function RankSticker({ k, s }) {
+function RankSticker({ s }) {
   return (
-    <span className={"cal-rank" + (s.inProgress ? " now" : "")} style={{ "--c": RANK_COLOR[s.rank], transform: `rotate(${tiltFor(k)}deg)` }}
+    <span className={"cal-rank" + (s.inProgress ? " now" : "")} style={{ "--c": RANK_COLOR[s.rank] }}
       title={s.score + "点" + (s.inProgress ? "（途中）" : "")}>{s.rank}</span>
   );
 }

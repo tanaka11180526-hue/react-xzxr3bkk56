@@ -546,7 +546,7 @@ button.pg-more { background: none; border: none; padding: 6px 0 0 30px; text-ali
 
 /* レポートの評価のハンコ（答練の判定と同じ形）。途中の日・週は薄く点線のふち */
 .rp-rank { margin-left: auto; margin-right: 2cqw; display: flex; flex-direction: column; align-items: center; gap: 0.6cqw; }
-.rp-rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 12cqw; height: 12cqw; border-radius: 50%; border: 0.45cqw solid rgba(60,50,40,0.6); background: var(--c); color: #fff; font-size: 7cqw; font-weight: 800; transform: rotate(-6deg); box-shadow: inset 0 0 0 0.6cqw rgba(255,255,255,0.45), 0 0.4cqw 0.8cqw rgba(0,0,0,0.18); }
+.rp-rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 12cqw; height: 12cqw; border-radius: 50%; border: 0.45cqw solid rgba(60,50,40,0.6); background: var(--c); color: #fff; font-size: 7cqw; font-weight: 800; box-shadow: inset 0 0 0 0.6cqw rgba(255,255,255,0.45), 0 0.4cqw 0.8cqw rgba(0,0,0,0.18); }
 .rp-rank.now .rp-rank-badge { opacity: 0.6; border-style: dashed; box-shadow: none; }
 .rp-rank-score { font-family: "Caveat", "Klee One", cursive; font-size: 3.6cqw; line-height: 1; white-space: nowrap; }
 .rp-rank-score em { font-style: normal; font-family: "Klee One", sans-serif; font-size: 2.4cqw; color: #7a7366; margin-left: 0.8cqw; }
