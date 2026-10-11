@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { DAY_NAMES, addDays, fmtHM, keyToDate, toKey, todayKey } from "../lib/time";
-import { isTaskDone } from "../lib/tasks";
+import { isTaskDone, prevDayReviewLast } from "../lib/tasks";
 
 const LIST_MAX = 10;
 const LISTS = [
@@ -35,7 +35,7 @@ export default function ProgressCard({ app }) {
     .filter((it) => it.date >= from && it.date <= to && it.content)
     .map((it) => ({ ...it, sub: matchSubject(it.subject), done: isTaskDone(it) }))
     .filter((t) => t.sub)
-    .sort((a, b) => a.date.localeCompare(b.date));
+    .sort((a, b) => a.date.localeCompare(b.date) || prevDayReviewLast(a, b)); // 同じ日の「前日の復習」は一番下
   const done = tasks.filter((t) => t.done);
   const late = tasks.filter((t) => !t.done && t.date < today);
   const left = tasks.filter((t) => !t.done && t.date >= today);
@@ -62,7 +62,8 @@ export default function ProgressCard({ app }) {
   const pct = tasks.length ? Math.round((done.length / tasks.length) * 100) : 0;
 
   const pick = (arr) => (only ? arr.filter((t) => t.sub.id === only) : arr);
-  const lists = { left: pick(left), late: pick(late), done: pick(done).slice().reverse() };
+  // 終わったものは新しい日から。同じ日の中では「前日の復習」を一番下のままにする
+  const lists = { left: pick(left), late: pick(late), done: pick(done).slice().sort((a, b) => b.date.localeCompare(a.date) || prevDayReviewLast(a, b)) };
   const current = lists[list];
   const shown = more ? current : current.slice(0, LIST_MAX);
 

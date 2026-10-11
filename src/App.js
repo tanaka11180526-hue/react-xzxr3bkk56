@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { load, save, remove as removeKey, makeId, usePersisted } from "./lib/storage";
 import { dayStart, nextMidnight, splitByDay, toKey, todayKey } from "./lib/time";
-import { syncTaskNames } from "./lib/tasks";
+import { syncTaskNames, prevDayReviewLast } from "./lib/tasks";
 import * as sync from "./lib/sync";
 import { BREAK_LIMIT_MS, DEFAULT_SUBJECTS, PAUSE_LIMIT_MS } from "./lib/constants";
 import TimerTab from "./components/TimerTab";
@@ -408,7 +408,8 @@ export default function App() {
   const scheduleByDate = useMemo(() => {
     const map = {};
     (schedule.items || []).forEach((it) => (map[it.date] = map[it.date] || []).push(it));
-    Object.values(map).forEach((list) => list.sort((a, b) => (a.start || "99").localeCompare(b.start || "99")));
+    // 「前日の復習」はその日の一番下。ほかはシートの並びのまま
+    Object.values(map).forEach((list) => list.sort((a, b) => prevDayReviewLast(a, b) || (a.start || "99").localeCompare(b.start || "99")));
     return map;
   }, [schedule]);
   const matchSubject = useCallback((name) => {
