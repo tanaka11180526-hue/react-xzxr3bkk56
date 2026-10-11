@@ -69,14 +69,17 @@ export default function NotebookHero({ app, dateKey }) {
   // 計測中・一時停止中・休憩中は、楕円に今の計測（休憩）時間を大きく出し、今日の合計は下に小さく出す
   const totalText = <>今日の合計 <b>{fmtHMS(today.total)}</b></>;
   let label = isToday ? "合計時間" : fmtMD(dateKey) + "の合計";
+  let labelSub = null; // 見出しの科目名（科目ボタンと同じマーカーを引く）
   let big = fmtHMS(today.total);
   let status;
   if (timer.mode === "study") {
-    label = getSub(timer.subjectId).label + " 計測中";
+    labelSub = getSub(timer.subjectId);
+    label = " 計測中";
     big = fmtHMS((now - timer.start) / 1000);
     status = totalText;
   } else if (timer.mode === "paused") {
-    label = getSub(timer.subjectId).label + " 一時停止中";
+    labelSub = getSub(timer.subjectId);
+    label = " 一時停止中";
     big = fmtHMS((timer.pausedAt - timer.start) / 1000);
     status = <>あと{Math.max(0, Math.ceil((PAUSE_LIMIT_MS - (now - timer.pausedAt)) / 1000))}秒で休憩に・{totalText}</>;
   } else if (timer.mode === "break") {
@@ -85,7 +88,8 @@ export default function NotebookHero({ app, dateKey }) {
     status = totalText;
   } else status = <>科目の ▷ を押すと計測が始まるで</>;
   // 今日以外の日は、その日の合計だけ
-  if (!isToday) { label = fmtMD(dateKey) + "の合計"; big = fmtHMS(today.total); }
+  if (!isToday) { label = fmtMD(dateKey) + "の合計"; labelSub = null; big = fmtHMS(today.total); }
+  const labelLen = (labelSub ? labelSub.label.length : 0) + label.length;
 
   // 計測中だけ出す小さな操作ボタン（開始は科目の ▷ から）
   let controls = [];
@@ -110,10 +114,10 @@ export default function NotebookHero({ app, dateKey }) {
         <div className="nh-frame">
           <CornerDoodle daysLeft={app.examDate ? Math.ceil((keyToDate(app.examDate) - keyToDate(todayKey())) / 86400000) : null} />
           {milestone && <MilestoneStamp hours={milestone} />}
-          <div className={"nh-label" + (label.length >= 7 ? " long" : "")}>
+          <div className={"nh-label" + (labelLen >= 7 ? " long" : "")}>
             {/* 計測中・休憩中は見出しが長くなるので、左上の付箋にかぶらないように飾りを外す */}
             {!(isToday && timer.mode !== "idle") && <Sparks />}
-            <span>{label}</span>
+            <span>{labelSub && <span className="nh-hl" style={{ "--hl": labelSub.color + "8C" }}>{labelSub.label}</span>}{label}</span>
             {!(isToday && timer.mode !== "idle") && <Sparks flip />}
           </div>
           <div className="nh-oval">{big}</div>
