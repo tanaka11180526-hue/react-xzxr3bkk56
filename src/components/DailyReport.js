@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { DAY_NAMES, addDays, keyToDate, todayKey } from "../lib/time";
 import { STREAK_MIN_SECS } from "../lib/constants";
 import { useSwipe } from "../lib/swipe";
-import { dayScore, firstStudyDay } from "../lib/score";
+import { dayScore, firstStudyDay, studied } from "../lib/score";
 import RankStamp from "./RankStamp";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -32,7 +32,7 @@ export default function DailyReport({ app, dateKey, onClose }) {
   const top = ranked.slice(0, 3);
   const streak = streakAt(days, key);
   const first = firstStudyDay(days);
-  const score = first && key >= first ? dayScore(key, { days, items: schedule.items || [], today: todayKey() }) : null;
+  const score = first && key >= first && studied(days, key) ? dayScore(key, { days, items: schedule.items || [], today: todayKey() }) : null;
 
   // 予定から計った分（やったこと）
   const dayStart = d.getTime(), dayEnd = dayStart + 86400000;

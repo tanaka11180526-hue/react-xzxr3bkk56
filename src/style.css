@@ -462,8 +462,8 @@ button.pg-row.dim { opacity: 0.45; }
 button.pg-more { background: none; border: none; padding: 6px 0 0 30px; text-align: left; text-decoration: underline; text-underline-offset: 3px; }
 
 /* その日の評価のシール（答練の判定と同じ形）。今日は途中なので薄く点線のふち */
-.cal-rank { position: absolute; top: 2px; right: 1px; width: 16px; height: 16px; border-radius: 5px; border: 1.5px solid #2B2B2B; background: var(--c); color: #fff;
-  font-size: 10.5px; font-weight: 800; line-height: 13px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.18); pointer-events: none; }
+.cal-rank { position: absolute; top: 2px; right: 1px; width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid rgba(60,50,40,0.6); background: var(--c); color: #fff;
+  font-size: 10.5px; font-weight: 800; line-height: 13px; text-align: center; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.45), 0 1px 2px rgba(0,0,0,0.2); pointer-events: none; }
 .cal-rank.now { opacity: 0.55; border-style: dashed; box-shadow: none; }
 /* 今日は日付が黒丸なので、シールを少し小さくして丸にかぶらないようにする */
 .cal-cell.today .cal-rank { width: 14px; height: 14px; font-size: 9.5px; line-height: 11px; top: 1px; right: 0; }
@@ -546,7 +546,7 @@ button.pg-more { background: none; border: none; padding: 6px 0 0 30px; text-ali
 
 /* レポートの評価のハンコ（答練の判定と同じ形）。途中の日・週は薄く点線のふち */
 .rp-rank { margin-left: auto; margin-right: 2cqw; display: flex; flex-direction: column; align-items: center; gap: 0.6cqw; }
-.rp-rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 12cqw; height: 12cqw; border-radius: 2.6cqw; border: 0.45cqw solid #2B2B2B; background: var(--c); color: #fff; font-size: 7cqw; font-weight: 800; transform: rotate(-6deg); box-shadow: 0 0.4cqw 0.8cqw rgba(0,0,0,0.15); }
+.rp-rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 12cqw; height: 12cqw; border-radius: 50%; border: 0.45cqw solid rgba(60,50,40,0.6); background: var(--c); color: #fff; font-size: 7cqw; font-weight: 800; transform: rotate(-6deg); box-shadow: inset 0 0 0 0.6cqw rgba(255,255,255,0.45), 0 0.4cqw 0.8cqw rgba(0,0,0,0.18); }
 .rp-rank.now .rp-rank-badge { opacity: 0.6; border-style: dashed; box-shadow: none; }
 .rp-rank-score { font-family: "Caveat", "Klee One", cursive; font-size: 3.6cqw; line-height: 1; white-space: nowrap; }
 .rp-rank-score em { font-style: normal; font-family: "Klee One", sans-serif; font-size: 2.4cqw; color: #7a7366; margin-left: 0.8cqw; }
@@ -560,7 +560,7 @@ button.pg-more { background: none; border: none; padding: 6px 0 0 30px; text-ali
 .rw-dow.sun { color: #B4432F; }
 .rw-dow.sat { color: #3E7CB1; }
 .rw-time { font-family: "Caveat", "Klee One", cursive; font-size: 3cqw; line-height: 1; }
-.rw-rank { width: 4.8cqw; height: 4.8cqw; border-radius: 1.2cqw; border: 0.3cqw solid #2B2B2B; background: var(--c); color: #fff; font-size: 2.9cqw; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
+.rw-rank { width: 4.8cqw; height: 4.8cqw; border-radius: 50%; border: 0.3cqw solid rgba(60,50,40,0.6); box-shadow: inset 0 0 0 0.25cqw rgba(255,255,255,0.45); background: var(--c); color: #fff; font-size: 2.9cqw; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
 .rw-rank.now { opacity: 0.55; border-style: dashed; }
 .rw-rank.none { border-color: transparent; background: none; }
 .rp-weekly .rp-list li { padding: 0.7cqw 0.4cqw; }
@@ -568,4 +568,4 @@ button.pg-more { background: none; border: none; padding: 6px 0 0 30px; text-ali
 .rp-weekly .rp-date { margin-bottom: 1cqw; }
 .rp-weekly .rp-rank-badge { width: 10.5cqw; height: 10.5cqw; font-size: 6cqw; }
 /* 評価シールの文字を、どの色の上でも読めるように */
-.cal-rank, .rp-rank-badge, .rw-rank { text-shadow: 0 1px 1px rgba(0,0,0,0.35); }
+.cal-rank, .rp-rank-badge, .rw-rank { text-shadow: 0 1px 1px rgba(0,0,0,0.45); }
