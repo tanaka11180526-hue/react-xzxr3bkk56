@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import { DAY_NAMES, fmtDateJa, fmtHM, toKey, todayKey } from "../lib/time";
 import { UNKNOWN_COLOR } from "../lib/constants";
-import { RANK_COLOR, dayScore, firstStudyDay } from "../lib/score";
+import { RANK_COLOR, dayScore, firstStudyDay, studied } from "../lib/score";
 import Sheet from "./Sheet";
 import ScheduleItem from "./ScheduleItem";
 
@@ -63,7 +63,7 @@ export default function CalendarTab({ app }) {
           const secs = (days[key] || { total: 0 }).total;
           return (
             <button key={key} className={"cal-cell" + (key === today ? " today" : "")} onClick={() => setSelected(key)}>
-              {first && key >= first && key <= today && <RankSticker k={key} s={dayScore(key, { days, items, today })} />}
+              {first && key >= first && key <= today && studied(days, key) && <RankSticker k={key} s={dayScore(key, { days, items, today })} />}
               <span className={"cal-day" + (dow === 0 ? " sun" : dow === 6 ? " sat" : "")}>{i + 1}</span>
               {secs > 0 && <span className="cal-secs">{fmtHM(secs)}</span>}
               {plans.slice(0, MAX_CHIPS).map((p, j) => {

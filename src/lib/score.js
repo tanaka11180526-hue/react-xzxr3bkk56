@@ -12,14 +12,15 @@ export const RANKS = [
   { rank: "D", min: 35 },
   { rank: "E", min: -Infinity },
 ];
-// 評価シールの色（S は虹色）。background にそのまま入れる
+// 評価シールの色（メダル風：S プラチナ・A ゴールド・B シルバー・C ブロンズ・D レギュラー・E くすんだ灰色）。
+// 斜めに明るいところと暗いところを入れて金属っぽく見せる。background にそのまま入れる
 export const RANK_COLOR = {
-  S: "linear-gradient(135deg, #E5484D 0%, #F5A524 22%, #F2D43D 40%, #5DB55B 58%, #3E8EDE 76%, #8B5CF6 100%)",
-  A: "#D9443B",
-  B: "#3E7CC9",
-  C: "#8CBF3F",
-  D: "#EE8A2E",
-  E: "#8B5A3C",
+  S: "linear-gradient(135deg, #E9F0FF 0%, #A9C1FF 30%, #8E86F0 62%, #6FA8F5 100%)",
+  A: "linear-gradient(135deg, #FFF3B0 0%, #F4C93A 40%, #D69E12 75%, #F1CF55 100%)",
+  B: "linear-gradient(135deg, #EEF6FB 0%, #B9CCDA 40%, #8EA6B8 75%, #C7D7E3 100%)",
+  C: "linear-gradient(135deg, #F5C9A0 0%, #D08A4E 40%, #A8622E 75%, #D59866 100%)",
+  D: "linear-gradient(135deg, #F2F2F2 0%, #C9C9C9 40%, #A6A6A6 75%, #D2D2D2 100%)",
+  E: "linear-gradient(135deg, #B5ADA4 0%, #8E857B 45%, #6E665E 100%)",
 };
 export const rankOf = (score) => RANKS.find((r) => score >= r.min).rank;
 
@@ -31,7 +32,8 @@ export function weekStart(key) {
   return addDays(key, -((keyToDate(key).getDay() + 6) % 7));
 }
 
-const studied = (days, k) => ((days[k] && days[k].total) || 0) >= STUDY_DAY_SECS;
+// 休憩以外で1分以上の記録がある日（記録が全くない日には、日の評価シールを貼らない。週の評価には入れる）
+export const studied = (days, k) => ((days[k] && days[k].total) || 0) >= STUDY_DAY_SECS;
 
 // その期間の予定（「やること」が入っている行。科目は問わない。復習は別に数える）
 function tasksIn(items, from, to) {
