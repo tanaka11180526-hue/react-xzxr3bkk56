@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { DAY_NAMES, addDays, fmtHM, keyToDate, toKey, todayKey } from "../lib/time";
 import { isTaskDone } from "../lib/tasks";
+import { RANK_COLOR, firstStudyDay, weekScore, weekStart } from "../lib/score";
 
 const LIST_MAX = 10;
 const LISTS = [
@@ -76,6 +77,7 @@ export default function ProgressCard({ app }) {
         </div>
       </div>
       <div className="card progress">
+        <WeekScores kind={kind} from={from} to={to} days={days} items={schedule.items || []} today={today} />
         {tasks.length ? (
           <>
             <div className="pg-head">
@@ -159,6 +161,59 @@ function TaskRow({ t, list, spent, canMarkDone, markDone }) {
           {diff !== null && diff < 0 && <em className="pg-fast">{-diff}分早い</em>}
         </span>
       ) : plan > 0 && <span className="pg-plan">{plan}分</span>}
+    </div>
+  );
+}
+
+const pt = (v) => Math.round(v * 10) / 10;
+
+// 週の評価。今週は点数と4項目の内訳、今月はその月にかかる週ごとのランク
+function WeekScores({ kind, from, to, days, items, today }) {
+  const first = firstStudyDay(days);
+  if (!first) return null;
+  const ctx = { days, items, today };
+  if (kind === "week") {
+    const w = weekScore(from, ctx);
+    const { hours, tasks, missed, studiedDays } = w.detail;
+    const rows = [
+      ["勉強時間", hours.toFixed(1) + "時間", w.parts.time, 40],
+      ["タスク", tasks.total ? tasks.done + "/" + tasks.total + "件" : "予定なし", w.parts.task, 40],
+      ["復習の取りこぼし", missed + "件", w.parts.review, 10],
+      ["継続", studiedDays + "日", w.parts.streak, 10],
+    ];
+    return (
+      <div className="ws">
+        <div className="ws-head">
+          <span className={"ws-rank" + (w.inProgress ? " now" : "")} style={{ "--c": RANK_COLOR[w.rank] }}>{w.rank}</span>
+          <span className="ws-score"><b>{w.score}</b>点{w.inProgress && <em>途中経過</em>}</span>
+        </div>
+        <div className="ws-rows">
+          {rows.map(([label, value, got, max]) => (
+            <div key={label} className="ws-row">
+              <span className="ws-label">{label}</span>
+              <span className="ws-value">{value}</span>
+              <span className="ws-pt">{got === null ? "—" : pt(got)}<small>/{max}</small></span>
+            </div>
+          ))}
+        </div>
+        {w.parts.task === null && <p className="hint">予定が0件なので、タスクを除いた60点満点を100点に換算しています</p>}
+      </div>
+    );
+  }
+  const weeks = [];
+  for (let k = weekStart(from); k <= to && k <= today; k = addDays(k, 7)) {
+    if (addDays(k, 6) >= first) weeks.push(weekScore(k, ctx));
+  }
+  if (!weeks.length) return null;
+  return (
+    <div className="ws ws-month">
+      {weeks.map((w) => (
+        <div key={w.from} className="ws-week">
+          <span className="ws-week-date">{md(w.from)}〜{md(w.to)}</span>
+          <span className={"ws-rank small" + (w.inProgress ? " now" : "")} style={{ "--c": RANK_COLOR[w.rank] }}>{w.rank}</span>
+          <span className="ws-score"><b>{w.score}</b>点{w.inProgress && <em>途中経過</em>}</span>
+        </div>
+      ))}
     </div>
   );
 }
