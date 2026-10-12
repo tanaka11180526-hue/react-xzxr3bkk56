@@ -259,6 +259,11 @@ function lowOf(items) {
     .sort((a, b) => a.d - b.d);
 }
 
+// 間違いの種類（シートの N列。本人が言ったときだけ Claude が入れる。複数は「、」などで区切る）
+function missKinds(v) {
+  return String(v || "").split(/[、,，・/／\s]+/).filter(Boolean);
+}
+
 function LowItems({ low }) {
   return (
     <div className="ex-low">
@@ -269,6 +274,7 @@ function LowItems({ low }) {
             <span className="ex-item-q">{qLabel(it)}</span>
             {it.kind && <span className="ex-tag">{it.kind}</span>}
             {it.level && <span className="ex-tag">難易度{it.level}</span>}
+            {missKinds(it.miss).map((k) => <span key={k} className="ex-tag miss">{k}</span>)}
             {it.reviewed === true && <span className="ex-tag ok">復習済</span>}
           </div>
           <div className="ex-item-topic">{it.topic}</div>
