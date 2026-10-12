@@ -404,6 +404,8 @@ export default function App() {
     });
     return out;
   }, [studyDays, liveSubject, liveStart, liveEnd]);
+  // 評価の「集中」用：記録に、計測中の分も足したもの
+  const scoreLogs = useMemo(() => (liveSubject && liveEnd > liveStart ? [...logs, { start: liveStart, end: liveEnd }] : logs), [logs, liveSubject, liveStart, liveEnd]);
 
   const scheduleByDate = useMemo(() => {
     const map = {};
@@ -539,7 +541,7 @@ export default function App() {
     examDate, setExamDate, days, breakDays, scheduleByDate, schedule, scheduleState, refreshSchedule, matchSubject,
     viewDate, setViewDate, openDay, setEditor, openReport: setReport, syncCfg, setSyncCfg, syncState, pending, flush, queueAll, configured,
     addEntries, updateEntry, deleteEntry, setLogs, setBreaks, queue,
-    canMarkDone, markDone, notes, setNote, exams, examsOn, examsStatus, loadExams,
+    canMarkDone, markDone, notes, setNote, exams, scoreLogs, examsOn, examsStatus, loadExams,
   };
 
   const syncError = syncState.status === "error" || scheduleState.status === "error";

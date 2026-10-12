@@ -65,7 +65,7 @@ export default function CalendarTab({ app }) {
           const secs = (days[key] || { total: 0 }).total;
           return (
             <button key={key} className={"cal-cell" + (key === today ? " today" : "")} onClick={() => setSelected(key)}>
-              {first && key >= first && key <= today && studied(days, key) && <RankSticker s={dayScore(key, { days, items, today })} />}
+              {first && key >= first && key <= today && studied(days, key) && <RankSticker s={dayScore(key, { days, items, logs: app.scoreLogs, today })} />}
               <span className={"cal-day" + (dow === 0 ? " sun" : dow === 6 ? " sat" : "")}>{i + 1}</span>
               {secs > 0 && <span className="cal-secs">{fmtHM(secs)}</span>}
               {plans.slice(0, MAX_CHIPS).map((p, j) => {

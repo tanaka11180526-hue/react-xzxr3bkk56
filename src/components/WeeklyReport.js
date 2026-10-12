@@ -19,7 +19,7 @@ export default function WeeklyReport({ app, onClose }) {
   const swipe = useSwipe(() => go(-1), () => go(1));
 
   const keys = Array.from({ length: 7 }, (_, i) => addDays(from, i));
-  const ctx = { days, items: schedule.items || [], today };
+  const ctx = { days, items: schedule.items || [], logs: app.scoreLogs, today };
   const first = firstStudyDay(days);
   const rated = (k) => first && k >= first && k <= today && studied(days, k);
   const score = first && addDays(from, 6) >= first ? weekScore(from, ctx) : null;
@@ -100,7 +100,7 @@ export default function WeeklyReport({ app, onClose }) {
 
         <div className="report-extra">
           <div className="report-stats">
-            {score && <div><span>勉強した日</span><b>{score.detail.studiedDays}日</b></div>}
+            {score && <div><span>2時間以上の日</span><b>{score.detail.stableDays}日</b></div>}
             {score && <div><span>終わったタスク</span><b>{score.detail.tasks.total ? score.detail.tasks.done + "/" + score.detail.tasks.total + "件" : "予定なし"}</b></div>}
             {score && <div><span>取りこぼした復習</span><b>{score.detail.missed}件</b></div>}
             <div><span>休憩</span><b>{fmtSpaced(breakSecs)}</b></div>
