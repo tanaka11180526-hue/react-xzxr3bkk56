@@ -1,7 +1,8 @@
 import React, { useRef, useState } from "react";
-import { DAY_NAMES, fmtDateJa, fmtHM, toKey, todayKey } from "../lib/time";
+import { DAY_NAMES, fmtDateJa, fmtHM, keyToDate, toKey, todayKey } from "../lib/time";
 import { UNKNOWN_COLOR } from "../lib/constants";
 import { RANK_COLOR, dayScore, firstStudyDay, studied } from "../lib/score";
+import { examShort, isExamPlan } from "../lib/tasks";
 import Sheet from "./Sheet";
 import ScheduleItem from "./ScheduleItem";
 
@@ -14,6 +15,7 @@ export default function CalendarTab({ app }) {
   const { days, scheduleByDate, matchSubject, configured, schedule, scheduleState, refreshSchedule } = app;
   const [month, setMonth] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); });
   const [selected, setSelected] = useState(null);
+  const [mode, setMode] = useState("plan"); // plan：ふつうの予定（答練は除く）／ exam：答練だけ
   const touch = useRef(null);
   const year = month.getFullYear(), m = month.getMonth();
   const firstDow = new Date(year, m, 1).getDay();
@@ -39,6 +41,11 @@ export default function CalendarTab({ app }) {
     <div className="page">
       <SyncStatus configured={configured} schedule={schedule} state={scheduleState} onRefresh={refreshSchedule} />
 
+      <div className="seg cal-mode">
+        <button className={mode === "plan" ? "on" : ""} onClick={() => setMode("plan")}>予定</button>
+        <button className={mode === "exam" ? "on" : ""} onClick={() => setMode("exam")}>答練</button>
+      </div>
+
       <div className="date-nav">
         <button className="nav-btn" onClick={() => move(-1)} aria-label="前の月">‹</button>
         <div className="date-nav-center">
@@ -53,7 +60,8 @@ export default function CalendarTab({ app }) {
         {Array.from({ length: daysInMonth }, (_, i) => {
           const key = toKey(new Date(year, m, i + 1));
           const dow = (firstDow + i) % 7;
-          const plans = scheduleByDate[key] || [];
+          if (mode === "exam") return <ExamCell key={key} app={app} dateKey={key} dow={dow} today={today} onClick={() => setSelected(key)} />;
+          const plans = (scheduleByDate[key] || []).filter((p) => !isExamPlan(p));
           const secs = (days[key] || { total: 0 }).total;
           return (
             <button key={key} className={"cal-cell" + (key === today ? " today" : "")} onClick={() => setSelected(key)}>
@@ -71,7 +79,11 @@ export default function CalendarTab({ app }) {
       </div>
       <p className="hint center">左右にスワイプで月を移動・日付をタップで詳細</p>
 
-      {selected && <DaySheet app={app} dateKey={selected} onClose={() => setSelected(null)} />}
+      {mode === "exam" && <NextExams app={app} today={today} />}
+
+      {selected && (mode === "exam"
+        ? <ExamDaySheet app={app} dateKey={selected} onClose={() => setSelected(null)} />
+        : <DaySheet app={app} dateKey={selected} onClose={() => setSelected(null)} />)}
     </div>
   );
 }
@@ -96,7 +108,7 @@ function SyncStatus({ configured, schedule, state, onRefresh }) {
 
 function DaySheet({ app, dateKey, onClose }) {
   const { scheduleByDate, days, subjects, openDay, openReport } = app;
-  const plans = scheduleByDate[dateKey] || [];
+  const plans = (scheduleByDate[dateKey] || []).filter((p) => !isExamPlan(p)); // 答練は「答練」のカレンダーに出す
   const day = days[dateKey] || { total: 0, by: {} };
   const canStart = dateKey === todayKey();
   return (
@@ -124,5 +136,78 @@ function RankSticker({ s }) {
   return (
     <span className={"cal-rank" + (s.inProgress ? " now" : "")} style={{ "--c": RANK_COLOR[s.rank] }}
       title={s.score + "点" + (s.inProgress ? "（途中）" : "")}>{s.rank}</span>
+  );
+}
+
+// ── 答練のカレンダー ──
+const EXAM_ALIAS = { 財務: "財計" }; // 答練の科目「財務」は財計の色で出す
+const NEXT_EXAMS = 5;
+
+function examColor(app, subject) {
+  const s = app.matchSubject(subject) || app.matchSubject(EXAM_ALIAS[subject]);
+  return s ? s.color : UNKNOWN_COLOR;
+}
+// 答練の予定に、シートに入れた結果（答練結果の「合計」の行）があればその判定を付ける。科目と答練名、なければ科目と日付で探す
+function resultOf(app, it) {
+  const rows = ((app.exams && app.exams.results) || []).filter((r) => r.part === "合計" && r.subject === String(it.subject).trim());
+  return rows.find((r) => r.name === String(it.content).trim()) || rows.find((r) => r.date === it.date) || null;
+}
+const examsOn = (app, key) => (app.scheduleByDate[key] || []).filter(isExamPlan);
+
+function ExamCell({ app, dateKey, dow, today, onClick }) {
+  const list = examsOn(app, dateKey);
+  return (
+    <button className={"cal-cell" + (dateKey === today ? " today" : "")} onClick={onClick}>
+      <span className={"cal-day" + (dow === 0 ? " sun" : dow === 6 ? " sat" : "")}>{keyToDate(dateKey).getDate()}</span>
+      {list.map((it, j) => {
+        const r = resultOf(app, it);
+        return (
+          <span key={j} className="cal-chip cal-exam" style={{ background: examColor(app, it.subject) }}>
+            {String(it.subject).trim().slice(0, 1)}{examShort(it.content)}{r && r.grade && <b className="cal-exam-grade">{r.grade}</b>}
+          </span>
+        );
+      })}
+    </button>
+  );
+}
+
+function ExamDaySheet({ app, dateKey, onClose }) {
+  const list = examsOn(app, dateKey);
+  return (
+    <Sheet title={fmtDateJa(dateKey)} onClose={onClose}>
+      <div className="section-title">答練</div>
+      {list.length ? list.map((it, i) => {
+        const r = resultOf(app, it);
+        return (
+          <div key={i} className="exam-row">
+            <i style={{ background: examColor(app, it.subject) }} />
+            <span className="exam-row-name"><b>{it.subject}</b> {it.content}</span>
+            {r && <span className="exam-row-result">{r.score}/{r.full}{r.grade && <b>{r.grade}</b>}</span>}
+          </div>
+        );
+      }) : <p className="empty">この日の答練はありません</p>}
+    </Sheet>
+  );
+}
+
+// これからの答練（近い順に5件）
+function NextExams({ app, today }) {
+  const next = (app.schedule.items || []).filter((it) => isExamPlan(it) && it.date >= today)
+    .sort((a, b) => a.date.localeCompare(b.date)).slice(0, NEXT_EXAMS);
+  const days = (k) => Math.round((keyToDate(k) - keyToDate(today)) / 86400000);
+  return (
+    <section className="section">
+      <div className="section-title">次の答練</div>
+      <div className="card">
+        {next.length ? next.map((it, i) => (
+          <div key={i} className="exam-row">
+            <i style={{ background: examColor(app, it.subject) }} />
+            <span className="exam-row-date">{keyToDate(it.date).getMonth() + 1}/{keyToDate(it.date).getDate()}（{DAY_NAMES[keyToDate(it.date).getDay()]}）</span>
+            <span className="exam-row-name"><b>{it.subject}</b> {it.content}</span>
+            <span className="exam-row-left">{days(it.date) === 0 ? "今日" : "あと" + days(it.date) + "日"}</span>
+          </div>
+        )) : <p className="empty">これからの答練の予定はありません</p>}
+      </div>
+    </section>
   );
 }
