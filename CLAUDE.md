@@ -59,4 +59,5 @@
 ## 変更の流れ
 - 作業ブランチで直す → `git fetch origin main && git merge origin/main` → `CI=true npx react-scripts build` が通ることを確かめる → 見た目の変更は Playwright で `build/` を開いてスクショで確かめる → push → PR → マージ
 - アプリの変更は1つの会話でまとめてやる（別の会話と同時に触ると PR が重なる）
+- 評価の基準やシートの読み方に関わる変更のときは、Google ドライブの「CPA勉強方針メモ(クロード引継ぎ用)」も読む
 - 本人の記録を直すとき（消す・縮めるなど）は、本人に確認してから、起動時に一度だけ動く処理として入れる（`App.js` の `BREAK_CLEANUPS` など）。シートだけ直しても、アプリから送り直すと元に戻る
