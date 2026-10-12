@@ -104,12 +104,6 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 .top-date-nav { margin-bottom: -4px; }
 
 /* now card */
-.now-card { text-align: center; --c: var(--text); }
-.now-label { font-size: 12px; letter-spacing: 1px; color: var(--muted); font-weight: 700; }
-.now-label.accent, .now-time.accent { color: var(--c); }
-.now-time { font-size: 46px; font-weight: 800; letter-spacing: -1px; font-variant-numeric: tabular-nums; line-height: 1.15; }
-.now-sub { font-size: 12px; color: var(--text-2); margin-top: 2px; line-height: 1.5; }
-.now-actions { display: flex; gap: 8px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
 .mix-bar { display: flex; height: 5px; border-radius: 3px; overflow: hidden; gap: 1px; margin-top: -4px; }
 
 /* sections */
@@ -124,13 +118,6 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 .subject-row { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-top: 1px solid var(--border); }
 .subject-row:last-child { border-bottom: 1px solid var(--border); }
 .subject-row.running { background: color-mix(in srgb, var(--c) 12%, transparent); }
-.play-btn { width: 44px; height: 44px; border-radius: 50%; border: none; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-.play-btn.static { background: var(--surface-2); }
-.play-btn .dot { width: 10px; height: 10px; border-radius: 3px; }
-.play-icon { width: 0; height: 0; border-top: 7px solid transparent; border-bottom: 7px solid transparent; border-left: 11px solid #000; margin-left: 3px; }
-.pause-icon { width: 12px; height: 14px; border-left: 4px solid; border-right: 4px solid; }
-.subject-name { flex: 1; font-size: 16px; font-weight: 700; min-width: 0; }
-.subject-time { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .tag { margin-left: 6px; font-size: 10px; padding: 2px 6px; border-radius: 5px; background: var(--surface-2); color: var(--text-2); vertical-align: middle; }
 
 /* schedule items */
@@ -142,7 +129,6 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 .plan-cat { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 5px; background: var(--surface-2); color: var(--text-2); }
 .plan-achieved { font-size: 11px; font-weight: 800; color: var(--ok); }
 .plan.done { opacity: 0.6; }
-.now-task { font-size: 13px; color: var(--text); margin-top: 2px; line-height: 1.4; }
 .plan-content { font-size: 14px; margin-top: 2px; line-height: 1.5; word-break: break-word; }
 .plan-note { font-size: 12px; color: var(--muted); margin-top: 2px; white-space: pre-wrap; }
 
@@ -421,7 +407,6 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 .pg-mini { width: 64px; text-align: right; color: var(--muted); font-size: 12px; }
 .pg-mini b { color: var(--text); font-size: 14px; }
 .pg-time { width: 64px; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
-.pg-title { margin-top: 6px; }
 .pg-task { display: flex; align-items: center; gap: 8px; font-size: 12.5px; flex-wrap: wrap; }
 .pg-date { width: 38px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .pg-content { flex: 1; min-width: 0; }
@@ -508,7 +493,6 @@ button.pg-more { background: none; border: none; padding: 6px 0 0 30px; text-ali
 .ex-item-nums b { color: var(--text); font-size: 14px; }
 .ex-item-nums em { font-style: normal; color: var(--danger); font-weight: 800; margin-left: 6px; }
 .ex-item-memo { font-size: 11.5px; color: var(--text-2); background: #F3EEDF; border-left: 3px solid var(--warn); padding: 3px 7px; margin-top: 4px; border-radius: 0 6px 6px 0; line-height: 1.5; }
-.ex-more { padding-left: 0; }
 .ex-field { margin-bottom: 9px; }
 .ex-field-top { display: flex; justify-content: space-between; font-size: 13px; }
 .ex-field-name { font-weight: 700; }
