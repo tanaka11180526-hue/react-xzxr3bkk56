@@ -22,6 +22,7 @@ export default function CalendarTab({ app }) {
   const daysInMonth = new Date(year, m + 1, 0).getDate();
   const today = todayKey();
   const move = (dir) => setMonth(new Date(year, m + dir, 1));
+  const isThisMonth = today.slice(0, 7) === toKey(month).slice(0, 7);
   const items = schedule.items || [];
   const first = firstStudyDay(days); // 使い始める前の日には評価を出さない
 
@@ -50,6 +51,7 @@ export default function CalendarTab({ app }) {
         <button className="nav-btn" onClick={() => move(-1)} aria-label="前の月">‹</button>
         <div className="date-nav-center">
           <div className="date-nav-label">{year}年 {m + 1}月</div>
+          {!isThisMonth && <button className="link-btn" onClick={() => { const d = new Date(); setMonth(new Date(d.getFullYear(), d.getMonth(), 1)); }}>今月に戻る</button>}
         </div>
         <button className="nav-btn" onClick={() => move(1)} aria-label="次の月">›</button>
       </div>
