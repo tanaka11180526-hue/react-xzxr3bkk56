@@ -1,15 +1,17 @@
-// 週と日の評価（スコアとランク）。週の基準は 2026-10-11 に決めたもの（日曜21時の週次ふりかえりと同じ）。
-// 勉強時間は iPhone の記録（休憩は数えない）、タスクと復習は「ToDo・実績」から読んだ予定で計算する。
+// 週と日の評価（スコアとランク）。基準は 2026-10-12 版。
+// 週の基準は日曜21時の週次ふりかえり（定期タスク）と、方針メモ「CPA勉強方針メモ」の「週次スコア(2026-10-12版)」と同じ。
+// 日の基準は学習計画の管理側（Claude）から届いたもの。どちらも本人は把握しない前提なので、勝手に変えない。
+// 勉強時間は iPhone の記録（休憩は数えない）、予定と復習は「ToDo・実績」から読んだもので計算する。
 // 済・〇は今の状態を使うので、あとから付けた分は過去の点数にも入る
-import { addDays, keyToDate } from "./time";
-import { isTaskDone } from "./tasks";
+import { addDays, dayStart, keyToDate } from "./time";
+import { isPrevDayReview, isTaskDone } from "./tasks";
 
 export const RANKS = [
   { rank: "S", min: 90 },
   { rank: "A", min: 80 },
-  { rank: "B", min: 65 },
-  { rank: "C", min: 50 },
-  { rank: "D", min: 35 },
+  { rank: "B", min: 70 },
+  { rank: "C", min: 55 },
+  { rank: "D", min: 40 },
   { rank: "E", min: -Infinity },
 ];
 // 評価シールの色（メダル風：S プラチナ・A ゴールド・B シルバー・C ブロンズ・D レギュラー・E くすんだ灰色）。
@@ -24,8 +26,9 @@ export const RANK_COLOR = {
 };
 export const rankOf = (score) => RANKS.find((r) => score >= r.min).rank;
 
-const STUDY_DAY_SECS = 60; // 休憩以外で1分以上の記録がある日を「勉強した日」とする
 const H = 3600;
+const STUDY_DAY_SECS = 60; // 休憩以外で1分以上の記録がある日を「勉強した日」とする（評価シールを貼るかどうか）
+const RUN_GAP_MS = 60 * 1000; // この間隔以内で続いている勉強の記録は、ひと続き（休憩をはさまない1回分）とみなす
 
 // 月曜はじまりの週の最初の日
 export function weekStart(key) {
@@ -34,65 +37,90 @@ export function weekStart(key) {
 
 // 休憩以外で1分以上の記録がある日（記録が全くない日には、日の評価シールを貼らない。週の評価には入れる）
 export const studied = (days, k) => ((days[k] && days[k].total) || 0) >= STUDY_DAY_SECS;
+const secsOf = (days, k) => (days[k] && days[k].total) || 0;
+const planMin = (it) => { const n = parseFloat(it.plan); return n > 0 ? n : 0; };
+const minOf = (k1, k2) => (k1 < k2 ? k1 : k2);
 
-// その期間の予定（「やること」が入っている行。科目は問わない。復習は別に数える）
-function tasksIn(items, from, to) {
-  const rows = items.filter((it) => !it.review && it.content && it.date >= from && it.date <= to);
-  return { total: rows.length, done: rows.filter(isTaskDone).length };
+// その期間の予定（「ToDo・実績」で日付がその期間の行。復習①〜④は別に数える）
+const rowsIn = (items, from, to) => items.filter((it) => !it.review && it.date && it.date >= from && it.date <= to);
+
+// ②予定の消化（計画の分で数える）と③時間の裏付け。予定の計画が0なら null（この項目を除いて換算）
+function digest(rows, studySecs) {
+  const P = rows.reduce((a, it) => a + planMin(it), 0);
+  const D = rows.filter(isTaskDone).reduce((a, it) => a + planMin(it), 0);
+  if (!P) return { points: null, P, D, R: null };
+  const base = (D / P) * 30;
+  const R = D ? (studySecs / 60) / D : null;
+  const coef = R === null || R >= 0.6 ? 1 : R / 0.6;
+  return { points: base * coef, P, D, R };
 }
 
 // その日の終わりの時点で、期限が来ているのに済になっていない復習の数
-function missedReviews(items, asOf) {
-  return items.filter((it) => it.review && it.date && it.date <= asOf && !it.done).length;
-}
-const reviewPoints = (n) => (n === 0 ? 10 : n === 1 ? 5 : 0);
+const missedReviews = (items, asOf) => items.filter((it) => it.review && it.date && it.date <= asOf && !it.done).length;
+const reviewPoints = (n) => (n === 0 ? 10 : n === 1 ? 7 : n === 2 ? 4 : 0);
 
-// 4項目を足す。予定が0件なら、タスクを除いた60点満点を100点に換算する
+// 項目ごとの点（null は「この項目なし」）を足し、なしの項目を除いた満点を100点に換算して四捨五入
 function total(parts) {
-  const { time, task, review, streak } = parts;
-  const raw = task === null ? ((time + review + streak) / 60) * 100 : time + task + review + streak;
-  const score = Math.round(raw);
+  let got = 0, max = 0;
+  parts.forEach(([v, m]) => { if (v !== null) { got += v; max += m; } });
+  const score = Math.round(max ? (got / max) * 100 : 0);
   return { score, rank: rankOf(score) };
 }
 
+// ── 週（月〜日）──
+// ①勉強時間35 ②予定の消化30（③時間の裏付けを掛ける）④安定15 ⑤復習の取りこぼし10 ⑥遅れの持ち越し10
 export function weekScore(mondayKey, { days, items, today }) {
   const sunday = addDays(mondayKey, 6);
-  let secs = 0, studiedDays = 0;
+  let secs = 0, stableDays = 0;
   for (let k = mondayKey; k <= sunday; k = addDays(k, 1)) {
-    secs += (days[k] && days[k].total) || 0;
-    if (studied(days, k)) studiedDays++;
+    secs += secsOf(days, k);
+    if (secsOf(days, k) >= 2 * H) stableDays++;
   }
   const T = secs / H;
-  const time = T >= 42 ? 40 : T >= 35 ? 33 + ((T - 35) / 7) * 7 : (T / 35) * 33;
-  const tasks = tasksIn(items, mondayKey, sunday);
-  const task = tasks.total ? (tasks.done / tasks.total) * 40 : null;
-  const missed = missedReviews(items, sunday);
-  const review = reviewPoints(missed);
-  const streak = studiedDays >= 7 ? 10 : studiedDays === 6 ? 7 : studiedDays === 5 ? 4 : 0;
+  const time = Math.min(T / 36, 1) * 35;
+  const rows = rowsIn(items, mondayKey, sunday);
+  const dg = digest(rows, secs);
+  const stable = [0, 0, 0, 3, 6, 10, 13, 15][stableDays];
+  const missed = missedReviews(items, minOf(sunday, today));
+  const carried = items.filter((it) => !it.review && it.date && it.date < mondayKey && it.content && !isTaskDone(it)).length;
+  const carry = carried === 0 ? 10 : carried <= 2 ? 7 : carried <= 4 ? 4 : 0;
   return {
-    ...total({ time, task, review, streak }),
-    parts: { time, task, review, streak },
-    detail: { hours: T, tasks, missed, studiedDays },
+    ...total([[time, 35], [dg.points, 30], [stable, 15], [reviewPoints(missed), 10], [carry, 10]]),
+    detail: { hours: T, P: dg.P, D: dg.D, R: dg.R, stableDays, missed, carried, tasks: { total: rows.filter((it) => it.content).length, done: rows.filter((it) => it.content && isTaskDone(it)).length } },
     inProgress: today <= sunday,
     from: mondayKey,
     to: sunday,
   };
 }
 
-export function dayScore(key, { days, items, today }) {
-  const t = ((days[key] && days[key].total) || 0) / H;
-  const time = t >= 6 ? 40 : t >= 5 ? 33 + (t - 5) * 7 : (t / 5) * 33;
-  const tasks = tasksIn(items, key, key);
-  const task = tasks.total ? (tasks.done / tasks.total) * 40 : null;
-  const missed = missedReviews(items, key);
-  const review = reviewPoints(missed);
-  let run = 0;
-  for (let k = key; studied(days, k); k = addDays(k, -1)) run++;
-  const streak = run >= 7 ? 10 : run >= 3 ? 5 : 0;
+// その日の一番長いひと続きの勉強（分）。休憩をはさまずに続いている記録（科目を変えた直後など）はつなげて数える
+function longestRun(logs, key) {
+  const from = dayStart(key), to = from + 86400000;
+  const list = logs.filter((l) => l.start >= from && l.start < to).sort((a, b) => a.start - b.start);
+  let best = 0, runStart = null, runEnd = null;
+  list.forEach((l) => {
+    if (runEnd !== null && l.start - runEnd <= RUN_GAP_MS) runEnd = Math.max(runEnd, l.end);
+    else { runStart = l.start; runEnd = l.end; }
+    best = Math.max(best, runEnd - runStart);
+  });
+  return best / 60000;
+}
+
+// ── 日 ──
+// ①勉強時間35 ②予定の消化30（③時間の裏付けを掛ける）④集中15 ⑤復習の取りこぼし10 ⑥前日の復習10
+export function dayScore(key, { days, items, logs = [], today }) {
+  const secs = secsOf(days, key);
+  const time = Math.min(secs / H / 6, 1) * 35;
+  const rows = rowsIn(items, key, key);
+  const dg = digest(rows, secs);
+  const run = longestRun(logs, key);
+  const focus = run >= 90 ? 15 : run >= 60 ? 11 : run >= 45 ? 7 : run >= 30 ? 4 : 0;
+  const missed = missedReviews(items, minOf(key, today));
+  const prev = rows.filter(isPrevDayReview);
+  const prevPoints = prev.length ? (prev.every(isTaskDone) ? 10 : 0) : null;
   return {
-    ...total({ time, task, review, streak }),
-    parts: { time, task, review, streak },
-    detail: { hours: t, tasks, missed, run },
+    ...total([[time, 35], [dg.points, 30], [focus, 15], [reviewPoints(missed), 10], [prevPoints, 10]]),
+    detail: { hours: secs / H, P: dg.P, D: dg.D, R: dg.R, run, missed, prevDone: prevPoints === null ? null : prevPoints === 10 },
     inProgress: key === today,
   };
 }

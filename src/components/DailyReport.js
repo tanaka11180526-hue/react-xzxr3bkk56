@@ -32,7 +32,7 @@ export default function DailyReport({ app, dateKey, onClose }) {
   const top = ranked.slice(0, 3);
   const streak = streakAt(days, key);
   const first = firstStudyDay(days);
-  const score = first && key >= first && studied(days, key) ? dayScore(key, { days, items: schedule.items || [], today: todayKey() }) : null;
+  const score = first && key >= first && studied(days, key) ? dayScore(key, { days, items: schedule.items || [], logs: app.scoreLogs, today: todayKey() }) : null;
 
   // 予定から計った分（やったこと）
   const dayStart = d.getTime(), dayEnd = dayStart + 86400000;
