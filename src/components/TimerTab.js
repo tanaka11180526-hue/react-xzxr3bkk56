@@ -1,6 +1,6 @@
 import React from "react";
 import { addDays, dayStart, fmtClock, fmtDateJa, fmtHMS, todayKey } from "../lib/time";
-import ScheduleItem from "./ScheduleItem";
+import PlanList from "./PlanList";
 import NotebookHero from "./NotebookHero";
 import { useSwipe } from "../lib/swipe";
 
@@ -37,7 +37,7 @@ export default function TimerTab({ app }) {
       {plans.length > 0 && (
         <section className="card section">
           <div className="section-title">{isToday ? "今日" : fmtDateJa(viewDate)}の予定<span className="muted">（スプレッドシート）</span></div>
-          {plans.map((p, i) => <ScheduleItem key={i} app={app} item={p} canStart={isToday} />)}
+          <PlanList app={app} plans={plans} canStart={isToday} />
         </section>
       )}
 

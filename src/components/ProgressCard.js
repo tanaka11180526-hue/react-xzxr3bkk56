@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { DAY_NAMES, addDays, fmtHM, keyToDate, toKey, todayKey } from "../lib/time";
-import { isTaskDone, prevDayReviewLast } from "../lib/tasks";
+import { isPrevDayReview, isTaskDone, prevDayReviewLast, prevDayReviewTitle, prevDayReviewTopic } from "../lib/tasks";
 
 const LIST_MAX = 10;
 const LISTS = [
@@ -65,7 +65,15 @@ export default function ProgressCard({ app }) {
   // 終わったものは新しい日から。同じ日の中では「前日の復習」を一番下のままにする
   const lists = { left: pick(left), late: pick(late), done: pick(done).slice().sort((a, b) => b.date.localeCompare(a.date) || prevDayReviewLast(a, b)) };
   const current = lists[list];
-  const shown = more ? current : current.slice(0, LIST_MAX);
+  // 同じ日の「前日の復習」は1つのまとまりにする（見た目だけ。件数は1行＝1件のまま）
+  const units = [];
+  current.forEach((t) => {
+    const last = units[units.length - 1];
+    if (isPrevDayReview(t) && last && last.group && last.date === t.date) last.items.push(t);
+    else units.push(isPrevDayReview(t) ? { group: true, date: t.date, items: [t] } : { date: t.date, t });
+  });
+  const shown = more ? units : units.slice(0, LIST_MAX);
+  const shownCount = shown.reduce((n, u) => n + (u.group ? u.items.length : 1), 0);
 
   return (
     <section className="section">
@@ -117,17 +125,20 @@ export default function ProgressCard({ app }) {
               ))}
             </div>
             {shown.length === 0 && <p className="empty">{list === "left" ? "これからのタスクはありません" : list === "late" ? "遅れてるタスクはありません" : "終わったタスクはまだありません"}</p>}
-            {shown.map((t, i) => {
-              const head = list !== "done" && (i === 0 || shown[i - 1].date !== t.date);
+            {shown.map((u, i) => {
+              const head = list !== "done" && (i === 0 || shown[i - 1].date !== u.date);
+              const key = u.group ? u.date + "prev" : u.date + u.t.row + (u.t.reviewIndex ?? "") + u.t.content;
               return (
-                <React.Fragment key={t.date + t.row + (t.reviewIndex ?? "") + t.content}>
-                  {head && <div className={"pg-day" + (t.date === today ? " today" : "")}>{t.date === today ? "今日・" + mdw(t.date) : mdw(t.date)}</div>}
-                  <TaskRow t={t} list={list} spent={list === "done" ? spentOf(t) : 0} canMarkDone={canMarkDone} markDone={markDone} />
+                <React.Fragment key={key}>
+                  {head && <div className={"pg-day" + (u.date === today ? " today" : "")}>{u.date === today ? "今日・" + mdw(u.date) : mdw(u.date)}</div>}
+                  {u.group
+                    ? <PrevReviewRows items={u.items} list={list} spentOf={spentOf} canMarkDone={canMarkDone} markDone={markDone} />
+                    : <TaskRow t={u.t} list={list} spent={list === "done" ? spentOf(u.t) : 0} canMarkDone={canMarkDone} markDone={markDone} />}
                 </React.Fragment>
               );
             })}
-            {current.length > shown.length && (
-              <button className="pg-more" onClick={() => setMore(true)}>もっと見る（ほか {current.length - shown.length}件）</button>
+            {current.length > shownCount && (
+              <button className="pg-more" onClick={() => setMore(true)}>もっと見る（ほか {current.length - shownCount}件）</button>
             )}
           </>
         )}
@@ -137,7 +148,34 @@ export default function ProgressCard({ app }) {
   );
 }
 
-function TaskRow({ t, list, spent, canMarkDone, markDone }) {
+// 同じ日の「前日の復習」のまとまり。押すと中の論点が開く
+function PrevReviewRows({ items, list, spentOf, canMarkDone, markDone }) {
+  const [open, setOpen] = useState(false);
+  const t = items[0];
+  const plan = items.reduce((s, it) => s + (parseFloat(it.plan) || 0), 0);
+  return (
+    <>
+      <button className={"pg-task pg-group-head" + (list === "done" ? " is-done" : "")} onClick={() => setOpen(!open)} aria-expanded={open}>
+        {list === "done" && <span className="pg-date">{md(t.date)}</span>}
+        <i style={{ background: t.sub.color }} />
+        <span className="pg-content">
+          <span className="pg-subj" style={{ color: t.sub.color }}>{t.sub.label}</span>{prevDayReviewTitle(items)}・{items.length}件 {open ? "▾" : "▸"}
+        </span>
+        {plan > 0 && <span className="pg-plan">{plan}分</span>}
+      </button>
+      {open && (
+        <div className="pg-group-items">
+          {items.map((it) => (
+            <TaskRow key={it.row + it.content} t={it} list={list} spent={list === "done" ? spentOf(it) : 0} canMarkDone={canMarkDone} markDone={markDone} label={prevDayReviewTopic(it)} inGroup />
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+// inGroup：「前日の復習」のまとまりの中（日付と科目は見出しでわかるので出さない）
+function TaskRow({ t, list, spent, canMarkDone, markDone, label, inGroup }) {
   const plan = parseFloat(t.plan);
   const fromApp = Math.round(spent);
   const sheet = parseFloat(t.actual);
@@ -145,13 +183,13 @@ function TaskRow({ t, list, spent, canMarkDone, markDone }) {
   const diff = plan > 0 && used > 0 ? used - plan : null;
   return (
     <div className={"pg-task" + (t.done ? " is-done" : "")}>
-      {list === "done" && <span className="pg-date">{md(t.date)}</span>}
+      {list === "done" && !inGroup && <span className="pg-date">{md(t.date)}</span>}
       {canMarkDone && t.row ? (
         <button className={"done-btn" + (t.done ? " on" : "")} onClick={() => markDone(t, !t.done)}
           aria-label={t.done ? "終わったを取り消す" : "終わった"}>{t.done ? "✓" : ""}</button>
       ) : <i style={{ background: t.sub.color }} />}
       <span className="pg-content">
-        <span className="pg-subj" style={{ color: t.sub.color }}>{t.sub.label}</span>{t.content}
+        {!inGroup && <span className="pg-subj" style={{ color: t.sub.color }}>{t.sub.label}</span>}{label || t.content}
       </span>
       {list === "done" ? (
         <span className="pg-spent">
