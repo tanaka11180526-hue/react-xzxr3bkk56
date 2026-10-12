@@ -44,6 +44,17 @@ export function isPrevDayReview(it) {
 }
 // 同じ日の中で「前日の復習」を後ろに回す並べ方（ほかは元の順のまま）
 export const prevDayReviewLast = (a, b) => isPrevDayReview(a) - isPrevDayReview(b);
+// 2026-10-12 から論点ごとに1行ずつ入る（例：「前日の復習(10/11分): 財計 新リース 前半7割」）。
+// アプリでは1つのまとまりにして出し、押すと中の論点が開く
+const PREV_DAY_REVIEW_HEAD = /^前日の復習\s*(?:[（(]([^）)]*)[）)])?\s*[:：]?\s*/;
+export function prevDayReviewTopic(it) {
+  const s = String(it.content || "").trim();
+  return s.replace(PREV_DAY_REVIEW_HEAD, "") || s;
+}
+export function prevDayReviewTitle(list) {
+  const m = String((list[0] && list[0].content) || "").trim().match(PREV_DAY_REVIEW_HEAD);
+  return PREV_DAY_REVIEW + (m && m[1] ? "（" + m[1] + "）" : "");
+}
 
 // 答練の予定（「ToDo・実績」の分類が「答練」の行）。カレンダーでは「答練」の切り替えのほうにだけ出す
 export function isExamPlan(it) {

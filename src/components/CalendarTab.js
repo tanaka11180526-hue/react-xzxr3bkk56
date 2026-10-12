@@ -2,9 +2,9 @@ import React, { useRef, useState } from "react";
 import { DAY_NAMES, fmtDateJa, fmtHM, keyToDate, toKey, todayKey } from "../lib/time";
 import { UNKNOWN_COLOR } from "../lib/constants";
 import { RANK_COLOR, dayScore, firstStudyDay, studied } from "../lib/score";
-import { examShort, isExamPlan } from "../lib/tasks";
+import { examShort, isExamPlan, isPrevDayReview } from "../lib/tasks";
 import Sheet from "./Sheet";
-import ScheduleItem from "./ScheduleItem";
+import PlanList from "./PlanList";
 
 const MAX_CHIPS = 3;
 // 毎日、その日の評価（S〜E）を書いたシールを貼る（まっすぐ）
@@ -63,7 +63,10 @@ export default function CalendarTab({ app }) {
           const key = toKey(new Date(year, m, i + 1));
           const dow = (firstDow + i) % 7;
           if (mode === "exam") return <ExamCell key={key} app={app} dateKey={key} dow={dow} today={today} onClick={() => setSelected(key)} />;
-          const plans = (scheduleByDate[key] || []).filter((p) => !isExamPlan(p));
+          const all = (scheduleByDate[key] || []).filter((p) => !isExamPlan(p));
+          // 「前日の復習」は何行あっても札1枚にまとめる（一番下）
+          const prev = all.filter(isPrevDayReview);
+          const plans = prev.length ? all.filter((p) => !isPrevDayReview(p)).concat({ subject: prev[0].subject, content: "前日の復習" }) : all;
           const secs = (days[key] || { total: 0 }).total;
           return (
             <button key={key} className={"cal-cell" + (key === today ? " today" : "")} onClick={() => setSelected(key)}>
@@ -116,7 +119,7 @@ function DaySheet({ app, dateKey, onClose }) {
   return (
     <Sheet title={fmtDateJa(dateKey)} onClose={onClose}>
       <div className="section-title">予定</div>
-      {plans.length ? plans.map((p, i) => <ScheduleItem key={i} app={app} item={p} canStart={canStart} />)
+      {plans.length ? <PlanList app={app} plans={plans} canStart={canStart} />
         : <p className="empty">この日の予定はありません</p>}
 
       <div className="section-title">勉強した時間<span className="muted">合計 {fmtHM(day.total)}</span></div>

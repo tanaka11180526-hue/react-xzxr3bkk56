@@ -571,3 +571,13 @@ button.pg-more { background: none; border: none; padding: 6px 0 0 30px; text-ali
 .exam-row-left { font-size: 12px; color: var(--muted); white-space: nowrap; }
 .exam-row-result { font-size: 12px; color: var(--muted); white-space: nowrap; display: flex; align-items: center; gap: 4px; }
 .exam-row-result b { color: var(--text); }
+
+/* 「前日の復習」のまとまり（押すと中の論点が開く） */
+.plan-group { display: flex; flex-direction: column; gap: 6px; }
+button.plan-group-head { width: 100%; text-align: left; border-top: none; border-right: none; border-bottom: none; color: inherit; font: inherit; }
+.plan-group-arrow { font-size: 14px; color: var(--muted); flex-shrink: 0; }
+.plan.in-group { margin-left: 14px; }
+.pg-group-head { cursor: pointer; }
+button.pg-task { width: 100%; background: none; border: none; text-align: left; color: inherit; font: inherit; font-size: 12.5px; }
+.pg-group-items { padding-left: 14px; }
+.pg-group-items .pg-spent { padding-left: 30px; }
