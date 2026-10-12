@@ -44,3 +44,19 @@ export function isPrevDayReview(it) {
 }
 // 同じ日の中で「前日の復習」を後ろに回す並べ方（ほかは元の順のまま）
 export const prevDayReviewLast = (a, b) => isPrevDayReview(a) - isPrevDayReview(b);
+
+// 答練の予定（「ToDo・実績」の分類が「答練」の行）。カレンダーでは「答練」の切り替えのほうにだけ出す
+export function isExamPlan(it) {
+  return !it.review && String(it.category || "").trim() === "答練";
+}
+// カレンダーの札に出す短い名前（論文上級答練1 → 上級1、論文直前答練2 → 直前2、論文模擬試験1 → 模試1、レギュラー答練3 → レギュ3）
+export function examShort(content) {
+  const s = String(content || "").trim();
+  const m = s.match(/(\d+)\s*$/);
+  const n = m ? m[1] : "";
+  if (s.includes("上級")) return "上級" + n;
+  if (s.includes("直前")) return "直前" + n;
+  if (s.includes("模擬") || s.includes("模試")) return "模試" + n;
+  if (s.includes("レギュラー")) return "レギュ" + n;
+  return s.slice(0, 4);
+}
