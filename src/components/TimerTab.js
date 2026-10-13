@@ -36,7 +36,7 @@ export default function TimerTab({ app }) {
 
       {plans.length > 0 && (
         <section className="card section">
-          <div className="section-title">{isToday ? "今日" : fmtDateJa(viewDate)}の予定<span className="muted">（スプレッドシート）</span></div>
+          <div className="section-title">{isToday ? "今日" : fmtDateJa(viewDate)}の予定</div>
           <PlanList app={app} plans={plans} canStart={isToday} />
         </section>
       )}

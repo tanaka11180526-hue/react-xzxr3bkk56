@@ -55,7 +55,7 @@ function SyncSettings({ app }) {
   return (
     <section className="settings-section">
       <h3>スプレッドシート同期</h3>
-      <p className="muted small">予定はシートの「ToDo・実績」から読み込み（書き込みはしません）、計測した時間は「アプリ記録」タブに書き込みます。設定方法はリポジトリの <code>apps-script/README.md</code> を見てください。</p>
+      <p className="muted small">予定はシートの「ToDo・実績」から読み込みます。予定の ✓ はシートの「達成」（〇）と復習の済に、計った時間は「アプリ記録」タブに、レポートのひとことは「アプリメモ」タブに書き込みます。</p>
       <div className="field">
         <label>ウェブアプリのURL</label>
         <input type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://script.google.com/macros/s/…/exec" autoComplete="off" />
@@ -175,12 +175,19 @@ function SubjectSettings({ app }) {
 
 function BreakColor({ app }) {
   const { breakColor, setBreakColor } = app;
+  const [open, setOpen] = useState(false); // 色の一覧は「変える」を押したときだけ出す
   return (
     <section className="settings-section">
       <h3>休憩の色</h3>
-      <div className="palette">
-        {COLOR_PALETTE.map((c) => <button key={c} className={"swatch" + (breakColor === c ? " on" : "")} style={{ background: c }} onClick={() => setBreakColor(c)} aria-label={c} />)}
+      <div className="row">
+        <span className="swatch on" style={{ background: breakColor }} />
+        <button className="btn small" onClick={() => setOpen(!open)}>{open ? "閉じる" : "変える"}</button>
       </div>
+      {open && (
+        <div className="palette">
+          {COLOR_PALETTE.map((c) => <button key={c} className={"swatch" + (breakColor === c ? " on" : "")} style={{ background: c }} onClick={() => { setBreakColor(c); setOpen(false); }} aria-label={c} />)}
+        </div>
+      )}
     </section>
   );
 }
@@ -256,7 +263,6 @@ function AppAddress() {
         <code className="address">{url}</code>
         <button className="btn small" onClick={copy}>{copied ? "コピーしました" : "コピー"}</button>
       </div>
-      <p className="muted small">画面情報：{window.innerWidth}×{window.innerHeight} / 画面 {window.screen.width}×{window.screen.height} / 下の調整 {getComputedStyle(document.documentElement).getPropertyValue("--bottom-gap") || "0px"}</p>
     </section>
   );
 }
