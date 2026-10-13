@@ -12,7 +12,7 @@
 - データは iPhone の localStorage（キーは `cpa_` で始まる）。アドレス（ドメイン）が変わると記録が引き継がれないので、公開アドレスは変えない
 - 主なファイル
   - `src/App.js`：状態・タイマー・同期・予定の読み込み
-  - `src/components/NotebookHero.js`：タイマー画面のノート（科目ボタン、左上の付箋、右下の猫と本とマグの落書き）。科目ボタンは、今日その科目の終わってない予定が1つでもあれば「どの予定をやる？」と聞く（「予定なしで計る」も選べる）
+  - `src/components/NotebookHero.js`：タイマー画面のノート（科目ボタン、左上の付箋、右下の猫と本とマグの落書き）。今日以外の日は、まっすぐ貼った無地のマステにひとことを書き、右にその日の勉強時間で変わる落書き（2時間未満は芽・5時間未満は花・5時間以上は王冠。記録がない日はなし）。科目ボタンは、今日その科目の終わってない予定が1つでもあれば「どの予定をやる？」と聞く（「予定なしで計る」も選べる）
   - `src/components/TimerTab.js` `CalendarTab.js` `StatsTab.js` `ProgressCard.js` `ExamCard.js`（答練のボタンとページ） `DailyReport.js` `WeeklyReport.js` `Settings.js`
   - `src/lib/sync.js`（シートとの通信）、`src/lib/tasks.js`（予定名の付け替え・終わった判定）、`src/lib/score.js`（週と日の評価）
   - `apps-script/Code.gs`：シート側のスクリプト（合言葉とシートIDは空のまま置く）
