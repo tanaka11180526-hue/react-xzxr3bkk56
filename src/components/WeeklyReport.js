@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { DAY_NAMES, addDays, keyToDate, todayKey } from "../lib/time";
 import { useSwipe } from "../lib/swipe";
-import { dayScore, firstStudyDay, RANK_COLOR, studied, weekScore, weekStart } from "../lib/score";
+import { SCORE_FROM, dayScore, firstStudyDay, RANK_COLOR, studied, weekScore, weekStart } from "../lib/score";
 import { ClockDoodle, SunDoodle, fmtSpaced } from "./DailyReport";
 import RankStamp from "./RankStamp";
 
@@ -21,8 +21,8 @@ export default function WeeklyReport({ app, onClose }) {
   const keys = Array.from({ length: 7 }, (_, i) => addDays(from, i));
   const ctx = { days, items: schedule.items || [], logs: app.scoreLogs, today };
   const first = firstStudyDay(days);
-  const rated = (k) => first && k >= first && k <= today && studied(days, k);
-  const score = first && addDays(from, 6) >= first ? weekScore(from, ctx) : null;
+  const rated = (k) => first && k >= first && k >= SCORE_FROM && k <= today && studied(days, k);
+  const score = first && addDays(from, 6) >= first && from >= SCORE_FROM ? weekScore(from, ctx) : null;
 
   let total = 0, breakSecs = 0;
   const bySub = {};
