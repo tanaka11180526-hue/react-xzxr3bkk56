@@ -1,4 +1,4 @@
-// 週と日の評価（スコアとランク）。基準は 2026-10-12 版。
+// 週と日の評価（スコアとランク）。基準は 2026-10-12 版（勉強時間によるランクの上限は 2026-10-13 に追加）。
 // 週の基準は日曜21時の週次ふりかえり（定期タスク）と、方針メモ「CPA勉強方針メモ」の「週次スコア(2026-10-12版)」と同じ。
 // 日の基準は学習計画の管理側（Claude）から届いたもの。どちらも本人は把握しない前提なので、勝手に変えない。
 // 勉強時間は iPhone の記録（休憩は数えない）、予定と復習は「ToDo・実績」から読んだもので計算する。
@@ -25,6 +25,21 @@ export const RANK_COLOR = {
   E: "linear-gradient(135deg, #B5ADA4 0%, #8E857B 45%, #6E665E 100%)",
 };
 export const rankOf = (score) => RANKS.find((r) => score >= r.min).rank;
+// 予定が0件の日のランク（点数は出さない）
+export const NO_PLAN_RANK = "ー";
+RANK_COLOR[NO_PLAN_RANK] = "linear-gradient(135deg, #E4E1DC 0%, #C9C4BC 50%, #B3ADA4 100%)";
+
+// スコアとランクは 2026-10-12 以降の日（と、その日を含む週以降）だけ出す。それより前は勉強時間だけ
+export const SCORE_FROM = "2026-10-12";
+
+// 勉強時間によるランクの上限（2026-10-13 決定）。最終ランクは、点数のランクと上限の低いほう
+const DAY_CAP = (h) => (h >= 7 ? "S" : h >= 5 ? "A" : "B");
+const WEEK_CAP = (h) => (h >= 49 ? "S" : h >= 35 ? "A" : "B");
+const rankIndex = (r) => RANKS.findIndex((x) => x.rank === r);
+function withCap(t, cap) {
+  const rank = RANKS[Math.max(rankIndex(t.rank), rankIndex(cap))].rank;
+  return { ...t, scoreRank: t.rank, cap, rank, capped: rank !== t.rank };
+}
 
 const H = 3600;
 const STUDY_DAY_SECS = 60; // 休憩以外で1分以上の記録がある日を「勉強した日」とする（評価シールを貼るかどうか）
@@ -85,7 +100,7 @@ export function weekScore(mondayKey, { days, items, today }) {
   const carried = items.filter((it) => !it.review && it.date && it.date < mondayKey && it.content && !isTaskDone(it)).length;
   const carry = carried === 0 ? 10 : carried <= 2 ? 7 : carried <= 4 ? 4 : 0;
   return {
-    ...total([[time, 35], [dg.points, 30], [stable, 15], [reviewPoints(missed), 10], [carry, 10]]),
+    ...withCap(total([[time, 35], [dg.points, 30], [stable, 15], [reviewPoints(missed), 10], [carry, 10]]), WEEK_CAP(T)),
     detail: { hours: T, P: dg.P, D: dg.D, R: dg.R, stableDays, missed, carried, tasks: { total: rows.filter((it) => it.content).length, done: rows.filter((it) => it.content && isTaskDone(it)).length } },
     inProgress: today <= sunday,
     from: mondayKey,
@@ -118,8 +133,12 @@ export function dayScore(key, { days, items, logs = [], today }) {
   const missed = missedReviews(items, minOf(key, today));
   const prev = rows.filter(isPrevDayReview);
   const prevPoints = prev.length ? (prev.every(isTaskDone) ? 10 : 0) : null;
+  // その日の予定（「ToDo・実績」の行と復習①〜④）が0件なら、ランクは「ー」にして点数は出さない
+  const noPlan = !items.some((it) => it.date === key);
+  const t = withCap(total([[time, 35], [dg.points, 30], [focus, 15], [reviewPoints(missed), 10], [prevPoints, 10]]), DAY_CAP(secs / H));
   return {
-    ...total([[time, 35], [dg.points, 30], [focus, 15], [reviewPoints(missed), 10], [prevPoints, 10]]),
+    ...t,
+    ...(noPlan ? { rank: NO_PLAN_RANK, capped: false, noPlan: true } : {}),
     detail: { hours: secs / H, P: dg.P, D: dg.D, R: dg.R, run, missed, prevDone: prevPoints === null ? null : prevPoints === 10 },
     inProgress: key === today,
   };

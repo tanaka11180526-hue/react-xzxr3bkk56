@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import { DAY_NAMES, fmtDateJa, fmtHM, keyToDate, toKey, todayKey } from "../lib/time";
 import { UNKNOWN_COLOR } from "../lib/constants";
-import { RANK_COLOR, dayScore, firstStudyDay, studied } from "../lib/score";
+import { RANK_COLOR, SCORE_FROM, dayScore, firstStudyDay, studied } from "../lib/score";
 import { examShort, isExamPlan, isPrevDayReview } from "../lib/tasks";
 import Sheet from "./Sheet";
 import PlanList from "./PlanList";
@@ -70,7 +70,7 @@ export default function CalendarTab({ app }) {
           const secs = (days[key] || { total: 0 }).total;
           return (
             <button key={key} className={"cal-cell" + (key === today ? " today" : "")} onClick={() => setSelected(key)}>
-              {first && key >= first && key <= today && studied(days, key) && <RankSticker s={dayScore(key, { days, items, logs: app.scoreLogs, today })} />}
+              {first && key >= first && key >= SCORE_FROM && key <= today && studied(days, key) && <RankSticker s={dayScore(key, { days, items, logs: app.scoreLogs, today })} />}
               <span className={"cal-day" + (dow === 0 ? " sun" : dow === 6 ? " sat" : "")}>{i + 1}</span>
               {secs > 0 && <span className="cal-secs">{fmtHM(secs)}</span>}
               {plans.slice(0, MAX_CHIPS).map((p, j) => {
@@ -140,7 +140,7 @@ function DaySheet({ app, dateKey, onClose }) {
 function RankSticker({ s }) {
   return (
     <span className={"cal-rank" + (s.inProgress ? " now" : "")} style={{ "--c": RANK_COLOR[s.rank] }}
-      title={s.score + "点" + (s.inProgress ? "（途中）" : "")}>{s.rank}</span>
+      title={s.noPlan ? "予定なし" : s.score + "点" + (s.inProgress ? "（途中）" : "")}>{s.rank}</span>
   );
 }
 
