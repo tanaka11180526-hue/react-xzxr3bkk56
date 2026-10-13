@@ -4,6 +4,7 @@ import { STREAK_MIN_SECS } from "../lib/constants";
 import { useSwipe } from "../lib/swipe";
 import { SCORE_FROM, dayScore, firstStudyDay, studied } from "../lib/score";
 import RankStamp from "./RankStamp";
+import { PREV_DAY_REVIEW, isPrevDayReview } from "../lib/tasks";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -37,12 +38,14 @@ export default function DailyReport({ app, dateKey, onClose }) {
   // 予定から計った分（やったこと）
   const dayStart = d.getTime(), dayEnd = dayStart + 86400000;
   const taskMap = {};
+  // 「前日の復習」は、シートで名前が変わったり論点ごとに分かれたりしても1行にまとめる。1分未満しか計っていないものは出さない
   logs.filter((l) => l.task && l.start >= dayStart && l.start < dayEnd).forEach((l) => {
-    const k = l.subjectId + "|" + l.task;
-    taskMap[k] = taskMap[k] || { subjectId: l.subjectId, task: l.task, secs: 0 };
+    const task = isPrevDayReview({ content: l.task }) ? PREV_DAY_REVIEW : l.task;
+    const k = l.subjectId + "|" + task;
+    taskMap[k] = taskMap[k] || { subjectId: l.subjectId, task, secs: 0 };
     taskMap[k].secs += Math.floor((l.end - l.start) / 1000);
   });
-  const tasks = Object.values(taskMap).sort((a, b) => b.secs - a.secs);
+  const tasks = Object.values(taskMap).filter((t) => t.secs >= 60).sort((a, b) => b.secs - a.secs);
   const note = notes[key] || "";
   // ページ全体で横にスライドすると日付を動かす（今日より先には行かない。ひとことを書いている間は動かさない）
   const swipe = useSwipe(

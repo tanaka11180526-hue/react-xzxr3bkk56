@@ -38,7 +38,7 @@ export function isTaskDone(it) {
 
 // 毎日入れている「前日の復習」の予定（「やること」の書き出しで見分ける。科目の「その他」はほかでも使うため）。
 // その日の予定の一番下に並べる
-const PREV_DAY_REVIEW = "前日の復習";
+export const PREV_DAY_REVIEW = "前日の復習";
 export function isPrevDayReview(it) {
   return String(it.content || "").trim().startsWith(PREV_DAY_REVIEW);
 }
