@@ -24,6 +24,9 @@ export default function NotebookHero({ app, dateKey }) {
     || (subjects[0] && subjects[0].id);
   const cols = subjects.length > 8 ? 3 : 2;
   const viewKey = dateKey || todayKey();
+  // 日替わりのイラスト（入れた順に1日ずつ回す）
+  const illusts = app.illusts || [];
+  const illust = illusts.length ? illusts[Math.floor(keyToDate(viewKey).getTime() / 86400000) % illusts.length] : null;
   const month = keyToDate(viewKey).getMonth() + 1;
 
   // その日で累計の区切りを超えたか（計測中の分も含む）
@@ -150,10 +153,15 @@ export default function NotebookHero({ app, dateKey }) {
               );
             })}
           </div>
-          <div className="nh-bottom">
-            <SeasonDoodle month={month} />
-            <BooksDoodle steaming={timer.mode === "study"} />
-            <CatDoodle awake={timer.mode === "study" || !!praise} month={month} />
+          {/* イラストを入れていたら、猫・本とマグ・季節の落書きの代わりに日替わりで出す（科目ボタンの下に重なってよい） */}
+          <div className={"nh-bottom" + (illust ? " with-illust" : "")}>
+            {illust ? <img className="nh-illust" src={illust.url} alt="" /> : (
+              <>
+                <SeasonDoodle month={month} />
+                <BooksDoodle steaming={timer.mode === "study"} />
+                <CatDoodle awake={timer.mode === "study" || !!praise} month={month} />
+              </>
+            )}
             {praise && isToday && <div className="nh-bubble">{praise}</div>}
           </div>
         </div>

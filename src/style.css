@@ -226,6 +226,10 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 .subject-edit-row input { flex: 1; min-width: 0; }
 .swatch { width: 30px; height: 30px; border-radius: 50%; border: 3px solid transparent; flex-shrink: 0; padding: 0; }
 .swatch.on { border-color: #2B2B2B; }
+.illust-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 8px; }
+.illust-item { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: var(--surface); }
+.illust-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.illust-item button { position: absolute; top: 3px; right: 3px; width: 22px; height: 22px; border-radius: 50%; border: none; background: rgba(43,43,43,0.75); color: #fff; font-size: 13px; line-height: 22px; padding: 0; }
 .palette { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; padding: 10px 0; }
 .palette .swatch { width: 100%; height: auto; aspect-ratio: 1; border-radius: 8px; }
 .address { word-break: break-all; padding: 6px 8px; }
@@ -339,6 +343,14 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 .nh-bottom { position: relative; display: flex; align-items: flex-end; justify-content: flex-end; width: 100%; margin-top: 0.4cqw; flex-shrink: 0; }
 .nh-season { width: 11%; height: auto; margin-right: 0.6cqw; overflow: visible; }
 .nh-books { width: 17%; height: auto; margin-right: -0.4cqw; overflow: visible; }
+/* 本人が入れたイラスト（猫たちの代わり）。紙になじむようにふちをぼかし、科目ボタンはその上に出す */
+.nh-grid { position: relative; z-index: 2; }
+.nh-bottom.with-illust { min-height: 22cqw; }
+.nh-illust { position: absolute; right: -2cqw; bottom: -1cqw; width: 58%; height: auto; z-index: 1; pointer-events: none;
+  mix-blend-mode: multiply; filter: brightness(1.12) contrast(1.08);
+  -webkit-mask-image: radial-gradient(ellipse 72% 70% at 50% 52%, #000 62%, transparent 100%);
+  mask-image: radial-gradient(ellipse 72% 70% at 50% 52%, #000 62%, transparent 100%); }
+.nh-bottom .nh-bubble { z-index: 3; }
 .nh-steam path { transform-box: fill-box; transform-origin: 50% 100%; }
 .nh-books.steaming .nh-steam path { animation: nh-steam 2.4s ease-in-out infinite; }
 .nh-books.steaming .nh-steam path:nth-child(2) { animation-delay: 0.4s; }
