@@ -121,7 +121,12 @@ export default function NotebookHero({ app, dateKey }) {
           </div>
           <div className="nh-oval">{big}</div>
           {/* 計測中の表示と操作は今日を見ているときだけ。ほかの日はその日のひとことを出す */}
-          <div className={"nh-status" + (isToday ? "" : " nh-message")}>{isToday ? status : dayMessage(dateKey, today, getSub)}</div>
+          {isToday ? <div className="nh-status">{status}</div> : (
+            <div className="nh-message-row">
+              <div className="nh-status nh-message">{dayMessage(dateKey, today, getSub)}</div>
+              {today.total > 0 && <DayDoodle secs={today.total} />}
+            </div>
+          )}
           <div className="nh-controls">
             {isToday && controls.map((c) => <button key={c.label} onClick={c.on}>{c.label}</button>)}
           </div>
@@ -199,6 +204,39 @@ function Sparks({ flip }) {
   return (
     <svg className="nh-sparks" viewBox="0 0 20 20" style={flip ? { transform: "scaleX(-1)" } : null} aria-hidden="true">
       <path d="M4 5 L10 7 M2 11 H9 M4 17 L10 14" stroke="#2B2B2B" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+// 今日以外の日のひとことの右に描く落書き。その日の勉強時間で変わる（2時間未満は芽、5時間未満は花、5時間以上は王冠）
+function DayDoodle({ secs }) {
+  const h = secs / 3600;
+  const kind = h >= 5 ? "crown" : h >= 2 ? "flower" : "sprout";
+  const l = { fill: "none", stroke: "#2F2F2F", strokeWidth: 1.3, strokeLinecap: "round", strokeLinejoin: "round" };
+  return (
+    <svg className="nh-day-doodle" viewBox="0 0 40 40" aria-hidden="true">
+      {kind === "sprout" && (
+        <g>
+          <path d="M11 16c3 .4 7 2.6 9 6-4 .2-8-2-9-6z M27.4 11.6c-3.4.4-6 3.6-6.4 7.6 3.6-.6 6.4-3.6 6.4-7.6z" fill="#A9CF8E" opacity="0.85" />
+          <path d="M20 34c0-6 0-10 .4-14 M20.4 22c-5 .6-9-2-10-7 5-.6 9 2 10 7z M20.6 20c4-1 7.6-4.6 7.4-9-4.6 0-8 3.4-7.4 9z M12 34.4c5-.6 11-.6 16 0" {...l} />
+        </g>
+      )}
+      {kind === "flower" && (
+        <g>
+          <g fill="#F6C1CC" opacity="0.9">
+            <circle cx="20" cy="9" r="5" /><circle cx="29" cy="15" r="5" /><circle cx="26" cy="25" r="5" /><circle cx="14" cy="25" r="5" /><circle cx="11" cy="15" r="5" />
+          </g>
+          <path d="M19.6 4.4c3.6 0 5.6 3.4 4.2 6.4 3-1.6 6.8.2 7 3.6.2 3.2-2.8 5-5.6 4.4 2.2 2.4 1 6.4-2.2 7-2.8.6-4.6-1.4-5-3.6-1 2.6-4.4 4-6.8 2.2-2.4-1.8-1.8-5.2.4-6.4-3 .4-5.6-2-5-5 .6-3.2 4.4-4.4 7-2.4-1.2-3 .8-6.2 6-6.2z" {...l} />
+          <circle cx="20" cy="16.6" r="3.4" fill="#F6D776" {...l} />
+        </g>
+      )}
+      {kind === "crown" && (
+        <g>
+          <path d="M7 28l-2-15 9 7 6-11 6 11 9-7-2 15z" fill="#F6D776" transform="translate(1 1)" />
+          <path d="M7 28l-2-15 9 7 6-11 6 11 9-7-2 15z M7.4 32.4c8.4.8 17 .8 25.4 0 M7 28l.4 4.4 M33 28l-.2 4.4" {...l} />
+          <circle cx="20" cy="22.4" r="1.6" fill="#E26D5C" />
+        </g>
+      )}
     </svg>
   );
 }
