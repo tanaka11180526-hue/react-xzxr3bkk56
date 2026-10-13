@@ -54,15 +54,14 @@ export default function NotebookHero({ app, dateKey }) {
     return () => clearTimeout(t);
   }, [praise]);
 
-  // 科目の ▷：今日その科目の予定（終わってないもの）が1つならそれとして計る。2つ以上なら選ぶ
+  // 科目の ▷：今日その科目の予定（終わってないもの）があれば、1つだけでも「どの予定をやる？」と聞く（「予定なしで計る」も選べる）
   function pressSubject(s) {
     if (running === s.id) return timer.mode === "study" ? timerActions.pause() : timerActions.resume();
     const plans = (scheduleByDate[todayKey()] || []).filter((it) => {
       const sub = matchSubject(it.subject);
       return sub && sub.id === s.id && it.content && !isTaskDone(it);
     });
-    if (plans.length === 1) return timerActions.toggleSubject(s.id, plans[0].content);
-    if (plans.length > 1) return setPicking({ sub: s, plans });
+    if (plans.length) return setPicking({ sub: s, plans });
     timerActions.toggleSubject(s.id);
   }
 

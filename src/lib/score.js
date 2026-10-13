@@ -29,8 +29,8 @@ export const rankOf = (score) => RANKS.find((r) => score >= r.min).rank;
 export const NO_PLAN_RANK = "ー";
 RANK_COLOR[NO_PLAN_RANK] = "linear-gradient(135deg, #E4E1DC 0%, #C9C4BC 50%, #B3ADA4 100%)";
 
-// スコアとランクは 2026-10-12 以降の日（と、その日を含む週以降）だけ出す。それより前は勉強時間だけ
-export const SCORE_FROM = "2026-10-12";
+// スコアとランクは 2026-10-05 以降の日（と、その日を含む週以降）だけ出す。それより前は勉強時間だけ（2026-10-13 に本人が 10/12 から 10/05 に変えた）
+export const SCORE_FROM = "2026-10-05";
 
 // 勉強時間によるランクの上限（2026-10-13 決定）。最終ランクは、点数のランクと上限の低いほう
 const DAY_CAP = (h) => (h >= 7 ? "S" : h >= 5 ? "A" : "B");
