@@ -426,6 +426,9 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 /* 科目の ▷ から計るときに予定を選ぶ */
 .pick-plan { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 12px; margin-top: 8px; background: var(--surface); border: 1.5px solid var(--border); border-left: 4px solid var(--c); border-radius: 12px; font-size: 14px; color: var(--text); }
 
+.pick-plan.done { opacity: 0.55; }
+.pick-done { margin-left: auto; flex-shrink: 0; font-size: 11px; font-weight: 800; color: var(--ok); }
+
 /* 止め忘れの確認 */
 .long-text { font-size: 14px; line-height: 1.7; margin: 4px 0 6px; }
 .long-actions .btn.block:first-child { margin-top: 4px; }

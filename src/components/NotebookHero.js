@@ -54,13 +54,14 @@ export default function NotebookHero({ app, dateKey }) {
     return () => clearTimeout(t);
   }, [praise]);
 
-  // 科目の ▷：今日その科目の予定（終わってないもの）があれば、1つだけでも「どの予定をやる？」と聞く（「予定なしで計る」も選べる）
+  // 科目の ▷：今日その科目の予定があれば、1つだけでも「どの予定をやる？」と聞く（「予定なしで計る」も選べる）。
+  // 終わった予定も、続きを計れるように下に薄く出す
   function pressSubject(s) {
     if (running === s.id) return timer.mode === "study" ? timerActions.pause() : timerActions.resume();
     const plans = (scheduleByDate[todayKey()] || []).filter((it) => {
       const sub = matchSubject(it.subject);
-      return sub && sub.id === s.id && it.content && !isTaskDone(it);
-    });
+      return sub && sub.id === s.id && it.content;
+    }).sort((a, b) => isTaskDone(a) - isTaskDone(b)); // 終わってないものを上に
     if (plans.length) return setPicking({ sub: s, plans });
     timerActions.toggleSubject(s.id);
   }
@@ -161,10 +162,11 @@ export default function NotebookHero({ app, dateKey }) {
     {picking && (
       <Sheet title={picking.sub.label + "のどの予定をやる？"} onClose={() => setPicking(null)}>
         {picking.plans.map((p, i) => (
-          <button key={i} className="pick-plan" style={{ "--c": picking.sub.color }}
+          <button key={i} className={"pick-plan" + (isTaskDone(p) ? " done" : "")} style={{ "--c": picking.sub.color }}
             onClick={() => { timerActions.toggleSubject(picking.sub.id, p.content); setPicking(null); }}>
             {p.category && <span className="plan-cat">{p.category}</span>}
             <span>{p.content}</span>
+            {isTaskDone(p) && <span className="pick-done">済</span>}
           </button>
         ))}
         <button className="btn block" onClick={() => { timerActions.toggleSubject(picking.sub.id); setPicking(null); }}>予定なしで計る</button>
