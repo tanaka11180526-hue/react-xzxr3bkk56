@@ -7,6 +7,8 @@ import { isTaskDone } from "../lib/tasks";
 export default function ScheduleItem({ app, item, canStart, inGroup, label }) {
   const { matchSubject, timer, timerActions, canMarkDone, markDone } = app;
   const finished = isTaskDone(item);
+  // ✓ のボタンがあるときは、シートの「〇」「済」の印は出さない（同じことを2回出さない）
+  const checkable = !!(canMarkDone && item.row);
   const sub = matchSubject(item.subject);
   const color = sub ? sub.color : UNKNOWN_COLOR;
   // 復習も「論文対策講義3（復習①）」のように、やることを付けて計る
@@ -18,7 +20,7 @@ export default function ScheduleItem({ app, item, canStart, inGroup, label }) {
   const actualText = item.actual !== "" && item.actual != null ? "実績 " + item.actual + "分" : "";
   return (
     <div className={"plan" + (finished ? " done" : "") + (inGroup ? " in-group" : "")} style={{ "--c": color }}>
-      {canMarkDone && item.row && (
+      {checkable && (
         <button className={"done-btn" + (finished ? " on" : "")} onClick={() => markDone(item, !finished)}
           aria-label={finished ? "終わったを取り消す" : "終わった"}>{finished ? "✓" : ""}</button>
       )}
@@ -27,8 +29,8 @@ export default function ScheduleItem({ app, item, canStart, inGroup, label }) {
           {!inGroup && item.category && <span className="plan-cat">{item.category}</span>}
           {time && <span className="plan-time">{time}</span>}
           {!inGroup && item.subject && <span className="plan-subject">{item.subject}</span>}
-          {item.achieved && <span className="plan-achieved">{item.achieved}</span>}
-          {item.done && <span className="plan-achieved">済</span>}
+          {!checkable && item.achieved && <span className="plan-achieved">{item.achieved}</span>}
+          {!checkable && item.done && <span className="plan-achieved">済</span>}
         </div>
         {item.content && <div className="plan-content">{label || item.content}</div>}
         {(planText || actualText) && <div className="plan-note">{[planText, actualText].filter(Boolean).join("／")}</div>}
