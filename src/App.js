@@ -3,6 +3,7 @@ import { load, save, remove as removeKey, makeId, usePersisted } from "./lib/sto
 import { dayStart, nextMidnight, splitByDay, toKey, todayKey } from "./lib/time";
 import { syncTaskNames, prevDayReviewLast } from "./lib/tasks";
 import * as sync from "./lib/sync";
+import { addIllust, listIllusts, removeIllust } from "./lib/illust";
 import { BREAK_LIMIT_MS, DEFAULT_SUBJECTS, PAUSE_LIMIT_MS } from "./lib/constants";
 import TimerTab from "./components/TimerTab";
 import LongStudyCheck from "./components/LongStudyCheck";
@@ -144,6 +145,23 @@ export default function App() {
   const [report, setReport] = useState(null);
   const [now, setNow] = useState(Date.now());
   const [notes, setNotes] = usePersisted("cpa_daily_notes", {});
+  // ノートの右下のイラスト（この端末の IndexedDB にだけある。表示用の URL を作って持つ）
+  const [illusts, setIllusts] = useState([]);
+  const illustUrls = useRef([]);
+  const reloadIllusts = useCallback(async () => {
+    try {
+      const list = (await listIllusts()).map((x) => ({ id: x.id, url: URL.createObjectURL(x.blob) }));
+      illustUrls.current.forEach((u) => URL.revokeObjectURL(u));
+      illustUrls.current = list.map((x) => x.url);
+      setIllusts(list);
+    } catch (e) { /* IndexedDB が使えないときはイラストなし（猫のまま） */ }
+  }, []);
+  useEffect(() => { reloadIllusts(); }, [reloadIllusts]);
+  const addIllusts = useCallback(async (files) => {
+    for (const f of files) await addIllust(f);
+    await reloadIllusts();
+  }, [reloadIllusts]);
+  const deleteIllust = useCallback(async (id) => { await removeIllust(id); await reloadIllusts(); }, [reloadIllusts]);
   const [notesOutbox, setNotesOutbox] = usePersisted("cpa_notes_outbox", {});
   const [toast, setToast] = useState(null);
   const [longCheck, setLongCheck] = useState(null);
@@ -542,6 +560,7 @@ export default function App() {
     viewDate, setViewDate, openDay, setEditor, openReport: setReport, syncCfg, setSyncCfg, syncState, pending, flush, queueAll, configured,
     addEntries, updateEntry, deleteEntry, setLogs, setBreaks, queue,
     canMarkDone, markDone, notes, setNote, exams, scoreLogs, examsOn, examsStatus, loadExams,
+    illusts, addIllusts, deleteIllust,
   };
 
   const syncError = syncState.status === "error" || scheduleState.status === "error";
