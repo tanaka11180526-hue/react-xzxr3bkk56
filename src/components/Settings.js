@@ -11,7 +11,6 @@ export default function Settings({ app, onClose }) {
       <SyncSettings app={app} />
       <SubjectSettings app={app} />
       <BreakColor app={app} />
-      <Illusts app={app} />
       <Backup app={app} />
       <AppAddress />
     </Sheet>
@@ -169,41 +168,6 @@ function SubjectSettings({ app }) {
       <div className="row">
         <button className="btn" onClick={add}>＋ 科目を追加</button>
         <button className="btn ghost" onClick={() => window.confirm("科目を初期設定に戻しますか？") && setSubjects(DEFAULT_SUBJECTS)}>初期設定に戻す</button>
-      </div>
-    </section>
-  );
-}
-
-// ノートの右下に日替わりで出すイラスト。この端末の中にだけ保存する（バックアップの書き出しには入らない）
-function Illusts({ app }) {
-  const { illusts = [], addIllusts, deleteIllust } = app;
-  const fileRef = useRef(null);
-  const [busy, setBusy] = useState(false);
-  async function onPick(e) {
-    const files = Array.from(e.target.files || []);
-    e.target.value = "";
-    if (!files.length) return;
-    setBusy(true);
-    try { await addIllusts(files); } catch (err) { window.alert("入れられませんでした：" + (err && err.message ? err.message : err)); }
-    setBusy(false);
-  }
-  return (
-    <section className="settings-section">
-      <h3>イラスト</h3>
-      <p className="muted small">入れると、タイマーのノートの右下（猫たちの場所）に日替わりで出ます。画像はこの iPhone の中にだけ保存します（機種変更のときは入れ直し）。</p>
-      {illusts.length > 0 && (
-        <div className="illust-list">
-          {illusts.map((x) => (
-            <div key={x.id} className="illust-item">
-              <img src={x.url} alt="" />
-              <button aria-label="このイラストを消す" onClick={() => window.confirm("このイラストを消しますか？") && deleteIllust(x.id)}>×</button>
-            </div>
-          ))}
-        </div>
-      )}
-      <div className="row">
-        <button className="btn small" onClick={() => fileRef.current && fileRef.current.click()} disabled={busy}>{busy ? "入れています…" : "＋ 写真から入れる"}</button>
-        <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={onPick} />
       </div>
     </section>
   );
