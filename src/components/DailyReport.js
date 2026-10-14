@@ -30,7 +30,6 @@ export default function DailyReport({ app, dateKey, onClose }) {
   const breakSecs = (breakDays[key] || { total: 0 }).total;
   const d = keyToDate(key);
   const ranked = subjects.filter((s) => day.by[s.id]).sort((a, b) => day.by[b.id] - day.by[a.id]);
-  const top = ranked.slice(0, 3);
   const streak = streakAt(days, key);
   const first = firstStudyDay(days);
   const score = first && key >= first && key >= SCORE_FROM && studied(days, key) ? dayScore(key, { days, items: schedule.items || [], logs: app.scoreLogs, today: todayKey() }) : null;
@@ -80,19 +79,6 @@ export default function DailyReport({ app, dateKey, onClose }) {
                 {score && <RankStamp score={score} />}
               </div>
 
-              <span className="rp-tag tag-sand">TOP 3 SUBJECTS</span>
-              {top.length ? (
-                <ol className="rp-list">
-                  {top.map((s, i) => (
-                    <li key={s.id}>
-                      <span className="rp-num">{i + 1}</span>
-                      <span className="rp-name">{s.label}</span>
-                      <span className="rp-time">{fmtSpaced(day.by[s.id])}</span>
-                    </li>
-                  ))}
-                </ol>
-              ) : <p className="rp-empty">この日の記録はまだないで</p>}
-
               <span className="rp-tag tag-blue">FOCUS NOTE</span>
               {editing ? (
                 <textarea className="rp-note-input" autoFocus rows={2} defaultValue={note} placeholder="今日のひとこと"
@@ -111,8 +97,8 @@ export default function DailyReport({ app, dateKey, onClose }) {
           <div className="report-stats">
             <div><span>休憩</span><b>{fmtSpaced(breakSecs)}</b></div>
             <div><span>連続</span><b>{streak}日</b></div>
-            {ranked.length > 3 && <div><span>ほかの科目</span><b>{ranked.slice(3).map((s) => s.label + " " + fmtSpaced(day.by[s.id])).join("・")}</b></div>}
           </div>
+          <SubjectTimes list={ranked.map((s) => ({ s, secs: day.by[s.id] }))} />
           {tasks.length > 0 && (
             <>
               <div className="section-title">やったこと<span className="muted">（予定から計った分）</span></div>
@@ -129,6 +115,27 @@ export default function DailyReport({ app, dateKey, onClose }) {
         <p className="hint center light">スクリーンショットで保存・共有できます</p>
       </div>
     </div>
+  );
+}
+
+// ノートの下に出す、その日（週）にやった科目の時間（全部。長い順）
+export function SubjectTimes({ list }) {
+  if (!list.length) return null;
+  const max = list[0].secs;
+  return (
+    <>
+      <div className="section-title">科目ごとの時間</div>
+      <div className="report-subjects">
+        {list.map(({ s, secs }, i) => (
+          <div key={s.id} className="report-subject">
+            <span className="rs-num">{i + 1}</span>
+            <span className="rs-name">{s.label}</span>
+            <span className="rs-bar"><i style={{ width: Math.max(4, (secs / max) * 100) + "%", background: s.color }} /></span>
+            <span className="rs-time">{fmtSpaced(secs)}</span>
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
 
