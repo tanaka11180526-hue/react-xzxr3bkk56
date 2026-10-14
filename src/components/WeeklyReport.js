@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { DAY_NAMES, addDays, keyToDate, todayKey } from "../lib/time";
 import { useSwipe } from "../lib/swipe";
 import { SCORE_FROM, dayScore, firstStudyDay, RANK_COLOR, studied, weekScore, weekStart } from "../lib/score";
-import { ClockDoodle, SunDoodle, fmtSpaced } from "./DailyReport";
+import { ClockDoodle, SubjectTimes, SunDoodle, fmtSpaced } from "./DailyReport";
 import RankStamp from "./RankStamp";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -34,7 +34,7 @@ export default function WeeklyReport({ app, onClose }) {
     Object.entries(d.by).forEach(([id, s]) => { bySub[id] = (bySub[id] || 0) + s; });
   });
   const max = Math.max(1, ...keys.map((k) => (days[k] ? days[k].total : 0)));
-  const top = subjects.filter((s) => bySub[s.id]).sort((a, b) => bySub[b.id] - bySub[a.id]).slice(0, 3);
+  const ranked = subjects.filter((s) => bySub[s.id]).sort((a, b) => bySub[b.id] - bySub[a.id]);
 
   return (
     <div className="report-overlay" onClick={onClose}>
@@ -82,18 +82,6 @@ export default function WeeklyReport({ app, onClose }) {
                 })}
               </div>
 
-              <span className="rp-tag tag-sand">TOP 3 SUBJECTS</span>
-              {top.length ? (
-                <ol className="rp-list">
-                  {top.map((s, i) => (
-                    <li key={s.id}>
-                      <span className="rp-num">{i + 1}</span>
-                      <span className="rp-name">{s.label}</span>
-                      <span className="rp-time">{fmtSpaced(bySub[s.id])}</span>
-                    </li>
-                  ))}
-                </ol>
-              ) : <p className="rp-empty">この週の記録はまだないで</p>}
             </div>
           </div>
         </div>
@@ -105,6 +93,7 @@ export default function WeeklyReport({ app, onClose }) {
             {score && <div><span>取りこぼした復習</span><b>{score.detail.missed}件</b></div>}
             <div><span>休憩</span><b>{fmtSpaced(breakSecs)}</b></div>
           </div>
+          <SubjectTimes list={ranked.map((s) => ({ s, secs: bySub[s.id] }))} />
         </div>
       </div>
     </div>

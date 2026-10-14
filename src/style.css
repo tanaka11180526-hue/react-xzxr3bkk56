@@ -282,6 +282,13 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 .report-stats > div { display: flex; flex-direction: column; }
 .report-stats span { font-size: 11px; color: var(--muted); }
 .report-stats b { font-size: 15px; }
+.report-subjects { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+.report-subject { display: flex; align-items: center; gap: 8px; font-size: 13.5px; }
+.rs-num { width: 16px; text-align: center; font-size: 11px; color: var(--muted); }
+.rs-name { width: 4.2em; flex-shrink: 0; }
+.rs-bar { flex: 1; height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+.rs-bar i { display: block; height: 100%; border-radius: 3px; opacity: 0.8; }
+.rs-time { width: 5.2em; text-align: right; font-variant-numeric: tabular-nums; }
 .report-task { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 8px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
 .report-task i { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .report-task span { flex: 1; min-width: 0; }
