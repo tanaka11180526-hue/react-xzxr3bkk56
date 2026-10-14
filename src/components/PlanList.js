@@ -4,8 +4,8 @@ import { UNKNOWN_COLOR } from "../lib/constants";
 import { isPrevDayReview, isTaskDone, prevDayReviewTitle, prevDayReviewTopic } from "../lib/tasks";
 
 // その日の予定の一覧（カレンダーの日の一覧・タイマーの今日の予定）。
-// 予定は科目ごとのまとまりにして、シートに出てくる順に並べる（その科目の予定が1件だけならまとめずにそのまま出す）。
-// 「前日の復習」は一番下に1つのまとまり。
+// 予定は科目ごとのまとまりにする（その科目の予定が1件だけならまとめずにそのまま出す）。
+// 並びは、まとめなかった予定 → 科目のまとまり → 「前日の復習」のまとまり（一番下）。それぞれの中はシートに出てくる順。
 // どのまとまりも最初は閉じておき（計測中の予定があれば開く）、押すと中の予定が開く
 export default function PlanList({ app, plans, canStart }) {
   const rest = plans.filter((p) => !isPrevDayReview(p));
@@ -19,8 +19,10 @@ export default function PlanList({ app, plans, canStart }) {
   });
   return (
     <>
-      {groups.map((g) => {
-        if (g.items.length === 1) return <ScheduleItem key={"s:" + g.key} app={app} item={g.items[0]} canStart={canStart} />;
+      {groups.filter((g) => g.items.length === 1).map((g) => (
+        <ScheduleItem key={"s:" + g.key} app={app} item={g.items[0]} canStart={canStart} />
+      ))}
+      {groups.filter((g) => g.items.length > 1).map((g) => {
         const sub = app.matchSubject(g.key);
         return <PlanGroup key={"s:" + g.key} app={app} items={g.items} canStart={canStart} title={sub ? sub.label : g.key || "科目なし"} />;
       })}
