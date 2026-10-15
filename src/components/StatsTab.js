@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { DAY_NAMES, addDays, fmtHM, keyToDate, todayKey } from "../lib/time";
-import { STREAK_MIN_SECS } from "../lib/constants";
+import { DAY_NAMES, addDays, dayStart, fmtHM, keyToDate, todayKey } from "../lib/time";
+import { RECORDS_FROM, STREAK_MIN_SECS } from "../lib/constants";
 import ProgressCard from "./ProgressCard";
 import ExamPage, { ExamButton } from "./ExamCard";
 import WeeklyReport from "./WeeklyReport";
 
 const RANGES = [7, 14, 30];
+const fmtMD = (key) => { const d = keyToDate(key); return d.getMonth() + 1 + "/" + d.getDate(); };
 
 function calcStreak(days, today) {
   const has = (k) => days[k] && days[k].total >= STREAK_MIN_SECS;
@@ -22,9 +23,8 @@ function calcStreak(days, today) {
 }
 
 export default function StatsTab({ app }) {
-  const { days, subjects, examDate, setExamDate, openReport } = app;
+  const { days, subjects, logs, openReport } = app;
   const [range, setRange] = useState(7);
-  const [editingExam, setEditingExam] = useState(false);
   const [examsOpen, setExamsOpen] = useState(false);
   const [weekOpen, setWeekOpen] = useState(false);
   const today = todayKey();
@@ -32,7 +32,9 @@ export default function StatsTab({ app }) {
   const graphDays = Array.from({ length: range }, (_, i) => addDays(today, i - range + 1));
   const max = Math.max(1, ...graphDays.map((k) => (days[k] ? days[k].total : 0)));
   const rangeTotal = graphDays.reduce((sum, k) => sum + (days[k] ? days[k].total : 0), 0);
-  const daysLeft = examDate ? Math.ceil((keyToDate(examDate) - keyToDate(today)) / 86400000) : null;
+  // 累計：止めた記録だけを足す（計測中の分は止めたときに増える）。平均は記録を始めた日から今日までの日数で割る
+  const total = logs.reduce((sum, l) => sum + (l.start >= dayStart(RECORDS_FROM) ? Math.max(0, l.end - l.start) / 1000 : 0), 0);
+  const sinceDays = Math.max(1, Math.round((keyToDate(today) - keyToDate(RECORDS_FROM)) / 86400000) + 1);
 
   return (
     <div className="page">
@@ -52,18 +54,9 @@ export default function StatsTab({ app }) {
           <div className="stat-sub">{streak > 0 ? (todayDone ? "今日も継続中" : "今日10分やれば継続") : "今日から再スタート"}・最長 {longest}日<br />1日10分以上で連続に数えます</div>
         </div>
         <div className="card stat">
-          <div className="stat-label">📝 試験日まで</div>
-          {examDate && !editingExam ? (
-            <button className="stat-btn" onClick={() => setEditingExam(true)}>
-              <div className="stat-value">{daysLeft >= 0 ? daysLeft : "—"}<small>日</small></div>
-              <div className="stat-sub">{examDate.replace(/-/g, "/")}・タップで変更</div>
-            </button>
-          ) : (
-            <div className="exam-edit">
-              <input type="date" defaultValue={examDate} onChange={(e) => e.target.value && setExamDate(e.target.value)} />
-              {examDate && <button className="btn small" onClick={() => setEditingExam(false)}>OK</button>}
-            </div>
-          )}
+          <div className="stat-label">⏱ 累計</div>
+          <div className="stat-value">{Math.floor(total / 3600)}<small>時間</small>{Math.floor((total % 3600) / 60)}<small>分</small></div>
+          <div className="stat-sub">{fmtMD(RECORDS_FROM)} から<br />1日平均 {(total / 3600 / sinceDays).toFixed(1)}時間</div>
         </div>
       </div>
 

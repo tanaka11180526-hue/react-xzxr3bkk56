@@ -15,6 +15,7 @@ const PRAISE_MIN = 25;
 export default function NotebookHero({ app, dateKey }) {
   const { subjects, timer, timerActions, now, days, logs, getSub, scheduleByDate, matchSubject } = app;
   const [picking, setPicking] = useState(null);
+  const [examOpen, setExamOpen] = useState(false); // 付箋を押すと試験日を選ぶ画面
   // 合計と科目ごとの時間は、上の日付で選んだ日の分を出す（計測は常に今日）
   const isToday = !dateKey || dateKey === todayKey();
   const today = days[dateKey || todayKey()] || { total: 0, by: {} };
@@ -112,7 +113,9 @@ export default function NotebookHero({ app, dateKey }) {
     <div className="desk hero-desk">
       <div className="notebook">
         <div className="nh-frame">
-          <CornerDoodle daysLeft={app.examDate ? Math.ceil((keyToDate(app.examDate) - keyToDate(todayKey())) / 86400000) : null} />
+          <button className="nh-corner-btn" onClick={() => setExamOpen(true)} aria-label="試験日を設定">
+            <CornerDoodle daysLeft={app.examDate ? Math.ceil((keyToDate(app.examDate) - keyToDate(todayKey())) / 86400000) : null} />
+          </button>
           {milestone && <MilestoneStamp hours={milestone} />}
           <div className={"nh-label" + (labelLen >= 7 ? " long" : "")}>
             {/* 計測中・休憩中は見出しが長くなるので、左上の付箋にかぶらないように飾りを外す */}
@@ -159,6 +162,12 @@ export default function NotebookHero({ app, dateKey }) {
         </div>
       </div>
     </div>
+    {examOpen && (
+      <Sheet title="試験日" onClose={() => setExamOpen(false)}>
+        <input className="exam-date-input" type="date" defaultValue={app.examDate} onChange={(e) => e.target.value && app.setExamDate(e.target.value)} />
+        <button className="btn primary block" onClick={() => setExamOpen(false)}>OK</button>
+      </Sheet>
+    )}
     {picking && (
       <Sheet title={picking.sub.label + "のどの予定をやる？"} onClose={() => setPicking(null)}>
         {picking.plans.map((p, i) => (
@@ -275,7 +284,7 @@ function BooksDoodle({ steaming }) {
   );
 }
 
-// ノートの左上の落書き（「合格!」の付箋）
+// ノートの左上の落書き（「合格!」の付箋）。押すと試験日を選べる（2026-10-16 から。それまでは記録タブのカードで変えていた）
 function CornerDoodle({ daysLeft }) {
   return (
     <svg className="nh-corner" viewBox="0 0 64 56" aria-hidden="true">
@@ -286,7 +295,9 @@ function CornerDoodle({ daysLeft }) {
       </g>
       <g transform="rotate(-4 30 26)" fontFamily="Klee One, sans-serif" fill="#2F2F2F" textAnchor="middle">
         <text x="30" y="23" fontSize="12">合格!</text>
-        {daysLeft != null && <text x="30.6" y="39" fontSize="7.4">あと<tspan fontSize="11.5" fontWeight="700" dx="0.6">{daysLeft}</tspan><tspan dx="0.6">日</tspan></text>}
+        {daysLeft != null
+          ? <text x="30.6" y="39" fontSize="7.4">あと<tspan fontSize="11.5" fontWeight="700" dx="0.6">{daysLeft}</tspan><tspan dx="0.6">日</tspan></text>
+          : <text x="30.6" y="33.5" fontSize="5.8">試験日を<tspan x="30.6" dy="7">押して設定</tspan></text>}
       </g>
     </svg>
   );

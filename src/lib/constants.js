@@ -29,3 +29,6 @@ export const STREAK_MIN_SECS = 10 * 60;
 
 // スプレッドシートの科目名がどの科目にも当てはまらないときの色
 export const UNKNOWN_COLOR = "#6B7280";
+
+// 記録を始めた日（租税の論文対策講義1の日）。これより前の記録は 2026-10-16 に消した（App.js の RECORDS_CLEANUP）。記録タブの累計はこの日から数える
+export const RECORDS_FROM = "2026-09-21";
