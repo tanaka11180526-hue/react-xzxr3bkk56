@@ -11,6 +11,7 @@ import StatsTab from "./components/StatsTab";
 import Settings from "./components/Settings";
 import LogEditor from "./components/LogEditor";
 import DailyReport from "./components/DailyReport";
+import Splash from "./components/Splash";
 
 const MIN_LOG_MS = 5000;
 // 勉強の記録は1分未満なら残さない（押し間違い・すぐ止めた分。2026-10-15 本人の希望。休憩は今まで通り5秒）
@@ -576,6 +577,7 @@ export default function App() {
 
   return (
     <div className="app">
+      <Splash />
       <header className="app-header">
         <div>
           <div className="eyebrow">CPA Study Tracker</div>
