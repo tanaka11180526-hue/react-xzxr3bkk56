@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import ScheduleItem from "./ScheduleItem";
+import ScheduleItem, { RowPlay } from "./ScheduleItem";
 import { UNKNOWN_COLOR } from "../lib/constants";
 import { isPrevDayReview, isTaskDone, prevDayReviewTitle, prevDayReviewTopic } from "../lib/tasks";
 
@@ -96,16 +96,7 @@ function PlanRow({ app, item, canStart }) {
       ) : <span className="row-check-space" />}
       <span className="row-name">{task}{item.note && <small>{item.note}</small>}</span>
       {plan > 0 && <span className="row-plan">{plan}分</span>}
-      {canStart && sub && (
-        <button className={"row-play" + (running ? " running" : "")} onClick={() => timerActions.toggleSubject(sub.id, task)}
-          aria-label={running ? "一時停止" : active ? "再開" : "開始"}>
-          <svg viewBox="0 0 20 20" aria-hidden="true">
-            {running
-              ? <path d="M7.5 5.5 V14.5 M12.5 5.5 V14.5" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
-              : <path d="M7 5.5 L15 10 L7 14.5 Z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />}
-          </svg>
-        </button>
-      )}
+      {canStart && sub && <RowPlay running={running} active={active} onClick={() => timerActions.toggleSubject(sub.id, task)} />}
     </li>
   );
 }
