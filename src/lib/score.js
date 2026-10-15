@@ -4,7 +4,7 @@
 // 勉強時間は iPhone の記録（休憩は数えない）、予定と復習は「ToDo・実績」から読んだもので計算する。
 // 済・〇は今の状態を使うので、あとから付けた分は過去の点数にも入る
 import { addDays, dayStart, keyToDate } from "./time";
-import { isPrevDayReview, isTaskDone } from "./tasks";
+import { combinePrevDayReviews, isPrevDayReview, isTaskDone } from "./tasks";
 
 export const RANKS = [
   { rank: "S", min: 90 },
@@ -82,6 +82,12 @@ function total(parts) {
   return { score, rank: rankOf(score) };
 }
 
+// 今週のレポートの「終わったタスク」（表示だけ。点数には使わない）。同じ日の「前日の復習」は1件と数える
+function taskCount(rows) {
+  const list = combinePrevDayReviews(rows.filter((it) => it.content));
+  return { total: list.length, done: list.filter(isTaskDone).length };
+}
+
 // ── 週（月〜日）──
 // ①勉強時間35 ②予定の消化30（③時間の裏付けを掛ける）④安定15 ⑤復習の取りこぼし10 ⑥遅れの持ち越し10
 export function weekScore(mondayKey, { days, items, today }) {
@@ -101,7 +107,7 @@ export function weekScore(mondayKey, { days, items, today }) {
   const carry = carried === 0 ? 10 : carried <= 2 ? 7 : carried <= 4 ? 4 : 0;
   return {
     ...withCap(total([[time, 35], [dg.points, 30], [stable, 15], [reviewPoints(missed), 10], [carry, 10]]), WEEK_CAP(T)),
-    detail: { hours: T, P: dg.P, D: dg.D, R: dg.R, stableDays, missed, carried, tasks: { total: rows.filter((it) => it.content).length, done: rows.filter((it) => it.content && isTaskDone(it)).length } },
+    detail: { hours: T, P: dg.P, D: dg.D, R: dg.R, stableDays, missed, carried, tasks: taskCount(rows) },
     inProgress: today <= sunday,
     from: mondayKey,
     to: sunday,
