@@ -4,8 +4,8 @@ import { UNKNOWN_COLOR } from "../lib/constants";
 import { isPrevDayReview, isTaskDone, prevDayReviewTitle, prevDayReviewTopic } from "../lib/tasks";
 
 // その日の予定の一覧（カレンダーの日の一覧・タイマーの今日の予定）。
-// 予定は科目ごとのまとまりにする（その科目の予定が1件だけならまとめずにそのまま出す）。
-// 並びは、まとめなかった予定 → 科目のまとまり → 「前日の復習」（一番下）。それぞれの中はシートに出てくる順。
+// 予定は科目ごとのまとまりにする（1件だけの科目もまとまりにする）。
+// 並びは、科目のまとまり → 「前日の復習」（一番下）。それぞれの中はシートに出てくる順。
 // 科目のまとまりは最初から開いておき、見出しを押すと閉じる（閉じたことは覚えない）。
 // 「前日の復習」は App でその日1つの予定にまとめてある（parts に元の行）。ふつうの予定と同じカードで、文字を押すと論点の一覧が開く
 export default function PlanList({ app, plans, canStart }) {
@@ -20,10 +20,7 @@ export default function PlanList({ app, plans, canStart }) {
   });
   return (
     <>
-      {groups.filter((g) => g.items.length === 1).map((g) => (
-        <ScheduleItem key={"s:" + g.key} app={app} item={g.items[0]} canStart={canStart} />
-      ))}
-      {groups.filter((g) => g.items.length > 1).map((g) => {
+      {groups.map((g) => {
         const sub = app.matchSubject(g.key);
         return <PlanGroup key={"s:" + g.key} app={app} items={g.items} canStart={canStart} title={sub ? sub.label : g.key || "科目なし"} />;
       })}
@@ -55,7 +52,7 @@ function PrevReviewPlan({ app, item, canStart }) {
   );
 }
 
-// まとまり1つ。見出しに「3件中2件済・計画 30分」。label を渡すと中の予定の名前を短くして出す
+// まとまり1つ。見出しに「3件中2件済・計画 30分」（1件だけなら「計画 30分」、済なら「済・計画 30分」）。label を渡すと中の予定の名前を短くして出す
 function PlanGroup({ app, items, canStart, title, label }) {
   const { matchSubject } = app;
   const [open, setOpen] = useState(true);
@@ -67,7 +64,9 @@ function PlanGroup({ app, items, canStart, title, label }) {
       <button className={"plan plan-group-head" + (done === items.length ? " done" : "")} onClick={() => setOpen(!open)} aria-expanded={open}>
         <div className="plan-body">
           <div className="plan-content">{title}</div>
-          <div className="plan-note">{items.length}件中{done}件済{plan > 0 ? "・計画 " + plan + "分" : ""}</div>
+          <div className="plan-note">{items.length > 1
+            ? items.length + "件中" + done + "件済" + (plan > 0 ? "・計画 " + plan + "分" : "")
+            : [done ? "済" : "", plan > 0 ? "計画 " + plan + "分" : ""].filter(Boolean).join("・")}</div>
         </div>
         <span className="plan-group-arrow">{open ? "▾" : "▸"}</span>
       </button>
