@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 // アプリを一から起動したとき（タスキルのあとなど）だけ出す画面。
-// 真ん中にアプリのロゴ（輪っかが伸びてオレンジの点が出る）、右下に猫の GIF（public/splash/room.gif。背景は止めて猫だけ動かしたもの）。
+// 真ん中にアプリのロゴ（輪っかが伸びてオレンジの点が出る）、右下に小さめの猫の GIF（public/splash/room.gif。背景は止めて猫だけ動かしたもの）と、その下に「Now Loading...」（文字が波打ち、点が順に点く）。
 // 5秒で消え、押すとすぐ消える。裏ではアプリがふつうに立ち上がっている
 const R = 80;
 const LEN = 2 * Math.PI * R;
@@ -30,7 +30,13 @@ export default function Splash() {
           <text x="100" y="138" textAnchor="middle" fontSize="15" letterSpacing="5" fill="#6B6B6B" fontFamily="Helvetica, Arial, sans-serif">STUDY</text>
         </g>
       </svg>
-      <img className="splash-room" src={process.env.PUBLIC_URL + "/splash/room.gif"} alt="" />
+      <div className="splash-corner">
+        <img className="splash-room" src={process.env.PUBLIC_URL + "/splash/room.gif"} alt="" />
+        <div className="splash-loading" aria-hidden="true">
+          {"Now Loading".split("").map((ch, i) => <span key={i} style={{ animationDelay: i * 0.08 + "s" }}>{ch === " " ? "\u00a0" : ch}</span>)}
+          <span className="splash-dots"><i>.</i><i>.</i><i>.</i></span>
+        </div>
+      </div>
     </div>
   );
 }

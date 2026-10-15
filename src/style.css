@@ -629,10 +629,21 @@ button.pg-task { width: 100%; background: none; border: none; text-align: left; 
 /* 起動したときの画面（Splash.js）。背景は猫の GIF のふちと同じ色 */
 .splash { position: fixed; inset: 0; z-index: 100; background: #EDE3D0; transition: opacity 0.3s ease; }
 .splash.hide { opacity: 0; pointer-events: none; }
-.splash-logo { position: absolute; left: 50%; top: 42%; width: 200px; height: 200px; transform: translate(-50%, -50%); }
+.splash-logo { position: absolute; left: 50%; top: 50%; width: 200px; height: 200px; transform: translate(-50%, -50%); }
 .splash-arc { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); animation: splash-draw 1.4s cubic-bezier(.4, 0, .2, 1) .2s forwards; }
 @keyframes splash-draw { to { stroke-dashoffset: calc(var(--len) * 0.25); } }
 .splash-dot { opacity: 0; animation: splash-fade .3s ease 1.5s forwards; }
 .splash-text { opacity: 0; animation: splash-fade .6s ease .5s forwards; }
 @keyframes splash-fade { to { opacity: 1; } }
-.splash-room { position: absolute; right: 8px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); width: min(68vw, 360px); height: auto; }
+.splash-corner { position: absolute; right: 10px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); width: min(46vw, 240px); display: flex; flex-direction: column; align-items: center; }
+.splash-room { width: 100%; height: auto; display: block; }
+.splash-loading { margin-top: 2px; font-family: "Courier New", ui-monospace, monospace; font-size: 12px; font-weight: 700; letter-spacing: 1px; color: #7A6A52; white-space: nowrap; }
+.splash-loading > span { display: inline-block; animation: splash-wave 1.2s ease-in-out infinite; }
+@keyframes splash-wave { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-3px); } }
+.splash-loading > .splash-dots { animation: none; }
+.splash-dots i { font-style: normal; opacity: 0; animation: splash-dot1 1.6s steps(1) infinite; }
+.splash-dots i:nth-child(2) { animation-name: splash-dot2; }
+.splash-dots i:nth-child(3) { animation-name: splash-dot3; }
+@keyframes splash-dot1 { 0% { opacity: 0; } 25% { opacity: 1; } }
+@keyframes splash-dot2 { 0% { opacity: 0; } 50% { opacity: 1; } }
+@keyframes splash-dot3 { 0% { opacity: 0; } 75% { opacity: 1; } }
