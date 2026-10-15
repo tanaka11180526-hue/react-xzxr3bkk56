@@ -6,7 +6,7 @@ import { isPrevDayReview, isTaskDone, prevDayReviewTitle, prevDayReviewTopic } f
 // その日の予定の一覧（カレンダーの日の一覧・タイマーの今日の予定）。
 // 予定は科目ごとのまとまりにする（その科目の予定が1件だけならまとめずにそのまま出す）。
 // 並びは、まとめなかった予定 → 科目のまとまり → 「前日の復習」（一番下）。それぞれの中はシートに出てくる順。
-// 科目のまとまりは最初は閉じておき（計測中の予定があれば開く）、押すと中の予定が開く。
+// 科目のまとまりは最初から開いておき、見出しを押すと閉じる（閉じたことは覚えない）。
 // 「前日の復習」は App でその日1つの予定にまとめてある（parts に元の行）。ふつうの予定と同じカードで、文字を押すと論点の一覧が開く
 export default function PlanList({ app, plans, canStart }) {
   const rest = plans.filter((p) => !isPrevDayReview(p));
@@ -57,9 +57,8 @@ function PrevReviewPlan({ app, item, canStart }) {
 
 // まとまり1つ。見出しに「3件中2件済・計画 30分」。label を渡すと中の予定の名前を短くして出す
 function PlanGroup({ app, items, canStart, title, label }) {
-  const { matchSubject, timer } = app;
-  const measuring = (timer.mode === "study" || timer.mode === "paused") && items.some((it) => (timer.task || "") === (it.content || ""));
-  const [open, setOpen] = useState(measuring);
+  const { matchSubject } = app;
+  const [open, setOpen] = useState(true);
   const done = items.filter(isTaskDone).length;
   const plan = items.reduce((s, it) => s + (parseFloat(it.plan) || 0), 0);
   const sub = matchSubject(items[0].subject);
