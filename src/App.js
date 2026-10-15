@@ -3,7 +3,7 @@ import { load, save, remove as removeKey, makeId, usePersisted } from "./lib/sto
 import { dayStart, nextMidnight, splitByDay, toKey, todayKey } from "./lib/time";
 import { syncTaskNames, prevDayReviewLast, combinePrevDayReviews, isPrevDayReview, isTaskDone, prevDayReviewTask } from "./lib/tasks";
 import * as sync from "./lib/sync";
-import { BREAK_LIMIT_MS, DEFAULT_SUBJECTS, PAUSE_LIMIT_MS } from "./lib/constants";
+import { BREAK_LIMIT_MS, DEFAULT_SUBJECTS, PAUSE_LIMIT_MS, RECORDS_FROM } from "./lib/constants";
 import TimerTab from "./components/TimerTab";
 import LongStudyCheck from "./components/LongStudyCheck";
 import CalendarTab from "./components/CalendarTab";
@@ -80,6 +80,9 @@ const BREAK_CLEANUPS = [
 // 一度だけ行う、前日の復習の記録の名前そろえ（2026-10-15 本人の依頼）。
 // 論点の名前で計った記録を「前日の復習(10/14分)」の形にし、10/15 10:31〜11:16 のやること空の記録をこの日の前日の復習にする
 const PREV_REVIEW_TASK_FIX = { key: "cpa_prev_review_task_v1", set: { s_mv8wrb7y_p8q6g: "前日の復習(10/14分)" } };
+// 一度だけ行う、記録を始めた日（RECORDS_FROM＝9/21、租税の論文対策講義1の日）より前の勉強と休憩の記録の削除（2026-10-16 本人の依頼）。
+// iPhone からもシートの「アプリ記録」からも消す
+const RECORDS_CLEANUP_KEY = "cpa_records_from_0921_v1";
 const LEGACY_SUBJECTS = { subject_1780109014480: "財理", subject_1780109002406: "財計" }; // 旧「財務理論」「財務計算」
 
 const OLD_KEYS = ["cpa_active_subject", "cpa_timer_start", "cpa_paused_subject", "cpa_paused_timer_start", "cpa_paused_at", "cpa_break_start"];
@@ -297,6 +300,17 @@ export default function App() {
       });
       if (changed.length) { setLogs(fixed); queue(changed.map((id) => [id, "study"])); }
       save(PREV_REVIEW_TASK_FIX.key, true);
+    }
+    if (!load(RECORDS_CLEANUP_KEY, false)) {
+      const from = dayStart(RECORDS_FROM);
+      const old = (l) => l.start < from;
+      const dropIds = [...logs.filter(old), ...breaks.filter(old)].map((l) => l.id);
+      if (dropIds.length) {
+        setLogs((p) => p.filter((l) => !old(l)));
+        setBreaks((p) => p.filter((b) => !old(b)));
+        queue([], dropIds);
+      }
+      save(RECORDS_CLEANUP_KEY, true);
     }
     BREAK_CLEANUPS.forEach(({ key, del, trim }) => {
       if (load(key, false)) return;
