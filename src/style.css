@@ -588,6 +588,9 @@ button.pg-more { background: none; border: none; padding: 6px 0 0 30px; text-ali
 /* 「前日の復習」のまとまり（押すと中の論点が開く） */
 .plan-group { display: flex; flex-direction: column; gap: 6px; }
 button.plan-group-head { width: 100%; text-align: left; border-top: none; border-right: none; border-bottom: none; color: inherit; font: inherit; }
+.plan.plan-group-head { padding: 6px 12px; }
+.plan-group-line { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.plan-group-line .plan-content, .plan-group-line .plan-note { margin-top: 0; }
 .plan-group-arrow { font-size: 14px; color: var(--muted); flex-shrink: 0; }
 /* 科目のまとまりの中の予定（小さい行。前日の復習の論点一覧と同じ見た目） */
 .plan-rows { list-style: none; margin: 0 0 0 14px; padding: 4px 10px; background: var(--surface); border-radius: 10px; display: flex; flex-direction: column; }

@@ -62,11 +62,11 @@ function PlanGroup({ app, items, canStart, title, label }) {
   return (
     <div className="plan-group" style={{ "--c": sub ? sub.color : UNKNOWN_COLOR }}>
       <button className={"plan plan-group-head" + (done === items.length ? " done" : "")} onClick={() => setOpen(!open)} aria-expanded={open}>
-        <div className="plan-body">
-          <div className="plan-content">{title}</div>
-          <div className="plan-note">{items.length > 1
+        <div className="plan-body plan-group-line">
+          <span className="plan-content">{title}</span>
+          <span className="plan-note">{items.length > 1
             ? items.length + "件中" + done + "件済" + (plan > 0 ? "・計画 " + plan + "分" : "")
-            : [done ? "済" : "", plan > 0 ? "計画 " + plan + "分" : ""].filter(Boolean).join("・")}</div>
+            : [done ? "済" : "", plan > 0 ? "計画 " + plan + "分" : ""].filter(Boolean).join("・")}</span>
         </div>
         <span className="plan-group-arrow">{open ? "▾" : "▸"}</span>
       </button>
