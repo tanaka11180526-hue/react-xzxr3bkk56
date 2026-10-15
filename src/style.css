@@ -625,3 +625,8 @@ button.pg-task { width: 100%; background: none; border: none; text-align: left; 
 /* 勉強時間の上限でランクが下がったときの説明（レポートのハンコの下） */
 .rp-rank-cap { font-family: "Klee One", sans-serif; font-size: 2.2cqw; line-height: 1.3; color: #7a7366; text-align: center; width: 19cqw; }
 .rp-rank { flex-shrink: 0; } /* ランクの欄は縮めない（合計時間を1行にしたぶん、説明が細く崩れないように） */
+
+/* 起動したときの猫の GIF（Splash.js）。背景は GIF のふちの色 */
+.splash { position: fixed; inset: 0; z-index: 100; background: #F1E6D5; display: flex; align-items: center; justify-content: center; transition: opacity 0.3s ease; }
+.splash.hide { opacity: 0; pointer-events: none; }
+.splash img { width: min(86vw, 420px); height: auto; }
