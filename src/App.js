@@ -83,6 +83,18 @@ const PREV_REVIEW_TASK_FIX = { key: "cpa_prev_review_task_v1", set: { s_mv8wrb7y
 // 一度だけ行う、記録を始めた日（RECORDS_FROM＝9/21、租税の論文対策講義1の日）より前の勉強と休憩の記録の削除（2026-10-16 本人の依頼）。
 // iPhone からもシートの「アプリ記録」からも消す
 const RECORDS_CLEANUP_KEY = "cpa_records_from_0921_v1";
+// 一度だけ行う、別のアプリで計っていた分の取り込み（2026-10-16 本人の依頼。スクショの日ごとの合計から）。
+// 科目はわからないので、どの日も 租税 3/4・管理 1/8・財計 1/8 に分け、start から 租税→管理→財計 の順に並べる（時刻は目安）。
+// 10/5・10/6 はこのアプリにも記録があるので、別のアプリとの差の分だけを、この日の記録の後ろに足す。手動の印を付けてシートにも送る
+const IMPORT_OTHER_APP = {
+  key: "cpa_import_other_app_v1",
+  days: [ // [日付, 分, 開始]
+    ["2026-09-26", 105, "09:00"], ["2026-09-27", 345, "09:00"], ["2026-09-28", 545, "09:00"], ["2026-09-29", 266, "09:00"],
+    ["2026-09-30", 133, "09:00"], ["2026-10-01", 55, "09:00"], ["2026-10-02", 338, "09:00"], ["2026-10-03", 248, "09:00"],
+    ["2026-10-05", 77, "20:00"], ["2026-10-06", 324, "13:00"],
+  ],
+  subjects: [["租税", "tax"], ["管理", "management"], ["財計", "subject_1780109002406"]], // [名前, 見つからないときの ID]
+};
 const LEGACY_SUBJECTS = { subject_1780109014480: "財理", subject_1780109002406: "財計" }; // 旧「財務理論」「財務計算」
 
 const OLD_KEYS = ["cpa_active_subject", "cpa_timer_start", "cpa_paused_subject", "cpa_paused_timer_start", "cpa_paused_at", "cpa_break_start"];
@@ -311,6 +323,28 @@ export default function App() {
         queue([], dropIds);
       }
       save(RECORDS_CLEANUP_KEY, true);
+    }
+    if (!load(IMPORT_OTHER_APP.key, false)) {
+      const subIds = IMPORT_OTHER_APP.subjects.map(([name, fallback]) => {
+        const sub = subjects.find((x) => x.label === name || x.short === name);
+        return sub ? sub.id : fallback;
+      });
+      const have = new Set(logs.map((l) => l.id));
+      const added = [];
+      IMPORT_OTHER_APP.days.forEach(([key, mins, at]) => {
+        const tax = Math.round(mins * 3 / 4), man = Math.round(mins / 8);
+        let t = dayStart(key) + (Number(at.slice(0, 2)) * 60 + Number(at.slice(3))) * 60000;
+        [tax, man, mins - tax - man].forEach((m, i) => {
+          const id = "s_imp_" + key.replace(/-/g, "") + "_" + i;
+          if (m > 0 && !have.has(id)) added.push({ id, subjectId: subIds[i], manual: true, start: t, end: t + m * 60000 });
+          t += m * 60000;
+        });
+      });
+      if (added.length) {
+        setLogs((p) => [...p, ...added]);
+        queue(added.map((l) => [l.id, "study"]));
+      }
+      save(IMPORT_OTHER_APP.key, true);
     }
     BREAK_CLEANUPS.forEach(({ key, del, trim }) => {
       if (load(key, false)) return;
