@@ -37,11 +37,21 @@ export default function ScheduleItem({ app, item, canStart, inGroup, label, topi
         {(planText || actualText) && <div className="plan-note">{[planText, actualText].filter(Boolean).join("／")}{onToggle && <span className="plan-toggle">{open ? " ▾" : " ▸"}</span>}</div>}
         {item.note && <div className="plan-note">{item.note}</div>}
       </div>
-      {canStart && sub && (
-        <button className={"btn small" + (running ? "" : " primary")} onClick={() => timerActions.toggleSubject(sub.id, task)}>
-          {running ? "⏸" : active ? "▶ 再開" : "▶ 開始"}
-        </button>
-      )}
+      {canStart && sub && <RowPlay running={running} active={active} onClick={() => timerActions.toggleSubject(sub.id, task)} />}
     </div>
+  );
+}
+
+// 計測の丸いボタン（▷、計測中は ⏸）。科目のまとまりの中の行と、前日の復習のカードで使う
+export function RowPlay({ running, active, onClick }) {
+  return (
+    <button className={"row-play" + (running ? " running" : "")} onClick={onClick}
+      aria-label={running ? "一時停止" : active ? "再開" : "開始"}>
+      <svg viewBox="0 0 20 20" aria-hidden="true">
+        {running
+          ? <path d="M7.5 5.5 V14.5 M12.5 5.5 V14.5" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+          : <path d="M7 5.5 L15 10 L7 14.5 Z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />}
+      </svg>
+    </button>
   );
 }
