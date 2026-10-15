@@ -639,11 +639,6 @@ button.pg-task { width: 100%; background: none; border: none; text-align: left; 
 .splash-scene { position: relative; width: 100%; }
 .splash-room { width: 100%; height: auto; display: block; }
 .splash-cat { position: absolute; left: 40.106%; top: 40.351%; width: 40.283%; height: auto; }
-.splash-cat-blink, .splash-cat-sleep { opacity: 0; }
-.splash-cat-blink { animation: splash-blink 6s linear infinite; }
-.splash-cat-sleep { animation: splash-resleep 6s linear infinite; }
-@keyframes splash-blink { 0%, 23.3% { opacity: 0; } 23.4%, 26.3% { opacity: 1; } 26.4%, 41.3% { opacity: 0; } 41.4%, 44.3% { opacity: 1; } 44.4%, 48.5% { opacity: 0; } 48.6%, 51.5% { opacity: 1; } 51.6%, 100% { opacity: 0; } }
-@keyframes splash-resleep { 0%, 73.2% { opacity: 0; } 73.3%, 88.2% { opacity: 1; } 88.3%, 100% { opacity: 0; } }
 .splash-zzz { position: absolute; left: 62%; top: 30%; font-family: "Courier New", ui-monospace, monospace; font-weight: 700; color: #3E4A72; pointer-events: none; }
 .splash-zzz i { position: absolute; font-style: normal; opacity: 0; animation: splash-z 2.4s ease-out infinite; }
 .splash-zzz i:nth-child(1) { font-size: 9px; }
