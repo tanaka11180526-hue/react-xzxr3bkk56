@@ -5,8 +5,9 @@ import { isPrevDayReview, isTaskDone, prevDayReviewTitle, prevDayReviewTopic } f
 
 // その日の予定の一覧（カレンダーの日の一覧・タイマーの今日の予定）。
 // 予定は科目ごとのまとまりにする（その科目の予定が1件だけならまとめずにそのまま出す）。
-// 並びは、まとめなかった予定 → 科目のまとまり → 「前日の復習」のまとまり（一番下）。それぞれの中はシートに出てくる順。
-// どのまとまりも最初は閉じておき（計測中の予定があれば開く）、押すと中の予定が開く
+// 並びは、まとめなかった予定 → 科目のまとまり → 「前日の復習」（一番下）。それぞれの中はシートに出てくる順。
+// 科目のまとまりは最初は閉じておき（計測中の予定があれば開く）、押すと中の予定が開く。
+// 「前日の復習」は App でその日1つの予定にまとめてある（parts に元の行）。ふつうの予定と同じカードで、文字を押すと論点の一覧が開く
 export default function PlanList({ app, plans, canStart }) {
   const rest = plans.filter((p) => !isPrevDayReview(p));
   const prev = plans.filter(isPrevDayReview);
@@ -26,10 +27,31 @@ export default function PlanList({ app, plans, canStart }) {
         const sub = app.matchSubject(g.key);
         return <PlanGroup key={"s:" + g.key} app={app} items={g.items} canStart={canStart} title={sub ? sub.label : g.key || "科目なし"} />;
       })}
-      {prev.length > 0 && (
-        <PlanGroup app={app} items={prev} canStart={canStart} title={prevDayReviewTitle(prev)} label={prevDayReviewTopic} />
-      )}
+      {prev.map((p, i) => <PrevReviewPlan key={"prev" + i} app={app} item={p} canStart={canStart} />)}
     </>
+  );
+}
+
+// その日の「前日の復習」（1つの予定）。文字を押すと論点の一覧（見るだけ）が開く
+function PrevReviewPlan({ app, item, canStart }) {
+  const parts = item.parts || [item];
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="plan-group">
+      <ScheduleItem app={app} item={item} canStart={canStart} label={prevDayReviewTitle(parts)}
+        topics={parts.length} open={open} onToggle={() => setOpen(!open)} />
+      {open && (
+        <ul className="prev-topics">
+          {parts.map((p, i) => (
+            <li key={i} className={isTaskDone(p) ? "done" : ""}>
+              <span className="prev-topic-mark">{isTaskDone(p) ? "〇" : "・"}</span>
+              <span className="prev-topic-name">{prevDayReviewTopic(p)}</span>
+              {parseFloat(p.plan) > 0 && <span className="prev-topic-plan">{parseFloat(p.plan)}分</span>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 

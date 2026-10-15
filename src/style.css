@@ -589,6 +589,14 @@ button.pg-more { background: none; border: none; padding: 6px 0 0 30px; text-ali
 .plan-group { display: flex; flex-direction: column; gap: 6px; }
 button.plan-group-head { width: 100%; text-align: left; border-top: none; border-right: none; border-bottom: none; color: inherit; font: inherit; }
 .plan-group-arrow { font-size: 14px; color: var(--muted); flex-shrink: 0; }
+.plan-body.toggles { cursor: pointer; }
+.plan-toggle { color: var(--muted); }
+.prev-topics { list-style: none; margin: 0 0 0 14px; padding: 8px 12px; background: var(--surface); border-radius: 10px; display: flex; flex-direction: column; gap: 4px; }
+.prev-topics li { display: flex; gap: 6px; font-size: 13px; line-height: 1.45; }
+.prev-topics li.done { color: var(--muted); }
+.prev-topic-mark { flex-shrink: 0; width: 1.1em; color: var(--ok); }
+.prev-topic-name { flex: 1; min-width: 0; }
+.prev-topic-plan { flex-shrink: 0; color: var(--muted); font-size: 12px; }
 .plan.in-group { margin-left: 14px; padding: 7px 10px; gap: 8px; } /* まとまりの中の予定は小さめ */
 .plan.in-group .plan-content { font-size: 13.5px; margin-top: 0; }
 .plan.in-group .done-btn { width: 24px; height: 24px; }

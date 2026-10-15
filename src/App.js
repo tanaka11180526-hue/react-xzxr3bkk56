@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { load, save, remove as removeKey, makeId, usePersisted } from "./lib/storage";
 import { dayStart, nextMidnight, splitByDay, toKey, todayKey } from "./lib/time";
-import { syncTaskNames, prevDayReviewLast } from "./lib/tasks";
+import { syncTaskNames, prevDayReviewLast, combinePrevDayReviews, isPrevDayReview, isTaskDone, prevDayReviewTask } from "./lib/tasks";
 import * as sync from "./lib/sync";
 import { BREAK_LIMIT_MS, DEFAULT_SUBJECTS, PAUSE_LIMIT_MS } from "./lib/constants";
 import TimerTab from "./components/TimerTab";
@@ -13,6 +13,8 @@ import LogEditor from "./components/LogEditor";
 import DailyReport from "./components/DailyReport";
 
 const MIN_LOG_MS = 5000;
+// 勉強の記録は1分未満なら残さない（押し間違い・すぐ止めた分。2026-10-15 本人の希望。休憩は今まで通り5秒）
+const MIN_STUDY_LOG_MS = 60 * 1000;
 const IDLE = { mode: "idle" };
 const EMPTY_OUTBOX = { up: {}, del: {} };
 
@@ -74,6 +76,9 @@ const BREAK_CLEANUPS = [
     trim: {},
   },
 ];
+// 一度だけ行う、前日の復習の記録の名前そろえ（2026-10-15 本人の依頼）。
+// 論点の名前で計った記録を「前日の復習(10/14分)」の形にし、10/15 10:31〜11:16 のやること空の記録をこの日の前日の復習にする
+const PREV_REVIEW_TASK_FIX = { key: "cpa_prev_review_task_v1", set: { s_mv8wrb7y_p8q6g: "前日の復習(10/14分)" } };
 const LEGACY_SUBJECTS = { subject_1780109014480: "財理", subject_1780109002406: "財計" }; // 旧「財務理論」「財務計算」
 
 const OLD_KEYS = ["cpa_active_subject", "cpa_timer_start", "cpa_paused_subject", "cpa_paused_timer_start", "cpa_paused_at", "cpa_break_start"];
@@ -188,7 +193,7 @@ export default function App() {
 
   // ── 記録の追加・編集・削除 ──
   const addEntries = useCallback((kind, base, start, end) => {
-    if (end - start < MIN_LOG_MS) return;
+    if (end - start < (kind === "study" ? MIN_STUDY_LOG_MS : MIN_LOG_MS)) return;
     const entries = splitByDay(start, end).map(([s, e]) => ({ id: makeId(kind === "study" ? "s" : "b"), ...base, start: s, end: e }));
     (kind === "study" ? setLogs : setBreaks)((p) => [...p, ...entries]);
     queue(entries.map((e) => [e.id, kind]));
@@ -279,6 +284,18 @@ export default function App() {
       setBreaks(fixedBreaks);
       queue([...fixedLogs.map((l) => [l.id, "study"]), ...fixedBreaks.map((b) => [b.id, "break"])]);
       save(MIGRATION_KEY, true);
+    }
+    if (!load(PREV_REVIEW_TASK_FIX.key, false)) {
+      const changed = [];
+      const fixed = logs.map((l) => {
+        let task = PREV_REVIEW_TASK_FIX.set[l.id];
+        if (!task && l.task && isPrevDayReview({ content: l.task })) task = prevDayReviewTask(l.task);
+        if (!task || task === l.task) return l;
+        changed.push(l.id);
+        return { ...l, task };
+      });
+      if (changed.length) { setLogs(fixed); queue(changed.map((id) => [id, "study"])); }
+      save(PREV_REVIEW_TASK_FIX.key, true);
     }
     BREAK_CLEANUPS.forEach(({ key, del, trim }) => {
       if (load(key, false)) return;
@@ -411,7 +428,8 @@ export default function App() {
 
   const scheduleByDate = useMemo(() => {
     const map = {};
-    (schedule.items || []).forEach((it) => (map[it.date] = map[it.date] || []).push(it));
+    // 同じ日の「前日の復習」の行は1つの予定にまとめる（tasks.js の combinePrevDayReviews）
+    combinePrevDayReviews(schedule.items || []).forEach((it) => (map[it.date] = map[it.date] || []).push(it));
     // 「前日の復習」はその日の一番下。ほかはシートの並びのまま
     Object.values(map).forEach((list) => list.sort((a, b) => prevDayReviewLast(a, b) || (a.start || "99").localeCompare(b.start || "99")));
     return map;
@@ -477,6 +495,11 @@ export default function App() {
     }));
   }, [setSchedule]);
   async function markDone(item, value) {
+    // まとめた「前日の復習」は、元の行のうち状態がちがうものに順に付ける／外す
+    if (item.parts) {
+      for (const part of item.parts) if (isTaskDone(part) !== value) await markDone(part, value);
+      return;
+    }
     if (!canMarkDone || !item.row) return;
     setItemDone(item, value);
     try {

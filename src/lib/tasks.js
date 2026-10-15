@@ -11,7 +11,7 @@ function commonPrefix(a, b) {
 export function syncTaskNames(logs, items, matchSubject) {
   const byDay = {};
   items.forEach((it) => {
-    if (!it.content) return;
+    if (!it.content || isPrevDayReview(it)) return; // 前日の復習は「前日の復習(10/14分)」で計るので付け替えない
     const sub = matchSubject(it.subject);
     if (!sub) return;
     const k = it.date + "|" + sub.id;
@@ -19,7 +19,7 @@ export function syncTaskNames(logs, items, matchSubject) {
   });
   const changed = [];
   const next = logs.map((l) => {
-    if (!l.task) return l;
+    if (!l.task || isPrevDayReview({ content: l.task })) return l;
     const cands = byDay[toKey(new Date(l.start)) + "|" + l.subjectId];
     if (!cands || cands.includes(l.task)) return l;
     const close = cands.filter((c) => commonPrefix(c, l.task) >= 4);
@@ -54,6 +54,32 @@ export function prevDayReviewTopic(it) {
 export function prevDayReviewTitle(list) {
   const m = String((list[0] && list[0].content) || "").trim().match(PREV_DAY_REVIEW_HEAD);
   return PREV_DAY_REVIEW + (m && m[1] ? "（" + m[1] + "）" : "");
+}
+
+// 2026-10-15 から、同じ日の「前日の復習」の行はアプリでは1つの予定として扱う（シートは論点ごとの行のまま）。
+// やることは「前日の復習(10/14分)」、計画は行の合計、✓ は全部の行に〇を付ける／外す、▶開始もこの名前で計る
+const PREV_DAY_REVIEW_DATE = /^前日の復習\s*[（(]\s*(\d{1,2}\/\d{1,2})\s*分/;
+export function prevDayReviewTask(content) {
+  const m = String(content || "").trim().match(PREV_DAY_REVIEW_DATE);
+  return m ? PREV_DAY_REVIEW + "(" + m[1] + "分)" : PREV_DAY_REVIEW;
+}
+// 予定の一覧の中で、同じ日の「前日の復習」の行を1つの予定にまとめる（最初の行の位置に置く）。
+// まとめた予定は parts に元の行を持つ。終わった判定は「全部の行が済」
+export function combinePrevDayReviews(items) {
+  const byDate = {};
+  items.forEach((it) => { if (!it.review && isPrevDayReview(it)) (byDate[it.date] = byDate[it.date] || []).push(it); });
+  const out = [];
+  items.forEach((it) => {
+    if (it.review || !isPrevDayReview(it)) return out.push(it);
+    const parts = byDate[it.date];
+    if (parts[0] !== it) return;
+    const plan = parts.reduce((s, p) => s + (parseFloat(p.plan) || 0), 0);
+    out.push({
+      date: it.date, category: it.category, subject: it.subject, content: prevDayReviewTask(it.content),
+      plan: plan || "", achieved: parts.every(isTaskDone) ? "〇" : "", row: it.row, parts,
+    });
+  });
+  return out;
 }
 
 // 答練の予定（「ToDo・実績」の分類が「答練」の行）。カレンダーでは「答練」の切り替えのほうにだけ出す
