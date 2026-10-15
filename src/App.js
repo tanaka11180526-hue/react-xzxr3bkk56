@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { load, save, remove as removeKey, makeId, usePersisted } from "./lib/storage";
-import { dayStart, nextMidnight, splitByDay, toKey, todayKey } from "./lib/time";
+import { DAY_MS, dayStart, nextMidnight, splitByDay, toKey, todayKey } from "./lib/time";
 import { syncTaskNames, prevDayReviewLast, combinePrevDayReviews, isPrevDayReview, isTaskDone, prevDayReviewTask } from "./lib/tasks";
 import * as sync from "./lib/sync";
 import { BREAK_LIMIT_MS, DEFAULT_SUBJECTS, PAUSE_LIMIT_MS, RECORDS_FROM } from "./lib/constants";
@@ -84,14 +84,14 @@ const PREV_REVIEW_TASK_FIX = { key: "cpa_prev_review_task_v1", set: { s_mv8wrb7y
 // iPhone からもシートの「アプリ記録」からも消す
 const RECORDS_CLEANUP_KEY = "cpa_records_from_0921_v1";
 // 一度だけ行う、別のアプリで計っていた分の取り込み（2026-10-16 本人の依頼。スクショの日ごとの合計から）。
-// 科目はわからないので、どの日も 租税 3/4・管理 1/8・財計 1/8 に分け、start から 租税→管理→財計 の順に並べる（時刻は目安）。
-// 10/5・10/6 はこのアプリにも記録があるので、別のアプリとの差の分だけを、この日の記録の後ろに足す。手動の印を付けてシートにも送る
+// その日の合計が別のアプリの時間になるように、本人の記録（手で入れた分も含む）では足りない分だけを入れる。
+// 科目はわからないので 租税 3/4・管理 1/8・財計 1/8 に分け、その日の本人の記録の後ろ（なければ 9:00）から順に並べる（時刻は目安）。手動の印を付けてシートにも送る。
+// v1（s_imp_）は本人が手で移していた日と二重になったので、v2 で v1 の分を全部消して入れ直す
 const IMPORT_OTHER_APP = {
-  key: "cpa_import_other_app_v1",
-  days: [ // [日付, 分, 開始]
-    ["2026-09-26", 105, "09:00"], ["2026-09-27", 345, "09:00"], ["2026-09-28", 545, "09:00"], ["2026-09-29", 266, "09:00"],
-    ["2026-09-30", 133, "09:00"], ["2026-10-01", 55, "09:00"], ["2026-10-02", 338, "09:00"], ["2026-10-03", 248, "09:00"],
-    ["2026-10-05", 77, "20:00"], ["2026-10-06", 324, "13:00"],
+  key: "cpa_import_other_app_v2",
+  days: [ // [日付, 別のアプリの合計（分）]
+    ["2026-09-26", 105], ["2026-09-27", 345], ["2026-09-28", 545], ["2026-09-29", 266], ["2026-09-30", 133],
+    ["2026-10-01", 55], ["2026-10-02", 338], ["2026-10-03", 248], ["2026-10-05", 399], ["2026-10-06", 444],
   ],
   subjects: [["租税", "tax"], ["管理", "management"], ["財計", "subject_1780109002406"]], // [名前, 見つからないときの ID]
 };
@@ -329,21 +329,25 @@ export default function App() {
         const sub = subjects.find((x) => x.label === name || x.short === name);
         return sub ? sub.id : fallback;
       });
-      const have = new Set(logs.map((l) => l.id));
+      const isImport = (l) => String(l.id).startsWith("s_imp");
+      const own = logs.filter((l) => !isImport(l));
       const added = [];
-      IMPORT_OTHER_APP.days.forEach(([key, mins, at]) => {
-        const tax = Math.round(mins * 3 / 4), man = Math.round(mins / 8);
-        let t = dayStart(key) + (Number(at.slice(0, 2)) * 60 + Number(at.slice(3))) * 60000;
-        [tax, man, mins - tax - man].forEach((m, i) => {
-          const id = "s_imp_" + key.replace(/-/g, "") + "_" + i;
-          if (m > 0 && !have.has(id)) added.push({ id, subjectId: subIds[i], manual: true, start: t, end: t + m * 60000 });
+      IMPORT_OTHER_APP.days.forEach(([key, mins]) => {
+        const d0 = dayStart(key), d1 = d0 + DAY_MS;
+        const mine = own.filter((l) => l.start >= d0 && l.start < d1);
+        const rest = mins - Math.round(mine.reduce((sum, l) => sum + (l.end - l.start), 0) / 60000);
+        if (rest <= 0) return;
+        const lastEnd = Math.max(d0 + 9 * 3600000, ...mine.map((l) => Math.ceil(l.end / 60000) * 60000));
+        let t = Math.max(d0, Math.min(lastEnd, d1 - 60000 - rest * 60000));
+        const tax = Math.round(rest * 3 / 4), man = Math.round(rest / 8);
+        [tax, man, rest - tax - man].forEach((m, i) => {
+          if (m > 0) added.push({ id: "s_imp2_" + key.replace(/-/g, "") + "_" + i, subjectId: subIds[i], manual: true, start: t, end: t + m * 60000 });
           t += m * 60000;
         });
       });
-      if (added.length) {
-        setLogs((p) => [...p, ...added]);
-        queue(added.map((l) => [l.id, "study"]));
-      }
+      const dropIds = logs.filter(isImport).map((l) => l.id);
+      setLogs((p) => [...p.filter((l) => !isImport(l)), ...added]);
+      queue(added.map((l) => [l.id, "study"]), dropIds);
       save(IMPORT_OTHER_APP.key, true);
     }
     BREAK_CLEANUPS.forEach(({ key, del, trim }) => {
