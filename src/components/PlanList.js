@@ -72,7 +72,42 @@ function PlanGroup({ app, items, canStart, title, label }) {
         </div>
         <span className="plan-group-arrow">{open ? "▾" : "▸"}</span>
       </button>
-      {open && items.map((it, i) => <ScheduleItem key={i} app={app} item={it} canStart={canStart} inGroup label={label ? label(it) : undefined} />)}
+      {open && (
+        <ul className="plan-rows">
+          {items.map((it, i) => <PlanRow key={i} app={app} item={it} canStart={canStart} />)}
+        </ul>
+      )}
     </div>
+  );
+}
+
+// 科目のまとまりの中の予定1件（小さい行）。左に ✓、右に計画の分と ▷（計測中は ⏸）
+function PlanRow({ app, item, canStart }) {
+  const { matchSubject, timer, timerActions, canMarkDone, markDone } = app;
+  const finished = isTaskDone(item);
+  const sub = matchSubject(item.subject);
+  const task = item.content || "";
+  const active = sub && (timer.mode === "study" || timer.mode === "paused") && timer.subjectId === sub.id && (timer.task || "") === task;
+  const running = active && timer.mode === "study";
+  const plan = parseFloat(item.plan);
+  return (
+    <li className={"plan-row" + (finished ? " done" : "") + (active ? " active" : "")}>
+      {canMarkDone && item.row ? (
+        <button className={"row-check" + (finished ? " on" : "")} onClick={() => markDone(item, !finished)}
+          aria-label={finished ? "終わったを取り消す" : "終わった"}>{finished ? "✓" : ""}</button>
+      ) : <span className="row-check-space" />}
+      <span className="row-name">{task}{item.note && <small>{item.note}</small>}</span>
+      {plan > 0 && <span className="row-plan">{plan}分</span>}
+      {canStart && sub && (
+        <button className={"row-play" + (running ? " running" : "")} onClick={() => timerActions.toggleSubject(sub.id, task)}
+          aria-label={running ? "一時停止" : active ? "再開" : "開始"}>
+          <svg viewBox="0 0 20 20" aria-hidden="true">
+            {running
+              ? <path d="M7.5 5.5 V14.5 M12.5 5.5 V14.5" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+              : <path d="M7 5.5 L15 10 L7 14.5 Z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />}
+          </svg>
+        </button>
+      )}
+    </li>
   );
 }
