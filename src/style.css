@@ -589,6 +589,21 @@ button.pg-more { background: none; border: none; padding: 6px 0 0 30px; text-ali
 .plan-group { display: flex; flex-direction: column; gap: 6px; }
 button.plan-group-head { width: 100%; text-align: left; border-top: none; border-right: none; border-bottom: none; color: inherit; font: inherit; }
 .plan-group-arrow { font-size: 14px; color: var(--muted); flex-shrink: 0; }
+/* 科目のまとまりの中の予定（小さい行。前日の復習の論点一覧と同じ見た目） */
+.plan-rows { list-style: none; margin: 0 0 0 14px; padding: 4px 10px; background: var(--surface); border-radius: 10px; display: flex; flex-direction: column; }
+.plan-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 13.5px; line-height: 1.45; border-bottom: 1px dashed var(--border); }
+.plan-row:last-child { border-bottom: none; }
+.plan-row.done .row-name, .plan-row.done .row-plan { color: var(--muted); }
+.plan-row.active .row-name { font-weight: 700; }
+.row-check { flex-shrink: 0; width: 20px; height: 20px; border-radius: 5px; border: 1.4px solid #2B2B2B; background: var(--surface); color: #34491F; font-size: 12px; font-weight: 800; line-height: 1; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+.row-check.on { background: #DDE7CB; }
+.row-check-space { width: 20px; flex-shrink: 0; }
+.row-name { flex: 1; min-width: 0; word-break: break-word; }
+.row-name small { display: block; font-size: 11.5px; color: var(--muted); }
+.row-plan { flex-shrink: 0; font-size: 12px; color: var(--muted); }
+.row-play { flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; border: 1.4px solid #2B2B2B; background: var(--surface); color: #2B2B2B; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+.row-play svg { width: 18px; height: 18px; }
+.row-play.running { background: #2B2B2B; color: #FBF8F1; }
 .plan-body.toggles { cursor: pointer; }
 .plan-toggle { color: var(--muted); }
 .prev-topics { list-style: none; margin: 0 0 0 14px; padding: 8px 12px; background: var(--surface); border-radius: 10px; display: flex; flex-direction: column; gap: 4px; }
