@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { DAY_NAMES, addDays, dayStart, fmtHM, keyToDate, todayKey } from "../lib/time";
 import { RECORDS_FROM, STREAK_MIN_SECS } from "../lib/constants";
 import ProgressCard from "./ProgressCard";
+import RotationCard from "./RotationCard";
 import ExamPage, { ExamButton } from "./ExamCard";
 import WeeklyReport from "./WeeklyReport";
 
@@ -59,6 +60,8 @@ export default function StatsTab({ app }) {
           <div className="stat-sub">{fmtMD(RECORDS_FROM)} から<br />1日平均 {(total / 3600 / sinceDays).toFixed(1)}時間</div>
         </div>
       </div>
+
+      <RotationCard app={app} />
 
       <ProgressCard app={app} />
 

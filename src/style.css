@@ -659,3 +659,29 @@ button.pg-task { width: 100%; background: none; border: none; text-align: left; 
 @keyframes splash-dot1 { 0% { opacity: 0; } 25% { opacity: 1; } }
 @keyframes splash-dot2 { 0% { opacity: 0; } 50% { opacity: 1; } }
 @keyframes splash-dot3 { 0% { opacity: 0; } 75% { opacity: 1; } }
+
+/* 記録タブの「回転教材」（RotationCard.js） */
+.rot-card { padding: 4px 12px; }
+.rot-mat { border-bottom: 1px dashed var(--border); }
+.rot-mat:last-child { border-bottom: none; }
+.rot-head { width: 100%; display: grid; grid-template-columns: 1fr auto 18px; grid-template-rows: auto auto; column-gap: 8px; row-gap: 5px; align-items: center; padding: 10px 0 10px 10px; background: none; border: none; border-left: 4px solid var(--c); border-radius: 0; text-align: left; color: inherit; font: inherit; }
+.rot-name { font-size: 14px; }
+.rot-name b { font-weight: 700; margin-right: 6px; }
+.rot-count { font-size: 15px; font-weight: 700; }
+.rot-count small { font-size: 11px; font-weight: 400; color: var(--muted); }
+.rot-bar { grid-column: 1 / 3; height: 5px; border-radius: 3px; background: var(--border); overflow: hidden; }
+.rot-bar i { display: block; height: 100%; background: var(--c); border-radius: 3px; }
+.rot-arrow { grid-row: 1 / 3; grid-column: 3; font-size: 13px; color: var(--muted); text-align: center; }
+.rot-body { padding: 2px 0 12px 14px; }
+.rot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(30px, 1fr)); gap: 5px; }
+.rot-cell { position: relative; height: 30px; padding: 0; border-radius: 6px; border: 1.2px solid var(--border); background: var(--surface); color: var(--muted); font-size: 10.5px; font: inherit; font-size: 10.5px; display: inline-flex; align-items: center; justify-content: center; overflow: hidden; }
+.rot-cell.done { border-color: var(--c); color: #2B2B2B; background: color-mix(in srgb, var(--c) calc(var(--a) * 100%), var(--surface)); }
+.rot-cell.planned { border-style: dashed; border-color: var(--c); color: #2B2B2B; }
+.rot-cell.next { border: 2.2px solid #2B2B2B; color: #2B2B2B; font-weight: 700; }
+.rot-cell.picked { outline: 2px solid #2B2B2B; outline-offset: 1px; }
+.rot-info { margin-top: 10px; font-size: 12.5px; display: flex; flex-direction: column; gap: 2px; }
+.rot-info span { color: var(--muted); }
+.rot-legend { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11px; color: var(--muted); align-items: center; }
+.rot-legend span { display: inline-flex; align-items: center; gap: 4px; }
+.rot-legend .rot-cell { width: 14px; height: 14px; border-radius: 3px; }
+.rot-tip { margin-left: auto; }
