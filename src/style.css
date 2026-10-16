@@ -639,7 +639,7 @@ button.pg-task { width: 100%; background: none; border: none; text-align: left; 
 .splash-dot { opacity: 0; animation: splash-fade .3s ease 1.5s forwards; }
 .splash-text { opacity: 0; animation: splash-fade .6s ease .5s forwards; }
 @keyframes splash-fade { to { opacity: 1; } }
-.splash-corner { position: absolute; right: 10px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); width: min(46vw, 240px); display: flex; flex-direction: column; align-items: center; }
+.splash-corner { position: absolute; right: 10px; bottom: max(8px, calc(env(safe-area-inset-bottom, 0px) - 10px)); width: min(46vw, 240px); display: flex; flex-direction: column; align-items: center; }
 .splash-scene { position: relative; width: 100%; }
 .splash-room { width: 100%; height: auto; display: block; }
 .splash-cat { position: absolute; left: 40.106%; top: 40.351%; width: 40.283%; height: auto; }
@@ -649,7 +649,7 @@ button.pg-task { width: 100%; background: none; border: none; text-align: left; 
 .splash-zzz i:nth-child(2) { font-size: 11px; animation-delay: .8s; }
 .splash-zzz i:nth-child(3) { font-size: 13px; animation-delay: 1.6s; }
 @keyframes splash-z { 0% { opacity: 0; transform: translate(0, 0); } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(10px, -18px); } }
-.splash-loading { margin-top: 2px; font-family: "Courier New", ui-monospace, monospace; font-size: 12px; font-weight: 700; letter-spacing: 1px; color: #7A6A52; white-space: nowrap; }
+.splash-loading { margin-top: 2px; font-family: "Courier New", ui-monospace, monospace; font-size: 15px; font-weight: 700; letter-spacing: 1px; color: #7A6A52; white-space: nowrap; }
 .splash-loading > span { display: inline-block; animation: splash-wave 1.2s ease-in-out infinite; }
 @keyframes splash-wave { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-3px); } }
 .splash-loading > .splash-dots { animation: none; }
