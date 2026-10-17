@@ -5,6 +5,7 @@ import ProgressCard from "./ProgressCard";
 import RotationCard from "./RotationCard";
 import ExamPage, { ExamButton } from "./ExamCard";
 import WeeklyReport from "./WeeklyReport";
+import TotalBySubject from "./TotalBySubject";
 
 const RANGES = [7, 14, 30];
 const fmtMD = (key) => { const d = keyToDate(key); return d.getMonth() + 1 + "/" + d.getDate(); };
@@ -28,6 +29,7 @@ export default function StatsTab({ app }) {
   const [range, setRange] = useState(7);
   const [examsOpen, setExamsOpen] = useState(false);
   const [weekOpen, setWeekOpen] = useState(false);
+  const [totalOpen, setTotalOpen] = useState(false); // 累計を押すと科目ごとの円グラフ
   const today = todayKey();
   const { streak, longest, todayDone } = calcStreak(days, today);
   const graphDays = Array.from({ length: range }, (_, i) => addDays(today, i - range + 1));
@@ -54,12 +56,13 @@ export default function StatsTab({ app }) {
           <div className="stat-value">{streak}<small>日</small></div>
           <div className="stat-sub">{streak > 0 ? (todayDone ? "今日も継続中" : "今日10分やれば継続") : "今日から再スタート"}・最長 {longest}日<br />1日10分以上で連続に数えます</div>
         </div>
-        <div className="card stat">
-          <div className="stat-label">⏱ 累計</div>
+        <button className="card stat stat-tap" onClick={() => setTotalOpen(true)}>
+          <div className="stat-label">⏱ 累計<span className="stat-more">科目ごと ›</span></div>
           <div className="stat-value">{Math.floor(total / 3600)}<small>時間</small>{Math.floor((total % 3600) / 60)}<small>分</small></div>
           <div className="stat-sub">{fmtMD(RECORDS_FROM)} から<br />1日平均 {(total / 3600 / sinceDays).toFixed(1)}時間</div>
-        </div>
+        </button>
       </div>
+      {totalOpen && <TotalBySubject app={app} onClose={() => setTotalOpen(false)} />}
 
       <RotationCard app={app} />
 
