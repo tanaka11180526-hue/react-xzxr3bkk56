@@ -64,20 +64,23 @@ export default function CalendarTab({ app }) {
           const dow = (firstDow + i) % 7;
           if (mode === "exam") return <ExamCell key={key} app={app} dateKey={key} dow={dow} today={today} onClick={() => setSelected(key)} />;
           const all = (scheduleByDate[key] || []).filter((p) => !isExamPlan(p));
-          // 「前日の復習」は何行あっても札1枚にまとめる（一番下）
-          const prev = all.filter(isPrevDayReview);
-          const plans = prev.length ? all.filter((p) => !isPrevDayReview(p)).concat({ subject: prev[0].subject, content: "前日の復習" }) : all;
+          // 札は科目ごとに1枚（科目名。シートに出てくる順）。「前日の復習」は何行あっても札1枚（一番下）。予定の中身はマスを押すと出る（2026-10-19 から）
+          const chips = [];
+          all.filter((p) => !isPrevDayReview(p)).forEach((p) => {
+            const sub = matchSubject(p.subject);
+            const name = sub ? sub.short || sub.label : String(p.subject || "").trim() || "予定";
+            if (!chips.some((c) => c.name === name)) chips.push({ name, color: sub ? sub.color : UNKNOWN_COLOR });
+          });
+          const prev = all.find(isPrevDayReview);
+          if (prev) { const sub = matchSubject(prev.subject); chips.push({ name: "復習", color: sub ? sub.color : UNKNOWN_COLOR }); }
           const secs = (days[key] || { total: 0 }).total;
           return (
             <button key={key} className={"cal-cell" + (key === today ? " today" : "")} onClick={() => setSelected(key)}>
               {first && key >= first && key >= SCORE_FROM && key <= today && studied(days, key) && <RankSticker s={dayScore(key, { days, items, logs: app.scoreLogs, today })} />}
               <span className={"cal-day" + (dow === 0 ? " sun" : dow === 6 ? " sat" : "")}>{i + 1}</span>
               {secs > 0 && <span className="cal-secs">{fmtHM(secs)}</span>}
-              {plans.slice(0, MAX_CHIPS).map((p, j) => {
-                const sub = matchSubject(p.subject);
-                return <span key={j} className="cal-chip" style={{ background: sub ? sub.color : UNKNOWN_COLOR }}>{p.content || p.subject}</span>;
-              })}
-              {plans.length > MAX_CHIPS && <span className="cal-more">+{plans.length - MAX_CHIPS}</span>}
+              {chips.slice(0, MAX_CHIPS).map((c) => <span key={c.name} className="cal-chip" style={{ background: c.color }}>{c.name}</span>)}
+              {chips.length > MAX_CHIPS && <span className="cal-more">+{chips.length - MAX_CHIPS}</span>}
             </button>
           );
         })}
