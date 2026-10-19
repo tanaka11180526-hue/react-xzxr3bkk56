@@ -5,6 +5,7 @@ import { RANK_COLOR, SCORE_FROM, dayScore, firstStudyDay, studied } from "../lib
 import { examShort, isExamPlan, isPrevDayReview } from "../lib/tasks";
 import Sheet from "./Sheet";
 import PlanList from "./PlanList";
+import TimeCalendar from "./TimeCalendar";
 
 const MAX_CHIPS = 4;
 // 毎日、その日の評価（S〜E）を書いたシールを貼る（まっすぐ）
@@ -15,7 +16,7 @@ export default function CalendarTab({ app }) {
   const { days, scheduleByDate, matchSubject, configured, schedule, scheduleState, refreshSchedule } = app;
   const [month, setMonth] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); });
   const [selected, setSelected] = useState(null);
-  const [mode, setMode] = useState("plan"); // plan：ふつうの予定（答練は除く）／ exam：答練だけ
+  const [mode, setMode] = useState("plan"); // plan：ふつうの予定（答練は除く）／ time：勉強時間だけ（TimeCalendar）／ exam：答練だけ
   const touch = useRef(null);
   const year = month.getFullYear(), m = month.getMonth();
   const firstDow = new Date(year, m, 1).getDay();
@@ -44,8 +45,11 @@ export default function CalendarTab({ app }) {
 
       <div className="seg cal-mode">
         <button className={mode === "plan" ? "on" : ""} onClick={() => setMode("plan")}>予定</button>
+        <button className={mode === "time" ? "on" : ""} onClick={() => setMode("time")}>時間</button>
         <button className={mode === "exam" ? "on" : ""} onClick={() => setMode("exam")}>答練</button>
       </div>
+
+      {mode === "time" ? <TimeCalendar app={app} /> : <>
 
       <div className="date-nav">
         <button className="nav-btn" onClick={() => move(-1)} aria-label="前の月">‹</button>
@@ -73,12 +77,10 @@ export default function CalendarTab({ app }) {
           });
           const prev = all.find(isPrevDayReview);
           if (prev) { const sub = matchSubject(prev.subject); chips.push({ name: "前日復習", color: sub ? sub.color : UNKNOWN_COLOR }); }
-          const secs = (days[key] || { total: 0 }).total;
           return (
             <button key={key} className={"cal-cell" + (key === today ? " today" : "")} onClick={() => setSelected(key)}>
               {first && key >= first && key >= SCORE_FROM && key <= today && studied(days, key) && <RankSticker s={dayScore(key, { days, items, logs: app.scoreLogs, today })} />}
               <span className={"cal-day" + (dow === 0 ? " sun" : dow === 6 ? " sat" : "")}>{i + 1}</span>
-              {secs > 0 && <span className="cal-secs">{fmtHM(secs)}</span>}
               {chips.slice(0, MAX_CHIPS).map((c) => <span key={c.name} className="cal-chip" style={{ background: c.color }}>{c.name}</span>)}
               {chips.length > MAX_CHIPS && <span className="cal-more">+{chips.length - MAX_CHIPS}</span>}
             </button>
@@ -92,6 +94,7 @@ export default function CalendarTab({ app }) {
       {selected && (mode === "exam"
         ? <ExamDaySheet app={app} dateKey={selected} onClose={() => setSelected(null)} />
         : <DaySheet app={app} dateKey={selected} onClose={() => setSelected(null)} />)}
+      </>}
     </div>
   );
 }

@@ -710,3 +710,56 @@ button.stat-tap { text-align: left; font: inherit; color: inherit; width: 100%; 
 .stat-pie-center b { font-size: 22px; font-weight: 600; }
 .stat-pie-center b small { font-size: 11px; font-weight: 400; }
 .stat-pie-center span { font-size: 12px; color: var(--muted); }
+
+/* カレンダータブの「時間」（TimeCalendar.js） */
+.tc-views, .tc-ranges { margin-bottom: 4px; }
+.tc-card { background: var(--surface) var(--paper-dots); background-size: 16px 16px; border: 1.5px solid #2B2B2B; border-radius: var(--radius); padding: 10px 8px; touch-action: pan-y; box-shadow: 0 3px 10px rgba(80,60,30,0.10); }
+.tc-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
+.tc-dow { text-align: center; font-size: 12px; color: var(--muted); padding-bottom: 2px; }
+.tc-dow.sun { color: var(--danger); }
+.tc-day { min-height: 50px; border: none; border-radius: 8px; background: transparent; color: #2B2B2B; font: inherit; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 2px; padding: 5px 0 4px; }
+.tc-day span { font-size: 12px; }
+.tc-day b { font-size: 12.5px; font-weight: 600; }
+.tc-day.today span { font-weight: 800; text-decoration: underline; }
+.tc-day.sel, .tc-week.sel, .tc-month.sel { outline: 2px solid #2B2B2B; outline-offset: -1px; }
+.tc-legend { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; font-size: 11px; color: var(--muted); }
+.tc-scale { display: inline-flex; align-items: center; gap: 0; }
+.tc-scale i { font-style: normal; padding: 1px 5px; font-size: 10.5px; }
+.tc-scale small { margin-left: 5px; }
+.tc-legend-right { font-size: 12.5px; color: var(--text); font-weight: 600; }
+.tc-weeks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+.tc-months { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+.tc-week, .tc-month { min-height: 58px; border: 1px solid var(--border); border-radius: 10px; background: transparent; color: #2B2B2B; font: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; }
+.tc-week[style], .tc-month[style] { border-color: transparent; }
+.tc-week span, .tc-month span { font-size: 12px; }
+.tc-week b, .tc-month b { font-size: 14px; font-weight: 600; }
+.tc-detail { margin-top: 12px; background: var(--surface); border: 1.5px solid #2B2B2B; border-radius: var(--radius); padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+.tc-detail-title { font-weight: 700; font-size: 15px; }
+.tc-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; }
+.tc-stats div { display: flex; flex-direction: column; }
+.tc-stats small { font-size: 11.5px; color: var(--muted); }
+.tc-stats b { font-size: 18px; font-weight: 600; }
+.tc-strip { position: relative; height: 18px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+.tc-strip i { position: absolute; top: 0; bottom: 0; }
+.tc-strip-hours { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--muted); margin-top: -6px; }
+.tc-subjects { display: flex; flex-direction: column; gap: 6px; }
+.tc-sub-row { display: grid; grid-template-columns: 4.5em 1fr auto; align-items: center; gap: 8px; font-size: 13px; }
+.tc-sub-bar { height: 8px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+.tc-sub-bar i { display: block; height: 100%; border-radius: 4px; }
+.tc-sub-row b { font-weight: 600; font-size: 13px; }
+.tc-bars { display: flex; gap: 6px; height: 120px; }
+.tc-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.tc-bar-col small { font-size: 10px; color: var(--muted); height: 12px; }
+.tc-bar-area { flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
+.tc-bar-area i { width: 70%; border-radius: 4px 4px 0 0; background: #6E9748; }
+.tc-bar-col span { font-size: 11.5px; }
+.tc-bar-col span.sun { color: var(--danger); }
+.tc-range-month + .tc-range-month { margin-top: 12px; }
+.tc-range-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px; }
+.tc-range-head small { font-size: 11.5px; color: var(--muted); }
+.tc-mini { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
+.tc-mini-day { height: 24px; border-radius: 4px; font-size: 11px; display: flex; align-items: center; justify-content: center; color: var(--muted); }
+.tc-mini-day[style] { font-weight: 600; }
+.tc-mini-day.out { opacity: 0.35; }
+.tc-mini-dow { text-align: center; font-size: 10.5px; color: var(--muted); }
+.tc-mini-dow.sun { color: var(--danger); }
