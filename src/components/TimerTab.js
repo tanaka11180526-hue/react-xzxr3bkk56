@@ -82,10 +82,11 @@ function Timeline({ app }) {
   function blockAt(bs) {
     const be = bs + BLOCK_MS;
     const hit = (l) => l.start < be && l.end > bs;
-    if (liveBreak && hit(liveBreak)) return { color: breakColor, isBreak: true, log: liveBreak };
-    for (let i = dayBreaks.length - 1; i >= 0; i--) if (hit(dayBreaks[i])) return { color: breakColor, isBreak: true, log: dayBreaks[i] };
+    // 勉強と休憩が重なっているところは勉強を出す（休憩中に手で勉強を足したときなど。2026-10-19 から）
     if (live && hit(live)) return { color: getSub(live.subjectId).color, log: live };
     for (let i = dayLogs.length - 1; i >= 0; i--) if (hit(dayLogs[i])) return { color: getSub(dayLogs[i].subjectId).color, log: dayLogs[i] };
+    if (liveBreak && hit(liveBreak)) return { color: breakColor, isBreak: true, log: liveBreak };
+    for (let i = dayBreaks.length - 1; i >= 0; i--) if (hit(dayBreaks[i])) return { color: breakColor, isBreak: true, log: dayBreaks[i] };
     return null;
   }
 
