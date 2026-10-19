@@ -208,18 +208,47 @@ export default function App() {
   }, [setOutbox]);
 
   // ── 記録の追加・編集・削除 ──
+  // 勉強と休憩は重ねない（勉強を優先）。手で勉強を足す／直すときは重なる休憩を削り、休憩を残すときは勉強の時間を抜く（2026-10-19 から）
+  const trimBreaks = useCallback((start, end) => {
+    const ups = [], dels = [];
+    const next = breaks.flatMap((b) => {
+      if (b.end <= start || b.start >= end) return [b];
+      const pieces = [[b.start, start], [end, b.end]].filter(([s, e]) => e - s >= MIN_LOG_MS);
+      if (!pieces.length) { dels.push(b.id); return []; }
+      return pieces.map(([s, e], i) => {
+        const n = { ...b, id: i === 0 ? b.id : makeId("b"), start: s, end: e };
+        ups.push(n.id);
+        return n;
+      });
+    });
+    if (!ups.length && !dels.length) return;
+    setBreaks(next);
+    queue(ups.map((id) => [id, "break"]), dels);
+  }, [breaks, setBreaks, queue]);
+  const withoutStudy = useCallback((start, end) => {
+    let parts = [[start, end]];
+    logs.forEach((l) => {
+      parts = parts.flatMap(([s, e]) => (l.end <= s || l.start >= e ? [[s, e]] : [[s, Math.min(e, l.start)], [Math.max(s, l.end), e]].filter(([a, b]) => b > a)));
+    });
+    return parts;
+  }, [logs]);
+
   const addEntries = useCallback((kind, base, start, end) => {
     if (end - start < (kind === "study" ? MIN_STUDY_LOG_MS : MIN_LOG_MS)) return;
-    const entries = splitByDay(start, end).map(([s, e]) => ({ id: makeId(kind === "study" ? "s" : "b"), ...base, start: s, end: e }));
+    const spans = kind === "break" ? withoutStudy(start, end).filter(([s, e]) => e - s >= MIN_LOG_MS) : [[start, end]];
+    const entries = spans.flatMap(([a, b]) => splitByDay(a, b)).map(([s, e]) => ({ id: makeId(kind === "study" ? "s" : "b"), ...base, start: s, end: e }));
+    if (!entries.length) return;
     (kind === "study" ? setLogs : setBreaks)((p) => [...p, ...entries]);
     queue(entries.map((e) => [e.id, kind]));
-  }, [setLogs, setBreaks, queue]);
+    if (kind === "study" && base.manual) trimBreaks(start, end);
+  }, [setLogs, setBreaks, queue, withoutStudy, trimBreaks]);
 
   function updateEntry(kind, id, fields) {
     const { start, end, ...rest } = fields;
     const entries = splitByDay(start, end).map(([s, e], i) => ({ id: i === 0 ? id : makeId(kind === "study" ? "s" : "b"), ...rest, start: s, end: e }));
     (kind === "study" ? setLogs : setBreaks)((p) => p.flatMap((l) => (l.id === id ? entries.map((n) => ({ ...l, ...n })) : [l])));
     queue(entries.map((e) => [e.id, kind]));
+    if (kind === "study") trimBreaks(start, end);
   }
   function deleteEntry(kind, id) {
     (kind === "study" ? setLogs : setBreaks)((p) => p.filter((l) => l.id !== id));
