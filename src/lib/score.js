@@ -115,7 +115,7 @@ export function weekScore(mondayKey, { days, items, today }) {
 }
 
 // その日の一番長いひと続きの勉強（分）。休憩をはさまずに続いている記録（科目を変えた直後など）はつなげて数える
-function longestRun(logs, key) {
+export function longestRun(logs, key) {
   const from = dayStart(key), to = from + 86400000;
   const list = logs.filter((l) => l.start >= from && l.start < to).sort((a, b) => a.start - b.start);
   let best = 0, runStart = null, runEnd = null;
