@@ -6,7 +6,7 @@ import { examShort, isExamPlan, isPrevDayReview } from "../lib/tasks";
 import Sheet from "./Sheet";
 import PlanList from "./PlanList";
 
-const MAX_CHIPS = 3;
+const MAX_CHIPS = 4;
 // 毎日、その日の評価（S〜E）を書いたシールを貼る（まっすぐ）
 // 表示は日曜はじまり（記録タブの「今週」は月曜はじまりのまま）
 const WEEK_ORDER = [0, 1, 2, 3, 4, 5, 6];
@@ -72,7 +72,7 @@ export default function CalendarTab({ app }) {
             if (!chips.some((c) => c.name === name)) chips.push({ name, color: sub ? sub.color : UNKNOWN_COLOR });
           });
           const prev = all.find(isPrevDayReview);
-          if (prev) { const sub = matchSubject(prev.subject); chips.push({ name: "復習", color: sub ? sub.color : UNKNOWN_COLOR }); }
+          if (prev) { const sub = matchSubject(prev.subject); chips.push({ name: "前日復習", color: sub ? sub.color : UNKNOWN_COLOR }); }
           const secs = (days[key] || { total: 0 }).total;
           return (
             <button key={key} className={"cal-cell" + (key === today ? " today" : "")} onClick={() => setSelected(key)}>
