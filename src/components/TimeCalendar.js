@@ -4,8 +4,8 @@ import { RECORDS_FROM } from "../lib/constants";
 import { longestRun, weekStart } from "../lib/score";
 
 // カレンダータブの「時間」：勉強時間だけを見るカレンダー（日・週・月・期間）。2026-10-19 から
-// 色は1日あたりの時間で5段階（0〜・4時間〜・7時間〜・10時間〜・12時間〜）。週と月は1日平均で塗る
-const LEVELS = [0, 4, 7, 10, 12];
+// 色は1日あたりの時間で5段階（0〜・2.5時間〜・5時間〜・7.5時間〜・10時間〜）。週と月は1日平均で塗る
+const LEVELS = [0, 2.5, 5, 7.5, 10]; // 10時間で一番濃い（2026-10-20 本人の希望）
 const SHADES = ["#E3EBD3", "#C3D6A2", "#9BBB72", "#6E9748", "#46702A"];
 const H = 3600;
 const level = (hoursPerDay) => (hoursPerDay <= 0 ? -1 : LEVELS.filter((h) => hoursPerDay >= h).length - 1);
