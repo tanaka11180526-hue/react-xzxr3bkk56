@@ -37,6 +37,7 @@ export default function TimeCalendar({ app }) {
       <div className="seg tc-views">
         {VIEWS.map(([id, label]) => <button key={id} className={view === id ? "on" : ""} onClick={() => setView(id)}>{label}</button>)}
       </div>
+      <p className="tc-motto">何時間やったかより、何をやったかが大事。</p>
       {view === "day" && <DayView app={app} />}
       {view === "week" && <WeekView app={app} />}
       {view === "month" && <MonthView app={app} />}
