@@ -3,6 +3,8 @@ import { addDays, dayStart, fmtClock, fmtDateJa, fmtHMS, todayKey } from "../lib
 import PlanList from "./PlanList";
 import NotebookHero from "./NotebookHero";
 import { useSwipe } from "../lib/swipe";
+import { overdueItems } from "../lib/tasks";
+import { RECORDS_FROM } from "../lib/constants";
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const BLOCK_MS = 5 * 60000;
@@ -15,6 +17,7 @@ export default function TimerTab({ app }) {
   const breakSecs = (breakDays[viewDate] || { total: 0 }).total;
   // 上の日付で選んだ日の予定を出す（計測を始められるのは今日の予定だけ）
   const plans = scheduleByDate[viewDate] || [];
+  const overdue = isToday ? overdueItems(scheduleByDate, today, RECORDS_FROM) : []; // 遅れは今日の画面にだけ出す
   const studied = subjects.filter((s) => day.by[s.id]).sort((a, b) => day.by[b.id] - day.by[a.id]);
   // ノートの絵の上で横にスライドすると日付を動かす（今日より先には行かない）
   const swipe = useSwipe(() => setViewDate(addDays(viewDate, -1)), () => { if (!isToday) setViewDate(addDays(viewDate, 1)); });
@@ -34,10 +37,10 @@ export default function TimerTab({ app }) {
         <NotebookHero app={app} dateKey={viewDate} />
       </div>
 
-      {plans.length > 0 && (
+      {(plans.length > 0 || overdue.length > 0) && (
         <section className="card section">
           <div className="section-title">{isToday ? "今日" : fmtDateJa(viewDate)}の予定</div>
-          <PlanList app={app} plans={plans} canStart={isToday} />
+          <PlanList app={app} plans={plans} canStart={isToday} overdue={overdue} />
         </section>
       )}
 

@@ -1,8 +1,8 @@
 import React, { useRef, useState } from "react";
 import { DAY_NAMES, fmtDateJa, fmtHM, keyToDate, toKey, todayKey } from "../lib/time";
-import { UNKNOWN_COLOR } from "../lib/constants";
+import { RECORDS_FROM, UNKNOWN_COLOR } from "../lib/constants";
 import { RANK_COLOR, SCORE_FROM, dayScore, firstStudyDay, studied } from "../lib/score";
-import { examShort, isExamPlan, isPrevDayReview } from "../lib/tasks";
+import { examShort, isExamPlan, isPrevDayReview, overdueItems } from "../lib/tasks";
 import Sheet from "./Sheet";
 import PlanList from "./PlanList";
 import TimeCalendar from "./TimeCalendar";
@@ -122,10 +122,11 @@ function DaySheet({ app, dateKey, onClose }) {
   const plans = (scheduleByDate[dateKey] || []).filter((p) => !isExamPlan(p)); // 答練は「答練」のカレンダーに出す
   const day = days[dateKey] || { total: 0, by: {} };
   const canStart = dateKey === todayKey();
+  const overdue = canStart ? overdueItems(scheduleByDate, dateKey, RECORDS_FROM) : []; // 今日の日を開いたときだけ遅れも出す
   return (
     <Sheet title={fmtDateJa(dateKey)} onClose={onClose}>
       <div className="section-title">予定</div>
-      {plans.length ? <PlanList app={app} plans={plans} canStart={canStart} />
+      {plans.length || overdue.length ? <PlanList app={app} plans={plans} canStart={canStart} overdue={overdue} />
         : <p className="empty">この日の予定はありません</p>}
 
       <div className="section-title">勉強した時間<span className="muted">合計 {fmtHM(day.total)}</span></div>

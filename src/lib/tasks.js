@@ -97,3 +97,10 @@ export function examShort(content) {
   if (s.includes("レギュラー")) return "レギュ" + n;
   return s.slice(0, 4);
 }
+
+// 遅れ：今日より前の日の予定で、まだ済でないもの（答練は除く。日付の古い順）。scheduleByDate は前日の復習を1件にまとめたもの。
+// 今日の予定の上に「遅れ」のまとまりとして出し、今日の画面から ✓ や ▷ ができるようにする（2026-10-23 から。点数は今まで通り元の日に入る）
+export function overdueItems(scheduleByDate, today, from) {
+  return Object.keys(scheduleByDate).filter((k) => k < today && (!from || k >= from)).sort()
+    .flatMap((k) => scheduleByDate[k].filter((it) => it.content && !isExamPlan(it) && !isTaskDone(it)));
+}
