@@ -764,3 +764,6 @@ button.stat-tap { text-align: left; font: inherit; color: inherit; width: 100%; 
 .tc-mini-dow { text-align: center; font-size: 10.5px; color: var(--muted); }
 .tc-mini-dow.sun { color: var(--danger); }
 .tc-motto { margin: 2px 0 6px; text-align: center; font-family: "Klee One", sans-serif; font-size: 13px; color: var(--text-2); }
+/* 今日の予定の上の「遅れ」（PlanList.js の OverdueGroup） */
+.plan-overdue .plan-group-head .plan-content { color: #A8412F; font-weight: 700; }
+.row-tag { font-style: normal; font-size: 11px; color: #A8412F; background: #F6E3DD; border-radius: 4px; padding: 0 4px; margin-right: 5px; white-space: nowrap; }
