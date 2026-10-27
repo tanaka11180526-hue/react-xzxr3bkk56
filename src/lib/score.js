@@ -56,7 +56,7 @@ const secsOf = (days, k) => (days[k] && days[k].total) || 0;
 const planMin = (it) => { const n = parseFloat(it.plan); return n > 0 ? n : 0; };
 const minOf = (k1, k2) => (k1 < k2 ? k1 : k2);
 
-// その期間の予定（「ToDo・実績」で日付がその期間の行。復習①〜④は別に数える）
+// その期間の予定（「ToDo・実績」で日付がその期間の行。復習①〜⑦は別に数える）
 const rowsIn = (items, from, to) => items.filter((it) => !it.review && it.date && it.date >= from && it.date <= to);
 
 // ②予定の消化（計画の分で数える）と③時間の裏付け。予定の計画が0なら null（この項目を除いて換算）
@@ -139,7 +139,7 @@ export function dayScore(key, { days, items, logs = [], today }) {
   const missed = missedReviews(items, minOf(key, today));
   const prev = rows.filter(isPrevDayReview);
   const prevPoints = prev.length ? (prev.every(isTaskDone) ? 10 : 0) : null;
-  // その日の予定（「ToDo・実績」の行と復習①〜④）が0件なら、ランクは「ー」にして点数は出さない
+  // その日の予定（「ToDo・実績」の行と復習①〜⑦）が0件なら、ランクは「ー」にして点数は出さない
   const noPlan = !items.some((it) => it.date === key);
   const t = withCap(total([[time, 35], [dg.points, 30], [focus, 15], [reviewPoints(missed), 10], [prevPoints, 10]]), DAY_CAP(secs / H));
   return {

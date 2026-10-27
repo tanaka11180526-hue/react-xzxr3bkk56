@@ -6,7 +6,7 @@ import { UNKNOWN_COLOR } from "../lib/constants";
 const md = (key) => { const d = keyToDate(key); return d.getMonth() + 1 + "/" + d.getDate(); };
 
 // 記録タブの「回転教材」。科目（教材）ごとに、何章（問・回）終わったかと、1つずつのマスを出す。
-// マスは、終わったら科目の色で塗り、復習①〜④が済むほど濃くする。予定に入っていてまだのマスは点線、次にやるマスは太いふち
+// マスは、終わったら科目の色で塗り、復習①〜⑦が済むほど濃くする。予定に入っていてまだのマスは点線、次にやるマスは太いふち
 export default function RotationCard({ app }) {
   const { schedule, matchSubject } = app;
   const mats = useMemo(() => rotationProgress(schedule.items || []), [schedule]);
@@ -33,7 +33,7 @@ export default function RotationCard({ app }) {
                 <div className="rot-body">
                   <div className="rot-grid">
                     {m.units.map((u) => {
-                      const level = u.done ? (u.reviewTotal ? 0.3 + 0.7 * (u.reviews / 4) : 0.75) : 0;
+                      const level = u.done ? (u.reviewTotal ? 0.3 + 0.7 * Math.min(1, u.reviews / u.reviewTotal) : 0.75) : 0;
                       return (
                         <button key={u.key} className={"rot-cell" + (u.done ? " done" : u.planned ? " planned" : "") + (m.next === u.key ? " next" : "") + (picked === u.key ? " picked" : "")}
                           style={{ "--a": level }} onClick={() => setPicked(picked === u.key ? null : u.key)} aria-label={u.name}>
@@ -45,7 +45,7 @@ export default function RotationCard({ app }) {
                   {sel ? (
                     <div className="rot-info">
                       <b>{sel.name}</b>
-                      <span>{sel.done ? "済" + (sel.reviewTotal ? (sel.reviews ? "・復習" + "①②③④"[sel.reviews - 1] + "まで済" : "・復習はまだ") : "") + (sel.pre && !sel.planned ? "（シートに入れる前に終わった分）" : "")
+                      <span>{sel.done ? "済" + (sel.reviewTotal ? (sel.reviews ? "・復習" + "①②③④⑤⑥⑦"[sel.reviews - 1] + "まで済" : "・復習はまだ") : "") + (sel.pre && !sel.planned ? "（シートに入れる前に終わった分）" : "")
                         : sel.planned ? "予定 " + sel.dates.map(md).join("・") : "まだ予定に入っていない"}</span>
                     </div>
                   ) : (
