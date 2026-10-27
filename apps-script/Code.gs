@@ -1,7 +1,7 @@
 /**
  * CPA Study Tracker ⇄「CPA学習計画シート」同期スクリプト
  *
- * ・「ToDo・実績」の各行（と復習①〜④の日付）を読み、アプリのカレンダーに予定として渡す
+ * ・「ToDo・実績」の各行（と復習①〜⑦の日付）を読み、アプリのカレンダーに予定として渡す
  * ・アプリで計測した勉強時間・休憩を「アプリ記録」タブに1件ずつ書き込む
  * ・アプリで「終わった」を押したタスクは、「ToDo・実績」の達成（H列）か復習の済チェックだけを書き換える
  * ・レポートの「ひとこと」を「アプリメモ」タブに書き込む
@@ -11,7 +11,7 @@
  */
 
 // このスクリプトの版。アプリはこの数字を見て、使える機能を決める
-const VERSION = 8;
+const VERSION = 9;
 
 // アプリの設定にも同じ合言葉を入れる
 const TOKEN = 'ここを自分だけの合言葉に変える';
@@ -20,7 +20,7 @@ const SPREADSHEET_ID = '';
 
 const TODO_SHEET = 'ToDo・実績';
 const TODO_FIRST_ROW = 5; // 1〜4行目は見出し
-const TODO_COLS = 18;     // A〜R
+const TODO_COLS = 24;     // A〜X
 // ToDo・実績 の列（1始まり）
 const C_DATE = 1, C_CAT = 2, C_SUBJECT = 3, C_CONTENT = 4, C_PLAN = 6, C_ACTUAL = 7, C_ACHIEVED = 8, C_MEMO = 9, C_REVIEW = 10;
 const REVIEWS = [
@@ -28,6 +28,9 @@ const REVIEWS = [
   { date: 13, done: 14, label: '復習②' },
   { date: 15, done: 16, label: '復習③' },
   { date: 17, done: 18, label: '復習④' },
+  { date: 19, done: 20, label: '復習⑤' }, // ⑤〜⑦は2026-10-27に本人が足した列（S〜X。1か月後から2週間おき）
+  { date: 21, done: 22, label: '復習⑥' },
+  { date: 23, done: 24, label: '復習⑦' },
 ];
 const SETTINGS_SHEET = '設定';
 const SETTINGS_SUBJECT_RANGE = 'C4:C';
