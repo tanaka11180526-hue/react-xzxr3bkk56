@@ -69,11 +69,14 @@ export default function CalendarTab({ app }) {
           if (mode === "exam") return <ExamCell key={key} app={app} dateKey={key} dow={dow} today={today} onClick={() => setSelected(key)} />;
           const all = (scheduleByDate[key] || []).filter((p) => !isExamPlan(p));
           // 札は科目ごとに1枚（科目名。シートに出てくる順）。「前日の復習」は何行あっても札1枚（一番下）。予定の中身はマスを押すと出る（2026-10-19 から）
+          // 一回目と復習①〜⑦は札を分け、復習は白地に科目の色の枠にする（並びは一回目 → 復習 → 前日復習。2026-11-12 本人の希望）
           const chips = [];
-          all.filter((p) => !isPrevDayReview(p)).forEach((p) => {
+          const rest = all.filter((p) => !isPrevDayReview(p));
+          [...rest.filter((p) => !p.review), ...rest.filter((p) => p.review)].forEach((p) => {
             const sub = matchSubject(p.subject);
             const name = sub ? sub.short || sub.label : String(p.subject || "").trim() || "予定";
-            if (!chips.some((c) => c.name === name)) chips.push({ name, color: sub ? sub.color : UNKNOWN_COLOR });
+            const review = !!p.review;
+            if (!chips.some((c) => c.name === name && c.review === review)) chips.push({ name, review, color: sub ? sub.color : UNKNOWN_COLOR });
           });
           const prev = all.find(isPrevDayReview);
           if (prev) { const sub = matchSubject(prev.subject); chips.push({ name: "前日復習", color: sub ? sub.color : UNKNOWN_COLOR }); }
@@ -81,7 +84,9 @@ export default function CalendarTab({ app }) {
             <button key={key} className={"cal-cell" + (key === today ? " today" : "")} onClick={() => setSelected(key)}>
               {first && key >= first && key >= SCORE_FROM && key <= today && studied(days, key) && <RankSticker s={dayScore(key, { days, items, logs: app.scoreLogs, today })} />}
               <span className={"cal-day" + (dow === 0 ? " sun" : dow === 6 ? " sat" : "")}>{i + 1}</span>
-              {chips.slice(0, MAX_CHIPS).map((c) => <span key={c.name} className="cal-chip" style={{ background: c.color }}>{c.name}</span>)}
+              {chips.slice(0, MAX_CHIPS).map((c) => (c.review
+                ? <span key={"r" + c.name} className="cal-chip cal-chip-review" style={{ borderColor: c.color }}>{c.name}</span>
+                : <span key={c.name} className="cal-chip" style={{ background: c.color }}>{c.name}</span>))}
               {chips.length > MAX_CHIPS && <span className="cal-more">+{chips.length - MAX_CHIPS}</span>}
             </button>
           );
