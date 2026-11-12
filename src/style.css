@@ -159,6 +159,8 @@ code { font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-
 /* 勉強した時間は、黄緑のマーカー色の小さな札に濃い緑の文字で */
 .cal-secs { font-size: 11px; font-weight: 800; color: #34491F; background: #DDE7CB; border-radius: 5px; margin: 0 2px; padding: 1px 0; letter-spacing: 0.2px; }
 .cal-chip { font-size: 9px; font-weight: 700; color: #0d0f16; border-radius: 3px; padding: 1px 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* 復習の札は白地に科目の色の枠（字は一回目と同じ濃い色。黄色などの字は白地で読みにくいため） */
+.cal-chip-review { background: #fff; border: 1.5px solid; padding: 0 1px; }
 .cal-more { font-size: 9px; color: var(--muted); }
 .by-subject { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
 .by-subject-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
