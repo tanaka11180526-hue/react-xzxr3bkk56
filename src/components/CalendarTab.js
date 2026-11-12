@@ -69,7 +69,7 @@ export default function CalendarTab({ app }) {
           if (mode === "exam") return <ExamCell key={key} app={app} dateKey={key} dow={dow} today={today} onClick={() => setSelected(key)} />;
           const all = (scheduleByDate[key] || []).filter((p) => !isExamPlan(p));
           // 札は科目ごとに1枚（科目名。シートに出てくる順）。「前日の復習」は何行あっても札1枚（一番下）。予定の中身はマスを押すと出る（2026-10-19 から）
-          // 一回目と復習①〜⑦は札を分け、復習は白地に科目の色の枠にする（並びは一回目 → 復習 → 前日復習。2026-11-12 本人の希望）
+          // 一回目と復習①〜⑦は札を分け、復習は薄い科目の色の地に科目の色の枠にする（2026-11-12 白地から変えた）（並びは一回目 → 復習 → 前日復習。2026-11-12 本人の希望）
           const chips = [];
           const rest = all.filter((p) => !isPrevDayReview(p));
           [...rest.filter((p) => !p.review), ...rest.filter((p) => p.review)].forEach((p) => {
@@ -85,7 +85,7 @@ export default function CalendarTab({ app }) {
               {first && key >= first && key >= SCORE_FROM && key <= today && studied(days, key) && <RankSticker s={dayScore(key, { days, items, logs: app.scoreLogs, today })} />}
               <span className={"cal-day" + (dow === 0 ? " sun" : dow === 6 ? " sat" : "")}>{i + 1}</span>
               {chips.slice(0, MAX_CHIPS).map((c) => (c.review
-                ? <span key={"r" + c.name} className="cal-chip cal-chip-review" style={{ borderColor: c.color }}>{c.name}</span>
+                ? <span key={"r" + c.name} className="cal-chip cal-chip-review" style={{ borderColor: c.color, background: /^#[0-9a-f]{6}$/i.test(c.color) ? c.color + "38" : "#fff" }}>{c.name}</span>
                 : <span key={c.name} className="cal-chip" style={{ background: c.color }}>{c.name}</span>))}
               {chips.length > MAX_CHIPS && <span className="cal-more">+{chips.length - MAX_CHIPS}</span>}
             </button>
