@@ -129,6 +129,10 @@ function buildDays(list, getKey) {
   return days;
 }
 
+// 予定の「終わった」を付ける／外す（復習は済、ほかは達成の〇）
+function withDone(it, value) {
+  return it.review ? { ...it, done: value } : { ...it, achieved: value ? "〇" : "" };
+}
 // シートの同じ予定か（行番号・復習の何回目か・日付で見る）
 function sameItem(a, b) {
   return a.row === b.row && !!a.review === !!b.review && (a.reviewIndex ?? null) === (b.reviewIndex ?? null) && a.date === b.date;
@@ -459,12 +463,23 @@ export default function App() {
     setLongCheck({ start: t.start });
   }, []);
 
+  // ✓ を押した予定（シートに書いている途中か、書き終わった直後）。押す前に読み始めた予定の読み込みが返ってくると、
+  // ✓ の前の状態で上書きして ✓ が外れて見えるので、読み込んだ結果にこれを重ねる（2026-11-13 から）
+  const doneEdits = useRef([]); // { item, value, settledAt }（settledAt は書き終わった時刻。書いている途中は 0）
   const refreshSchedule = useCallback(async () => {
     if (!configured) return;
     setScheduleState({ status: "loading" });
+    const startedAt = Date.now();
     try {
       const { items, subjects: sheetSubjects, version } = await sync.fetchSchedule(syncCfg);
-      setSchedule({ items, sheetSubjects, version, at: Date.now() });
+      // 読み始める前に書き終わった ✓ は、もう読んだ結果に入っている
+      doneEdits.current = doneEdits.current.filter((e) => !e.settledAt || e.settledAt >= startedAt);
+      const edits = doneEdits.current;
+      const fixed = edits.length ? items.map((it) => {
+        const e = edits.filter((x) => sameItem(x.item, it)).pop();
+        return e ? withDone(it, e.value) : it;
+      }) : items;
+      setSchedule({ items: fixed, sheetSubjects, version, at: Date.now() });
       setScheduleState({ status: "ok" });
     } catch (e) {
       setScheduleState({ status: "error", message: e.message });
@@ -573,7 +588,7 @@ export default function App() {
   const setItemDone = useCallback((item, value) => {
     setSchedule((sc) => ({
       ...sc,
-      items: sc.items.map((it) => (sameItem(it, item) ? (it.review ? { ...it, done: value } : { ...it, achieved: value ? "〇" : "" }) : it)),
+      items: sc.items.map((it) => (sameItem(it, item) ? withDone(it, value) : it)),
     }));
   }, [setSchedule]);
   async function markDone(item, value) {
@@ -583,10 +598,14 @@ export default function App() {
       return;
     }
     if (!canMarkDone || !item.row) return;
+    const edit = { item, value, settledAt: 0 };
+    doneEdits.current.push(edit);
     setItemDone(item, value);
     try {
       await sync.pushDone(syncCfg, item, value);
+      edit.settledAt = Date.now();
     } catch (e) {
+      doneEdits.current = doneEdits.current.filter((x) => x !== edit);
       setItemDone(item, !value);
       setToast("シートに書けませんでした：" + e.message);
       refreshSchedule();
