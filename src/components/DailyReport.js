@@ -34,17 +34,6 @@ export default function DailyReport({ app, dateKey, onClose }) {
   const first = firstStudyDay(days);
   const score = first && key >= first && key >= SCORE_FROM && studied(days, key) ? dayScore(key, { days, items: schedule.items || [], logs: app.scoreLogs, today: todayKey() }) : null;
 
-  // 予定から計った分（やったこと）
-  const dayStart = d.getTime(), dayEnd = dayStart + 86400000;
-  const taskMap = {};
-  // 「前日の復習」は、シートで名前が変わったり論点ごとに分かれたりしても1行にまとめる。1分未満しか計っていないものは出さない
-  logs.filter((l) => l.task && l.start >= dayStart && l.start < dayEnd).forEach((l) => {
-    const task = isPrevDayReview({ content: l.task }) ? PREV_DAY_REVIEW : l.task;
-    const k = l.subjectId + "|" + task;
-    taskMap[k] = taskMap[k] || { subjectId: l.subjectId, task, secs: 0 };
-    taskMap[k].secs += Math.floor((l.end - l.start) / 1000);
-  });
-  const tasks = Object.values(taskMap).filter((t) => t.secs >= 60).sort((a, b) => b.secs - a.secs);
   const note = notes[key] || "";
   // ページ全体で横にスライドすると日付を動かす（今日より先には行かない。ひとことを書いている間は動かさない）
   const swipe = useSwipe(
@@ -99,18 +88,6 @@ export default function DailyReport({ app, dateKey, onClose }) {
             <div><span>連続</span><b>{streak}日</b></div>
           </div>
           <SubjectTimes list={ranked.map((s) => ({ s, secs: day.by[s.id] }))} />
-          {tasks.length > 0 && (
-            <>
-              <div className="section-title">やったこと<span className="muted">（予定から計った分）</span></div>
-              {tasks.map((t) => (
-                <div key={t.subjectId + t.task} className="report-task">
-                  <i style={{ background: getSub(t.subjectId).color }} />
-                  <span><b>{getSub(t.subjectId).label}</b> {t.task}</span>
-                  <em>{fmtSpaced(t.secs)}</em>
-                </div>
-              ))}
-            </>
-          )}
         </div>
         <p className="hint center light">スクリーンショットで保存・共有できます</p>
       </div>
