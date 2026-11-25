@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { CatHat, SeasonDoodle } from "./Season";
 import Sheet from "./Sheet";
-import { isTaskDone } from "../lib/tasks";
 import { dayMessage } from "../lib/dayMessage";
 import { PAUSE_LIMIT_MS } from "../lib/constants";
 import { fmtHMS, keyToDate, todayKey } from "../lib/time";
@@ -13,8 +12,7 @@ const PRAISE_MIN = 25;
 
 // タイマー画面の一番上。机の上のノート（写真）に、合計時間・科目ボタン・計測ボタンを手書き風に重ねる
 export default function NotebookHero({ app, dateKey }) {
-  const { subjects, timer, timerActions, now, days, logs, getSub, scheduleByDate, matchSubject } = app;
-  const [picking, setPicking] = useState(null);
+  const { subjects, timer, timerActions, now, days, logs, getSub } = app;
   const [examOpen, setExamOpen] = useState(false); // 付箋を押すと試験日を選ぶ画面
   // 合計と科目ごとの時間は、上の日付で選んだ日の分を出す（計測は常に今日）
   const isToday = !dateKey || dateKey === todayKey();
@@ -55,15 +53,9 @@ export default function NotebookHero({ app, dateKey }) {
     return () => clearTimeout(t);
   }, [praise]);
 
-  // 科目の ▷：今日その科目の予定があれば、1つだけでも「どの予定をやる？」と聞く（「予定なしで計る」も選べる）。
-  // 終わった予定も、続きを計れるように下に薄く出す
+  // 科目の ▷：押したらすぐその科目で計る（2026-11-25 から。それまでは今日の予定があれば「どの予定をやる？」と聞いていた）
   function pressSubject(s) {
     if (running === s.id) return timer.mode === "study" ? timerActions.pause() : timerActions.resume();
-    const plans = (scheduleByDate[todayKey()] || []).filter((it) => {
-      const sub = matchSubject(it.subject);
-      return sub && sub.id === s.id && it.content;
-    }).sort((a, b) => isTaskDone(a) - isTaskDone(b)); // 終わってないものを上に
-    if (plans.length) return setPicking({ sub: s, plans });
     timerActions.toggleSubject(s.id);
   }
 
@@ -166,19 +158,6 @@ export default function NotebookHero({ app, dateKey }) {
       <Sheet title="試験日" onClose={() => setExamOpen(false)}>
         <input className="exam-date-input" type="date" defaultValue={app.examDate} onChange={(e) => e.target.value && app.setExamDate(e.target.value)} />
         <button className="btn primary block" onClick={() => setExamOpen(false)}>OK</button>
-      </Sheet>
-    )}
-    {picking && (
-      <Sheet title={picking.sub.label + "のどの予定をやる？"} onClose={() => setPicking(null)}>
-        {picking.plans.map((p, i) => (
-          <button key={i} className={"pick-plan" + (isTaskDone(p) ? " done" : "")} style={{ "--c": picking.sub.color }}
-            onClick={() => { timerActions.toggleSubject(picking.sub.id, p.content); setPicking(null); }}>
-            {p.category && <span className="plan-cat">{p.category}</span>}
-            <span>{p.content}</span>
-            {isTaskDone(p) && <span className="pick-done">済</span>}
-          </button>
-        ))}
-        <button className="btn block" onClick={() => { timerActions.toggleSubject(picking.sub.id); setPicking(null); }}>予定なしで計る</button>
       </Sheet>
     )}
     </div>

@@ -5,17 +5,13 @@ import { isTaskDone } from "../lib/tasks";
 // スプレッドシートの予定1件（「ToDo・実績」の1行、または復習日）
 // inGroup：「前日の復習」のまとまりの中（分類と科目は見出しでわかるので出さない。label は短くした名前）
 // topics・open・onToggle：まとめた「前日の復習」用（文字を押すと論点の一覧を開く。計画のあとに件数を出す）
-export default function ScheduleItem({ app, item, canStart, inGroup, label, topics, open, onToggle }) {
-  const { matchSubject, timer, timerActions, canMarkDone, markDone } = app;
+export default function ScheduleItem({ app, item, inGroup, label, topics, open, onToggle }) {
+  const { matchSubject, canMarkDone, markDone } = app;
   const finished = isTaskDone(item);
   // ✓ のボタンがあるときは、シートの「〇」「済」の印は出さない（同じことを2回出さない）
   const checkable = !!(canMarkDone && item.row);
   const sub = matchSubject(item.subject);
   const color = sub ? sub.color : UNKNOWN_COLOR;
-  // 復習も「論文対策講義3（復習①）」のように、やることを付けて計る
-  const task = item.content || "";
-  const active = sub && (timer.mode === "study" || timer.mode === "paused") && timer.subjectId === sub.id && (timer.task || "") === task;
-  const running = active && timer.mode === "study";
   const time = item.start ? item.start + (item.end ? "–" + item.end : "") : "";
   const planText = (item.plan ? "計画 " + item.plan + "分" : "") + (topics ? "（" + topics + "件）" : "");
   const actualText = item.actual !== "" && item.actual != null ? "実績 " + item.actual + "分" : "";
@@ -37,21 +33,6 @@ export default function ScheduleItem({ app, item, canStart, inGroup, label, topi
         {(planText || actualText) && <div className="plan-note">{[planText, actualText].filter(Boolean).join("／")}{onToggle && <span className="plan-toggle">{open ? " ▾" : " ▸"}</span>}</div>}
         {item.note && <div className="plan-note">{item.note}</div>}
       </div>
-      {canStart && sub && <RowPlay running={running} active={active} onClick={() => timerActions.toggleSubject(sub.id, task)} />}
     </div>
-  );
-}
-
-// 計測の丸いボタン（▷、計測中は ⏸）。科目のまとまりの中の行と、前日の復習のカードで使う
-export function RowPlay({ running, active, onClick }) {
-  return (
-    <button className={"row-play" + (running ? " running" : "")} onClick={onClick}
-      aria-label={running ? "一時停止" : active ? "再開" : "開始"}>
-      <svg viewBox="0 0 20 20" aria-hidden="true">
-        {running
-          ? <path d="M7.5 5.5 V14.5 M12.5 5.5 V14.5" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
-          : <path d="M7 5.5 L15 10 L7 14.5 Z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />}
-      </svg>
-    </button>
   );
 }

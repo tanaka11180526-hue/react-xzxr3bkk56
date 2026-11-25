@@ -126,12 +126,11 @@ function DaySheet({ app, dateKey, onClose }) {
   const { scheduleByDate, days, subjects, openDay, openReport } = app;
   const plans = (scheduleByDate[dateKey] || []).filter((p) => !isExamPlan(p)); // 答練は「答練」のカレンダーに出す
   const day = days[dateKey] || { total: 0, by: {} };
-  const canStart = dateKey === todayKey();
-  const overdue = canStart ? overdueItems(scheduleByDate, dateKey, RECORDS_FROM) : []; // 今日の日を開いたときだけ遅れも出す
+  const overdue = dateKey === todayKey() ? overdueItems(scheduleByDate, dateKey, RECORDS_FROM) : []; // 今日の日を開いたときだけ遅れも出す
   return (
     <Sheet title={fmtDateJa(dateKey)} onClose={onClose}>
       <div className="section-title">予定</div>
-      {plans.length || overdue.length ? <PlanList app={app} plans={plans} canStart={canStart} overdue={overdue} />
+      {plans.length || overdue.length ? <PlanList app={app} plans={plans} overdue={overdue} />
         : <p className="empty">この日の予定はありません</p>}
 
       <div className="section-title">勉強した時間<span className="muted">合計 {fmtHM(day.total)}</span></div>

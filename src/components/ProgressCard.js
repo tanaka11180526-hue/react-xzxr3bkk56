@@ -159,7 +159,8 @@ function TaskRow({ t, list, spent, canMarkDone, markDone, label, inGroup }) {
       </span>
       {list === "done" ? (
         <span className="pg-spent">
-          {plan > 0 ? plan + "分" : "—"} → {used > 0 ? used + "分" : "記録なし"}
+          {/* 予定ごとに計らなくなったので（2026-11-25 から）、記録がなければ計画の分だけ出す */}
+          {used > 0 ? (plan > 0 ? plan + "分" : "—") + " → " + used + "分" : plan > 0 ? plan + "分" : ""}
           {!fromApp && used > 0 && <small>（シート）</small>}
           {diff !== null && diff < 0 && <em className="pg-fast">{-diff}分早い</em>}
         </span>
