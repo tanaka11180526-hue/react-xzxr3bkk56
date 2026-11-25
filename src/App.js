@@ -277,13 +277,16 @@ export default function App() {
       if (timer.mode === "paused" && same) return timerActions.resume();
       const at = Date.now();
       finalize(timer, at);
-      setTimer(task ? { mode: "study", subjectId, task, start: at } : { mode: "study", subjectId, start: at });
+      // 勉強中に別の科目へ切り替えたときは、ノートの大きい数字を途切れさせない（runStart＝休憩をはさまず続けている勉強の始まり。2026-11-25 から）。
+      // 記録は科目ごとに分けて残す。一時停止中や休憩中からの切り替えは0から
+      const runStart = timer.mode === "study" ? timer.runStart || timer.start : null;
+      setTimer({ mode: "study", subjectId, ...(task ? { task } : {}), start: at, ...(runStart ? { runStart } : {}) });
     },
     pause() {
       if (timer.mode === "study") setTimer({ ...timer, mode: "paused", pausedAt: Date.now() });
     },
     resume() {
-      if (timer.mode === "paused") setTimer({ ...studyBase(timer), mode: "study", start: timer.start });
+      if (timer.mode === "paused") setTimer({ ...studyBase(timer), mode: "study", start: timer.start, ...(timer.runStart ? { runStart: timer.runStart } : {}) });
     },
     startBreak() {
       const at = Date.now();

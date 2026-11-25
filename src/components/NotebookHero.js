@@ -34,16 +34,17 @@ export default function NotebookHero({ app, dateKey }) {
     return hit.length ? hit[hit.length - 1] : null;
   }, [days, viewKey]);
 
-  // 勉強の計測がひと区切りついたら（休憩・終了・別の科目へ）、長く続いていれば猫が声をかける
+  // 勉強の計測がひと区切りついたら（休憩・終了）、長く続いていれば猫が声をかける。
+  // 休憩をはさまず別の科目へ切り替えたときは続き（runStart が同じ）なので、まだ声をかけない
   const [praise, setPraise] = useState(null);
   const prevTimer = useRef(timer);
   useEffect(() => {
     const p = prevTimer.current;
     prevTimer.current = timer;
     const wasOn = p.mode === "study" || p.mode === "paused";
-    const sameRun = (timer.mode === "study" || timer.mode === "paused") && timer.start === p.start;
+    const sameRun = (timer.mode === "study" || timer.mode === "paused") && runStartOf(timer) === runStartOf(p);
     if (!wasOn || sameRun) return;
-    const mins = Math.floor(((p.mode === "paused" ? p.pausedAt : Date.now()) - p.start) / 60000);
+    const mins = Math.floor(((p.mode === "paused" ? p.pausedAt : Date.now()) - runStartOf(p)) / 60000);
     if (mins < PRAISE_MIN) return;
     setPraise(praiseText(mins));
   }, [timer]);
@@ -68,12 +69,12 @@ export default function NotebookHero({ app, dateKey }) {
   if (timer.mode === "study") {
     labelSub = getSub(timer.subjectId);
     label = " 計測中";
-    big = fmtHMS((now - timer.start) / 1000);
+    big = fmtHMS((now - runStartOf(timer)) / 1000); // 休憩をはさまず科目を切り替えても続けて数える
     status = totalText;
   } else if (timer.mode === "paused") {
     labelSub = getSub(timer.subjectId);
     label = " 一時停止中";
-    big = fmtHMS((timer.pausedAt - timer.start) / 1000);
+    big = fmtHMS((timer.pausedAt - runStartOf(timer)) / 1000);
     status = <>あと{Math.max(0, Math.ceil((PAUSE_LIMIT_MS - (now - timer.pausedAt)) / 1000))}秒で休憩に・{totalText}</>;
   } else if (timer.mode === "break") {
     label = "☕ 休憩中";
@@ -162,6 +163,11 @@ export default function NotebookHero({ app, dateKey }) {
     )}
     </div>
   );
+}
+
+// 休憩をはさまず続けている勉強の始まり（科目を切り替えても変わらない）
+function runStartOf(t) {
+  return t.runStart || t.start;
 }
 
 function fmtMD(key) {
